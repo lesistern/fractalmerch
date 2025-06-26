@@ -1,0 +1,41 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Browser-sync
+.browserslistrc
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Uploads
+assets/images/uploads/*
+!assets/images/uploads/.gitkeep
+
+# Config files (if they contain sensitive data)
+config/config.local.php
+
+# Backup files
+*.bak
+*.backup

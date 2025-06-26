@@ -1,0 +1,22 @@
+{
+  "name": "proyecto",
+  "version": "1.0.0",
+  "description": "Un sistema completo de gestión de contenido desarrollado en PHP con MySQL, diseñado para funcionar con XAMPP.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run watch\" \"npm run serve\"",
+    "serve": "browser-sync start --proxy 'localhost/proyecto' --files '**/*.php,**/*.css,**/*.js' --ignore 'node_modules' --reload-delay 300",
+    "watch": "chokidar '**/*.php' '**/*.css' '**/*.js' --ignore 'node_modules' -c 'echo \"File changed: {path}\"'",
+    "start": "npm run dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^3.0.4",
+    "chokidar-cli": "^3.0.0",
+    "concurrently": "^9.2.0",
+    "nodemon": "^3.1.10"
+  }
+}

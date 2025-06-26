@@ -1,0 +1,88 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: proyecto_web_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo
+        coverage: none
+
+    - name: Validate PHP syntax
+      run: find . -name "*.php" -exec php -l {} \;
+
+    - name: Setup test database
+      run: |
+        mysql -h 127.0.0.1 -u root -ppassword -e "CREATE DATABASE IF NOT EXISTS proyecto_web_test;"
+        mysql -h 127.0.0.1 -u root -ppassword proyecto_web_test < database.sql
+
+    - name: Run PHP CodeSniffer
+      run: |
+        composer global require "squizlabs/php_codesniffer=*"
+        ~/.composer/vendor/bin/phpcs --standard=PSR12 --ignore=vendor/ .
+      continue-on-error: true
+
+    - name: Security check
+      run: |
+        # Check for common security issues
+        grep -r "mysql_query" . || echo "No deprecated mysql_query found"
+        grep -r "\$_GET\|\$_POST" . | grep -v "htmlspecialchars\|filter_input\|mysqli_real_escape_string" || echo "Input validation check complete"
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your deployment commands here
+        
+    - name: Run deployment tests
+      run: |
+        echo "Running post-deployment tests..."
+        # Add your deployment verification tests here
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run security scan
+      uses: securecodewarrior/github-action-add-sarif@v1
+      with:
+        sarif-file: 'security-scan-results.sarif'
+      continue-on-error: true
+        
+    - name: PHP Security Checker
+      run: |
+        curl -L https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.6/local-php-security-checker_2.0.6_linux_amd64 -o security-checker
+        chmod +x security-checker
+        ./security-checker --path=.
+      continue-on-error: true

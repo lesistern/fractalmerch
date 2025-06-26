@@ -1,0 +1,53 @@
+<?php
+require_once 'includes/functions.php';
+
+if (is_logged_in()) {
+    redirect('index.php');
+}
+
+if ($_POST) {
+    $email = sanitize_input($_POST['email']);
+    $password = $_POST['password'];
+    
+    if (empty($email) || empty($password)) {
+        flash_message('error', 'Por favor completa todos los campos');
+    } else {
+        if (authenticate_user($email, $password)) {
+            flash_message('success', 'Bienvenido de vuelta!');
+            redirect('index.php');
+        } else {
+            flash_message('error', 'Email o contraseña incorrectos');
+        }
+    }
+}
+
+$page_title = 'Iniciar Sesión';
+include 'includes/header.php';
+?>
+
+<div class="auth-container">
+    <div class="auth-form">
+        <h2>Iniciar Sesión</h2>
+        
+        <form method="POST" action="">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required 
+                       value="<?php echo isset($_POST['email']) ? $_POST['email'] : ''; ?>">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+        </form>
+        
+        <p class="auth-link">
+            ¿No tienes cuenta? <a href="register.php">Regístrate aquí</a>
+        </p>
+    </div>
+</div>
+
+<?php include 'includes/footer.php'; ?>

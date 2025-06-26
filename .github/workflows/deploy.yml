@@ -1,0 +1,84 @@
+name: Deploy to Production
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        
+    - name: Create deployment package
+      run: |
+        # Create a clean deployment package
+        mkdir -p deploy
+        rsync -av --exclude='.git' --exclude='.github' --exclude='deploy' --exclude='*.md' . deploy/
+        
+    - name: Setup environment config
+      run: |
+        cd deploy
+        # Copy production config (you'll need to set this up)
+        if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+          echo "Setting up production configuration..."
+          # cp config/config.prod.php config/config.php
+        else
+          echo "Setting up staging configuration..."
+          # cp config/config.staging.php config/config.php
+        fi
+        
+    - name: Deploy via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./deploy/
+        server-dir: ${{ secrets.FTP_SERVER_DIR }}
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          database.sql
+          
+    - name: Run database migrations
+      run: |
+        echo "Running database migrations..."
+        # Add your database migration commands here
+        # mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }} ${{ secrets.DB_NAME }} < migrations/latest.sql
+        
+    - name: Clear cache
+      run: |
+        echo "Clearing application cache..."
+        # Add cache clearing commands here
+        
+    - name: Health check
+      run: |
+        echo "Performing health check..."
+        # curl -f ${{ secrets.APP_URL }}/health-check.php || exit 1
+        
+    - name: Notify deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: always()
