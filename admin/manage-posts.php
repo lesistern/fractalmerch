@@ -106,6 +106,7 @@ include 'admin-dashboard-header.php';
             <li><a href="manage-users.php">Gestionar Usuarios</a></li>
             <li><a href="manage-posts.php" class="active">Gestionar Posts</a></li>
             <li><a href="manage-comments.php">Gestionar Comentarios</a></li>
+            <li><a href="manage-products.php">📦 Gestionar Productos</a></li>
             <li><a href="manage-categories.php">Categorías</a></li>
             <li><a href="generate-images.php">🎨 Generar Imágenes</a></li>
             <li><a href="../index.php">Volver al Sitio</a></li>

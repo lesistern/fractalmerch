@@ -224,4 +224,142 @@ function get_generated_images($limit = 20, $category = null, $user_id = null) {
         return [];
     }
 }
+
+// Funciones para la gestión de productos
+function get_products($search = null, $category_id = null) {
+    global $pdo;
+
+    $sql = "SELECT p.*, c.name as category_name, 
+                   SUM(pv.stock) as total_stock
+            FROM products p
+            LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN product_variants pv ON p.id = pv.product_id
+            WHERE 1=1";
+    $params = [];
+
+    if ($search) {
+        $sql .= " AND (p.name LIKE ? OR p.description LIKE ? OR p.sku LIKE ?)";
+        $params[] = "%$search%";
+        $params[] = "%$search%";
+        $params[] = "%$search%";
+    }
+
+    if ($category_id) {
+        $sql .= " AND p.category_id = ?";
+        $params[] = $category_id;
+    }
+
+    $sql .= " GROUP BY p.id ORDER BY p.created_at DESC";
+
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error getting products: " . $e->getMessage());
+        return [];
+    }
+}
+
+function get_product_by_id($product_id) {
+    global $pdo;
+
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
+        $stmt->execute([$product_id]);
+        $product = $stmt->fetch();
+
+        if ($product) {
+            $stmt = $pdo->prepare("SELECT * FROM product_variants WHERE product_id = ?");
+            $stmt->execute([$product_id]);
+            $product['variants'] = $stmt->fetchAll();
+        }
+        return $product;
+    } catch (PDOException $e) {
+        error_log("Error getting product by ID: " . $e->getMessage());
+        return false;
+    }
+}
+
+function add_product($name, $description, $price, $cost, $sku, $main_image_url, $category_id, $variants) {
+    global $pdo;
+
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("INSERT INTO products (name, description, price, cost, sku, main_image_url, category_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$name, $description, $price, $cost, $sku, $main_image_url, $category_id]);
+        $product_id = $pdo->lastInsertId();
+
+        foreach ($variants as $variant) {
+            $stmt = $pdo->prepare("INSERT INTO product_variants (product_id, size, color, measure, stock) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $product_id,
+                empty($variant['size']) ? null : $variant['size'],
+                empty($variant['color']) ? null : $variant['color'],
+                empty($variant['measure']) ? null : $variant['measure'],
+                (int)$variant['stock']
+            ]);
+        }
+
+        $pdo->commit();
+        return $product_id;
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        error_log("Error adding product: " . $e->getMessage());
+        return false;
+    }
+}
+
+function update_product($product_id, $name, $description, $price, $cost, $sku, $main_image_url, $category_id, $variants) {
+    global $pdo;
+
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("UPDATE products SET name = ?, description = ?, price = ?, cost = ?, sku = ?, main_image_url = ?, category_id = ? WHERE id = ?");
+        $stmt->execute([$name, $description, $price, $cost, $sku, $main_image_url, $category_id, $product_id]);
+
+        // Eliminar variantes existentes y añadir las nuevas
+        $stmt = $pdo->prepare("DELETE FROM product_variants WHERE product_id = ?");
+        $stmt->execute([$product_id]);
+
+        foreach ($variants as $variant) {
+            $stmt = $pdo->prepare("INSERT INTO product_variants (product_id, size, color, measure, stock) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $product_id,
+                empty($variant['size']) ? null : $variant['size'],
+                empty($variant['color']) ? null : $variant['color'],
+                empty($variant['measure']) ? null : $variant['measure'],
+                (int)$variant['stock']
+            ]);
+        }
+
+        $pdo->commit();
+        return true;
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        error_log("Error updating product: " . $e->getMessage());
+        return false;
+    }
+}
+
+function delete_product($product_id) {
+    global $pdo;
+
+    try {
+        $pdo->beginTransaction();
+
+        // Las variantes se eliminarán automáticamente por ON DELETE CASCADE
+        $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
+        $stmt->execute([$product_id]);
+
+        $pdo->commit();
+        return true;
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        error_log("Error deleting product: " . $e->getMessage());
+        return false;
+    }
+}
 ?>

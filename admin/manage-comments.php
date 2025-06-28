@@ -88,6 +88,7 @@ include 'admin-dashboard-header.php';
             <li><a href="manage-users.php">Gestionar Usuarios</a></li>
             <li><a href="manage-posts.php">Gestionar Posts</a></li>
             <li><a href="manage-comments.php" class="active">Gestionar Comentarios</a></li>
+            <li><a href="manage-products.php">📦 Gestionar Productos</a></li>
             <li><a href="manage-categories.php">Categorías</a></li>
             <li><a href="generate-images.php">🎨 Generar Imágenes</a></li>
             <li><a href="../index.php">Volver al Sitio</a></li>
