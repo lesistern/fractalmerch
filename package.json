@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npm run watch\" \"npm run serve\"",
-    "serve": "browser-sync start --proxy 'localhost/proyecto' --files '**/*.php,**/*.css,**/*.js' --ignore 'node_modules' --reload-delay 300",
-    "watch": "chokidar '**/*.php' '**/*.css' '**/*.js' --ignore 'node_modules' -c 'echo \"File changed: {path}\"'",
+    "serve": "browser-sync start --proxy '192.168.0.145/proyecto' --files '**/*.php,**/*.css,**/*.js' --ignore 'node_modules' --reload-delay 300",
+    "watch": "chokidar '**/*.php' '**/*.css' '**/*.js' --ignore 'node_modules' -c 'echo \"File changed: {path}\" && ./sync-to-xampp.sh'",
     "start": "npm run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

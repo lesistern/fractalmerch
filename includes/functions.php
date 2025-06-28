@@ -1,6 +1,6 @@
 <?php
-require_once 'config/database.php';
-require_once 'config/config.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/config.php';
 
 function create_user($username, $email, $password, $role = 'user') {
     global $pdo;
@@ -51,21 +51,19 @@ function get_posts($limit = null, $offset = 0, $category_id = null) {
     
     $sql .= " ORDER BY p.created_at DESC";
     
+    $params = [];
+    if ($category_id) {
+        $params[] = $category_id;
+    }
+    
     if ($limit) {
-        $sql .= " LIMIT ? OFFSET ?";
+        $limit = (int)$limit;
+        $offset = (int)$offset;
+        $sql .= " LIMIT $limit OFFSET $offset";
     }
     
     $stmt = $pdo->prepare($sql);
-    
-    if ($category_id && $limit) {
-        $stmt->execute([$category_id, $limit, $offset]);
-    } elseif ($category_id) {
-        $stmt->execute([$category_id]);
-    } elseif ($limit) {
-        $stmt->execute([$limit, $offset]);
-    } else {
-        $stmt->execute();
-    }
+    $stmt->execute($params);
     
     return $stmt->fetchAll();
 }
@@ -124,5 +122,106 @@ function time_ago($datetime) {
     if ($time < 2629746) return 'hace ' . floor($time/86400) . ' días';
     
     return date('d/m/Y', strtotime($datetime));
+}
+
+// Funciones para el generador de imágenes
+function validate_image_generation_input($prompt, $style, $size, $category) {
+    $errors = [];
+    
+    // Validar prompt
+    if (empty($prompt)) {
+        $errors[] = "La descripción de la imagen es requerida";
+    } elseif (strlen($prompt) < 10) {
+        $errors[] = "La descripción debe tener al menos 10 caracteres";
+    } elseif (strlen($prompt) > 1000) {
+        $errors[] = "La descripción no puede exceder 1000 caracteres";
+    }
+    
+    // Validar estilo
+    $allowed_styles = ['realistic', 'digital-art', 'photographic', 'artistic', 'cinematic', 'cartoon', 'anime', 'fantasy'];
+    if (!in_array($style, $allowed_styles)) {
+        $errors[] = "Estilo no válido";
+    }
+    
+    // Validar tamaño
+    $allowed_sizes = ['512x512', '1024x1024', '1792x1024', '1024x1792'];
+    if (!in_array($size, $allowed_sizes)) {
+        $errors[] = "Tamaño no válido";
+    }
+    
+    // Validar categoría
+    $allowed_categories = ['productos', 'logos', 'banners', 'backgrounds', 'marketing', 'social', 'web', 'otros'];
+    if (!in_array($category, $allowed_categories)) {
+        $errors[] = "Categoría no válida";
+    }
+    
+    return $errors;
+}
+
+function save_generated_image($filename, $prompt, $style, $size, $category, $user_id, $is_real = false) {
+    global $pdo;
+    
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO generated_images 
+            (filename, prompt, style, size, category, generated_by, is_real_image, created_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+        ");
+        
+        $result = $stmt->execute([
+            $filename, 
+            $prompt, 
+            $style, 
+            $size, 
+            $category, 
+            $user_id,
+            $is_real ? 1 : 0
+        ]);
+        
+        if ($result) {
+            return $pdo->lastInsertId();
+        }
+        
+        return false;
+        
+    } catch (PDOException $e) {
+        error_log("Error saving generated image: " . $e->getMessage());
+        return false;
+    }
+}
+
+function get_generated_images($limit = 20, $category = null, $user_id = null) {
+    global $pdo;
+    
+    $sql = "
+        SELECT gi.*, u.username 
+        FROM generated_images gi 
+        LEFT JOIN users u ON gi.generated_by = u.id 
+        WHERE 1=1
+    ";
+    
+    $params = [];
+    
+    if ($category) {
+        $sql .= " AND gi.category = ?";
+        $params[] = $category;
+    }
+    
+    if ($user_id) {
+        $sql .= " AND gi.generated_by = ?";
+        $params[] = $user_id;
+    }
+    
+    $sql .= " ORDER BY gi.created_at DESC LIMIT ?";
+    $params[] = (int)$limit;
+    
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error getting generated images: " . $e->getMessage());
+        return [];
+    }
 }
 ?>

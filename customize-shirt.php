@@ -42,32 +42,12 @@ include 'includes/header.php';
                 </div>
             </div>
             
-            <div class="panel-section" id="image-controls" style="display: none;">
-                <h3>Controles de Imagen</h3>
-                <div class="control-group">
-                    <label>Tamaño:</label>
-                    <input type="range" id="size-slider" min="50" max="300" value="100" class="slider">
-                    <span id="size-value">100%</span>
-                </div>
-                
-                <div class="control-group">
-                    <label>Rotación:</label>
-                    <input type="range" id="rotation-slider" min="0" max="360" value="0" class="slider">
-                    <span id="rotation-value">0°</span>
-                </div>
-                
-                <div class="control-group">
-                    <button class="control-btn" onclick="deleteSelectedImage()">
-                        <i class="fas fa-trash"></i> Eliminar
-                    </button>
-                    <button class="control-btn" onclick="centerImage()">
-                        <i class="fas fa-crosshairs"></i> Centrar
-                    </button>
-                </div>
-            </div>
             
             <div class="panel-section">
                 <h3>Acciones</h3>
+                <button class="action-btn preview" onclick="showFullPreview()">
+                    <i class="fas fa-eye"></i> Vista Previa
+                </button>
                 <button class="action-btn primary" onclick="saveDesign()">
                     <i class="fas fa-save"></i> Guardar Diseño
                 </button>
@@ -82,48 +62,91 @@ include 'includes/header.php';
         
         <!-- Área de diseño -->
         <div class="design-area">
-            <div class="shirt-canvas" id="shirt-canvas">
-                <!-- Remera frente -->
-                <div class="shirt-view" id="front-view">
-                    <img src="https://drive.usercontent.google.com/download?id=1oqO8dZpEswMEiRapgN4qt_Kp_QiUJrWN&export=view&authuser=0" 
-                         alt="Remera Frente" class="shirt-template">
-                    <div class="design-zone front-zone" id="front-design-zone">
-                        <!-- Guías de ayuda -->
-                        <div class="guide-lines">
-                            <div class="center-guide-h"></div>
-                            <div class="center-guide-v"></div>
-                            <div class="sublimation-limits"></div>
+            <div class="design-main-content">
+                <div class="shirt-canvas" id="shirt-canvas">
+                    <!-- Remera frente -->
+                    <div class="shirt-view" id="front-view">
+                        <img src="/proyecto/assets/images/remera-frente.png" 
+                             alt="Remera Frente" class="shirt-template">
+                        <div class="design-zone front-zone" id="front-design-zone">
+                            <!-- Guías de ayuda -->
+                            <div class="guide-lines">
+                                <div class="center-guide-h"></div>
+                                <div class="center-guide-v"></div>
+                                <div class="sublimation-limits"></div>
+                            </div>
+                            <!-- Las imágenes del usuario aparecerán aquí -->
                         </div>
-                        <!-- Las imágenes del usuario aparecerán aquí -->
+                    </div>
+                    
+                    <!-- Remera espalda -->
+                    <div class="shirt-view" id="back-view" style="display: none;">
+                        <img src="/proyecto/assets/images/remera-espalda.png" 
+                             alt="Remera Espalda" class="shirt-template">
+                        <div class="design-zone back-zone" id="back-design-zone">
+                            <!-- Guías de ayuda -->
+                            <div class="guide-lines">
+                                <div class="center-guide-h"></div>
+                                <div class="center-guide-v"></div>
+                                <div class="sublimation-limits"></div>
+                            </div>
+                            <!-- Las imágenes del usuario aparecerán aquí -->
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Remera espalda -->
-                <div class="shirt-view" id="back-view" style="display: none;">
-                    <img src="https://drive.usercontent.google.com/download?id=1_y_UYYLL-iDMfXvOne_h_DpLBTxmXhid&export=view&authuser=0" 
-                         alt="Remera Espalda" class="shirt-template">
-                    <div class="design-zone back-zone" id="back-design-zone">
-                        <!-- Guías de ayuda -->
-                        <div class="guide-lines">
-                            <div class="center-guide-h"></div>
-                            <div class="center-guide-v"></div>
-                            <div class="sublimation-limits"></div>
-                        </div>
-                        <!-- Las imágenes del usuario aparecerán aquí -->
+                <!-- Información de ayuda -->
+                <div class="help-info">
+                    <div class="info-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Las líneas punteadas muestran los límites de sublimación</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-crosshairs"></i>
+                        <span>Las guías de centro aparecen al acercar imágenes al centro</span>
                     </div>
                 </div>
             </div>
             
-            <!-- Información de ayuda -->
-            <div class="help-info">
-                <div class="info-item">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Las líneas punteadas muestran los límites de sublimación</span>
+            <!-- Controles deslizantes laterales -->
+            <div class="design-sliders" id="design-sliders" style="display: none;">
+                <div class="slider-section">
+                    <label class="slider-label">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                        Tamaño
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="side-size-slider" min="20" max="500" value="100" class="vertical-slider">
+                        <span class="slider-value" id="side-size-value">100px</span>
+                    </div>
                 </div>
-                <div class="info-item">
-                    <i class="fas fa-crosshairs"></i>
-                    <span>Las guías de centro aparecen al acercar imágenes al centro</span>
+                
+                <div class="slider-section">
+                    <label class="slider-label">
+                        <i class="fas fa-redo"></i>
+                        Rotación
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="side-rotation-slider" min="0" max="360" value="0" class="vertical-slider">
+                        <span class="slider-value" id="side-rotation-value">0°</span>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Vista Previa -->
+<div class="preview-modal" id="preview-modal" style="display: none;">
+    <div class="preview-overlay"></div>
+    <div class="preview-content">
+        <div class="preview-header">
+            <h3>Vista Previa del Diseño</h3>
+            <button class="close-preview-btn" onclick="closeFullPreview()"></button>
+        </div>
+        <div class="preview-body">
+            <div class="preview-shirt-container">
+                <!-- Se clonará el contenido del diseño aquí -->
             </div>
         </div>
     </div>

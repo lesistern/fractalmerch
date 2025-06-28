@@ -1,0 +1,44 @@
+{
+  "name": "mcp-media-generator",
+  "version": "1.0.0",
+  "description": "MCP server for image and video generation",
+  "type": "module",
+  "main": "build/index.js",
+  "bin": {
+    "mcp-media-generator": "build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc && chmod +x build/index.js",
+    "dev": "tsc --watch",
+    "start": "node build/index.js",
+    "inspect": "npx @modelcontextprotocol/inspector node build/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "image-generation",
+    "video-generation",
+    "ai",
+    "multimedia"
+  ],
+  "author": "Claude Assistant",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "axios": "^1.6.0",
+    "zod": "^3.22.0",
+    "form-data": "^4.0.0",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/fs-extra": "^11.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

@@ -1,0 +1,13 @@
+# Permitir acceso a archivos .webp temporales
+<Files "*.webp">
+    Allow from all
+</Files>
+
+# Configurar headers para archivos .webp
+<IfModule mod_headers.c>
+    <FilesMatch "\.(webp)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>

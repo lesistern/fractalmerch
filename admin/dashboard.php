@@ -41,8 +41,8 @@ $recent_posts = $stmt->fetchAll();
 $stmt = $pdo->query("SELECT c.*, p.title, u.username FROM comments c JOIN posts p ON c.post_id = p.id JOIN users u ON c.user_id = u.id WHERE c.status = 'pending' ORDER BY c.created_at DESC LIMIT 5");
 $pending_comments = $stmt->fetchAll();
 
-$page_title = 'Panel de Administración';
-include '../includes/header.php';
+$page_title = '📊 Panel de Administración';
+include 'admin-dashboard-header.php';
 ?>
 
 <div class="admin-container">
@@ -54,6 +54,7 @@ include '../includes/header.php';
             <li><a href="manage-posts.php">Gestionar Posts</a></li>
             <li><a href="manage-comments.php">Gestionar Comentarios</a></li>
             <li><a href="manage-categories.php">Categorías</a></li>
+            <li><a href="generate-images.php">🎨 Generar Imágenes</a></li>
             <li><a href="../index.php">Volver al Sitio</a></li>
         </ul>
     </div>
@@ -170,4 +171,28 @@ include '../includes/header.php';
     </div>
 </div>
 
-<?php include '../includes/footer.php'; ?>
+<footer class="admin-footer">
+    <div class="container">
+        <p>&copy; 2025 <?php echo SITE_NAME; ?> - Panel de Administración</p>
+    </div>
+</footer>
+
+<style>
+.admin-footer {
+    background: rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+    color: rgba(255,255,255,0.8);
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.admin-footer p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+</style>
+
+</body>
+</html>

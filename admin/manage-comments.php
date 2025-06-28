@@ -76,8 +76,8 @@ while ($row = $stmt->fetch()) {
     $comment_counts[$row['status']] = $row['count'];
 }
 
-$page_title = 'Gestionar Comentarios';
-include '../includes/header.php';
+$page_title = '💬 Gestionar Comentarios - Panel Admin';
+include 'admin-dashboard-header.php';
 ?>
 
 <div class="admin-container">
@@ -89,6 +89,7 @@ include '../includes/header.php';
             <li><a href="manage-posts.php">Gestionar Posts</a></li>
             <li><a href="manage-comments.php" class="active">Gestionar Comentarios</a></li>
             <li><a href="manage-categories.php">Categorías</a></li>
+            <li><a href="generate-images.php">🎨 Generar Imágenes</a></li>
             <li><a href="../index.php">Volver al Sitio</a></li>
         </ul>
     </div>
@@ -175,4 +176,11 @@ include '../includes/header.php';
     </div>
 </div>
 
-<?php include '../includes/footer.php'; ?>
+<footer class="admin-footer">
+    <div class="container">
+        <p>&copy; 2025 <?php echo SITE_NAME; ?> - Panel de Administración</p>
+    </div>
+</footer>
+
+</body>
+</html>

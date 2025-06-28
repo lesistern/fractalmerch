@@ -2,7 +2,16 @@
 session_start();
 
 define('SITE_NAME', 'Mi Proyecto Web');
-define('SITE_URL', 'http://localhost/proyecto/');
+
+// Detectar automáticamente la URL base para funcionar en LAN
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$path = dirname($_SERVER['PHP_SELF']);
+if ($path === '/' || $path === '\\') {
+    $path = '';
+}
+define('SITE_URL', $protocol . $host . $path . '/');
+
 define('ADMIN_EMAIL', 'admin@proyecto.com');
 
 define('POSTS_PER_PAGE', 10);

@@ -1,5 +1,7 @@
 module.exports = {
-    proxy: "localhost/proyecto",
+    proxy: "192.168.0.145/proyecto",
+    host: "0.0.0.0",
+    port: 3000,
     files: [
         "**/*.php",
         "**/*.css", 
@@ -30,9 +32,9 @@ module.exports = {
             "text-align: center"
         ]
     },
-    open: "local",
+    open: false,
     logLevel: "info",
-    logPrefix: "🚀 Proyecto",
+    logPrefix: "🚀 Proyecto LAN",
     browser: "default",
     cors: true,
     xip: false,
