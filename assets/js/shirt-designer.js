@@ -6,6 +6,27 @@ class ShirtDesigner {
         this.selectedImage = null;
         this.maxImages = 5;
         this.imageCounter = 0;
+        this.currentShirtSize = 'M';
+        
+        // Dimensiones de talles en cm (ancho x alto)
+        this.shirtSizes = {
+            'S': { width: 48, height: 68 },
+            'M': { width: 51, height: 70 },
+            'L': { width: 54, height: 72 },
+            'XL': { width: 57, height: 74 },
+            '2XL': { width: 60, height: 76 },
+            '3XL': { width: 63, height: 78 },
+            '4XL': { width: 66, height: 80 },
+            '5XL': { width: 69, height: 82 },
+            '6XL': { width: 72, height: 84 },
+            '7XL': { width: 75, height: 86 },
+            '8XL': { width: 78, height: 88 },
+            '9XL': { width: 81, height: 90 },
+            '10XL': { width: 84, height: 92 }
+        };
+        
+        // Papel A3: 29.7 x 42 cm
+        this.a3Size = { width: 29.7, height: 42 };
         
         this.init();
     }
@@ -13,6 +34,8 @@ class ShirtDesigner {
     init() {
         this.setupEventListeners();
         this.setupDragAndDrop();
+        this.updateShirtSizeLimits();
+        this.setupCanvasClipping();
     }
     
     setupEventListeners() {
@@ -29,17 +52,62 @@ class ShirtDesigner {
             this.handleImageUpload(e);
         });
         
-        // Controles de imagen
-        document.getElementById('size-slider').addEventListener('input', (e) => {
-            this.updateImageSize(e.target.value);
-        });
+        // Controles de imagen (con verificación de existencia)
+        const sizeSlider = document.getElementById('size-slider');
+        const rotationSlider = document.getElementById('rotation-slider');
         
-        document.getElementById('rotation-slider').addEventListener('input', (e) => {
-            this.updateImageRotation(e.target.value);
-        });
+        if (sizeSlider) {
+            sizeSlider.addEventListener('input', (e) => {
+                e.stopPropagation();
+                this.updateImageSize(e.target.value);
+            });
+            
+            // Prevenir deselección al interactuar con el slider
+            sizeSlider.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
+            sizeSlider.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+            });
+        }
+        
+        if (rotationSlider) {
+            rotationSlider.addEventListener('input', (e) => {
+                e.stopPropagation();
+                this.updateImageRotation(e.target.value);
+            });
+            
+            // Prevenir deselección al interactuar con el slider
+            rotationSlider.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
+            rotationSlider.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+            });
+        }
+        
+        // Prevenir deselección al hacer click en los controles
+        const imageControls = document.getElementById('image-controls');
+        if (imageControls) {
+            imageControls.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
         
         // Drag and drop de imágenes
         this.setupDesignZoneDragDrop();
+        
+        // Setup para click fuera del área de diseño para deseleccionar
+        document.addEventListener('click', (e) => {
+            // Solo deseleccionar si el click no es en una imagen, controles o sliders
+            if (!e.target.closest('.design-image') && 
+                !e.target.closest('.image-controls-right') && 
+                !e.target.closest('.uploaded-image-item')) {
+                this.deselectImage();
+            }
+        });
     }
     
     setupDragAndDrop() {
@@ -108,6 +176,8 @@ class ShirtDesigner {
     handleImageUpload(event) {
         const files = event.target.files;
         this.processFiles(files);
+        // Limpiar el input para permitir subir la misma imagen de nuevo
+        event.target.value = '';
     }
     
     processFiles(files) {
@@ -150,6 +220,14 @@ class ShirtDesigner {
             
             this.uploadedImages.push(imageData);
             this.renderUploadedImage(imageData);
+            
+            // Auto-agregar la imagen al área segura automáticamente
+            this.addImageToSafeArea(imageData.id);
+            
+            // Mostrar controles si es la primera imagen
+            if (this.uploadedImages.length === 1) {
+                this.showImageControls();
+            }
         };
         
         reader.readAsDataURL(file);
@@ -158,30 +236,93 @@ class ShirtDesigner {
     renderUploadedImage(imageData) {
         const container = document.getElementById('uploaded-images');
         
-        const imageItem = document.createElement('div');
+        // Verificar si ya existe el elemento
+        let imageItem = document.querySelector(`[data-image-id="${imageData.id}"]`);
+        if (imageItem) {
+            return; // Ya existe, no crear duplicado
+        }
+        
+        imageItem = document.createElement('div');
         imageItem.className = 'uploaded-image-item';
         imageItem.dataset.imageId = imageData.id;
         imageItem.draggable = true;
         
+        // Truncar nombre del archivo si es muy largo
+        const truncatedName = this.truncateFilename(imageData.name, 20);
+        
         imageItem.innerHTML = `
             <img src="${imageData.src}" alt="${imageData.name}">
-            <span>${imageData.name}</span>
+            <span title="${imageData.name}">${truncatedName}</span>
             <button onclick="shirtDesigner.removeUploadedImage('${imageData.id}')" style="margin-left: auto; background: none; border: none; color: #dc3545; cursor: pointer;">
                 <i class="fas fa-times"></i>
             </button>
         `;
         
-        // Drag start event
+        // Drag start event para reordenamiento
         imageItem.addEventListener('dragstart', (e) => {
             e.dataTransfer.setData('text/plain', imageData.id);
+            e.dataTransfer.setData('application/json', JSON.stringify({
+                type: 'reorder',
+                imageId: imageData.id
+            }));
+            imageItem.classList.add('dragging');
+        });
+        
+        imageItem.addEventListener('dragend', (e) => {
+            imageItem.classList.remove('dragging');
+            document.querySelectorAll('.uploaded-image-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        });
+        
+        // Drop events para reordenamiento
+        imageItem.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const dragData = e.dataTransfer.getData('application/json');
+            if (dragData) {
+                const data = JSON.parse(dragData);
+                if (data.type === 'reorder') {
+                    imageItem.classList.add('drag-over');
+                }
+            }
+        });
+        
+        imageItem.addEventListener('dragleave', (e) => {
+            imageItem.classList.remove('drag-over');
+        });
+        
+        imageItem.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const dragData = e.dataTransfer.getData('application/json');
+            if (dragData) {
+                const data = JSON.parse(dragData);
+                if (data.type === 'reorder' && data.imageId !== imageData.id) {
+                    this.reorderImages(data.imageId, imageData.id);
+                }
+            }
+            imageItem.classList.remove('drag-over');
         });
         
         // Click para seleccionar
         imageItem.addEventListener('click', () => {
             this.selectUploadedImage(imageData.id);
+            // Solo agregar si no está ya en el área segura
+            if (!imageData.view) {
+                this.addImageToSafeArea(imageData.id);
+            }
         });
         
         container.appendChild(imageItem);
+    }
+
+    truncateFilename(filename, maxLength) {
+        if (filename.length <= maxLength) return filename;
+        
+        const extension = filename.split('.').pop();
+        const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
+        const truncatedName = nameWithoutExt.substring(0, maxLength - extension.length - 4);
+        
+        return `${truncatedName}...${extension}`;
     }
     
     addImageToDesign(imageId, event) {
@@ -194,8 +335,8 @@ class ShirtDesigner {
         const designZone = document.querySelector(`#${this.currentView}-design-zone`);
         const rect = designZone.getBoundingClientRect();
         
-        // Calcular posición relativa al evento drop
-        let x = 50, y = 50; // Posición por defecto en el centro
+        // Posicionar automáticamente en el centro de la remera
+        let x = 50, y = 50; // Centro de la remera
         
         if (event && event.clientX && event.clientY) {
             x = ((event.clientX - rect.left) / rect.width) * 100;
@@ -203,90 +344,124 @@ class ShirtDesigner {
         }
         
         imageData.view = this.currentView;
-        // Ajustar coordenadas para el área segura (20% a 80% del design-zone)
-        imageData.x = Math.max(20, Math.min(80, x));
-        imageData.y = Math.max(20, Math.min(80, y));
+        imageData.x = Math.max(15, Math.min(85, x)); // Mantener dentro de la remera
+        imageData.y = Math.max(15, Math.min(85, y)); // Mantener dentro de la remera
+        
+        // Aplicar tamaño máximo A3 calculado
+        this.applyA3SizeLimit(imageData);
         
         this.renderDesignImage(imageData);
         this.selectDesignImage(imageId);
+        
+        console.log(`Imagen agregada sobre la remera - Posición: ${imageData.x.toFixed(1)}%, ${imageData.y.toFixed(1)}%`);
+    }
+
+    addImageToSafeArea(imageId) {
+        const imageData = this.uploadedImages.find(img => img.id === imageId);
+        if (!imageData) return;
+        
+        // Si la imagen ya está en el área segura, no hacer nada
+        if (imageData.view === this.currentView) return;
+        
+        // Si la imagen ya está en una vista, la removemos primero
+        this.removeImageFromDesign(imageId);
+        
+        imageData.view = this.currentView;
+        // Centrar automáticamente sobre la remera
+        imageData.x = 50;
+        imageData.y = 50;
+        
+        // Aplicar límites A3
+        this.applyA3SizeLimit(imageData);
+        
+        this.renderDesignImage(imageData);
+        this.selectDesignImage(imageId);
+        
+        console.log(`Imagen centrada automáticamente sobre la remera`);
     }
     
-    renderDesignImage(imageData) {
-        // Buscar el contenedor .sublimation-limits dentro de la vista actual
-        const designZone = document.querySelector(`#${imageData.view}-design-zone`);
-        const sublimationLimits = designZone ? designZone.querySelector('.sublimation-limits') : null;
+    // Nueva función para aplicar límites A3
+    applyA3SizeLimit(imageData) {
+        // Calcular tamaño máximo basado en A3 y talle actual
+        const maxSize = this.maxImageSizePx || 200; // Fallback a 200px si no está calculado
         
-        if (!sublimationLimits) {
-            console.error(`No se encontró .sublimation-limits para la vista: ${imageData.view}`);
-            return;
+        // Aplicar el límite manteniendo proporciones
+        if (imageData.size > maxSize) {
+            imageData.size = maxSize;
         }
         
-        console.log('Agregando imagen al sublimation-limits:', sublimationLimits);
-        console.log('Datos de imagen:', imageData);
+        // Si no tiene tamaño asignado, usar un tamaño apropiado para A3
+        if (!imageData.size) {
+            imageData.size = Math.min(maxSize, 150); // Tamaño inicial apropiado
+        }
         
-        const imageElement = document.createElement('img');
-        imageElement.className = 'design-image';
-        imageElement.id = `design-${imageData.id}`;
-        imageElement.src = imageData.src;
-        imageElement.alt = imageData.name;
-        
-        // Crear controles flotantes
-        const controlsOverlay = document.createElement('div');
-        controlsOverlay.className = 'image-controls-overlay';
-        controlsOverlay.innerHTML = `
-            <button class="control-icon rotate" title="Rotar" onclick="shirtDesigner.rotateImage('${imageData.id}')">
-                <i class="fas fa-redo"></i>
-            </button>
-            <button class="control-icon resize" title="Redimensionar" onclick="shirtDesigner.toggleResizeMode('${imageData.id}')">
-                <i class="fas fa-expand-arrows-alt"></i>
-            </button>
-            <button class="control-icon duplicate" title="Duplicar" onclick="shirtDesigner.duplicateImage('${imageData.id}')">
-                <i class="fas fa-copy"></i>
-            </button>
-            <button class="control-icon delete" title="Eliminar" onclick="shirtDesigner.deleteImage('${imageData.id}')">
-                <i class="fas fa-trash"></i>
-            </button>
-        `;
-        
-        imageElement.appendChild(controlsOverlay);
-        
-        this.updateImageStyle(imageElement, imageData);
-        
-        // Event listeners para interacción
-        this.setupImageInteraction(imageElement, imageData);
-        
-        sublimationLimits.appendChild(imageElement);
+        console.log(`Tamaño A3 aplicado: ${imageData.size}px (máximo: ${maxSize}px)`);
+    }
+
+    calculateOptimalSize(imageData) {
+        // Crear una imagen temporal para obtener dimensiones originales
+        const tempImg = new Image();
+        tempImg.onload = () => {
+            const originalWidth = tempImg.naturalWidth;
+            const originalHeight = tempImg.naturalHeight;
+            
+            // Obtener dimensiones del área segura (60% del design-zone)
+            const designZone = document.querySelector(`#${imageData.view}-design-zone`);
+            const safeAreaWidth = designZone.offsetWidth * 0.6; // 60% del ancho
+            const safeAreaHeight = designZone.offsetHeight * 0.6; // 60% del alto
+            
+            // Calcular factor de escala para que quepa completamente
+            const scaleX = safeAreaWidth / originalWidth;
+            const scaleY = safeAreaHeight / originalHeight;
+            const scale = Math.min(scaleX, scaleY) * 0.8; // 80% del máximo para dejar margen
+            
+            // Convertir a píxeles aproximados para el slider
+            const optimalSize = Math.min(Math.max(scale * 200, 50), 300);
+            imageData.size = Math.round(optimalSize);
+            
+            // Actualizar la imagen si ya está renderizada
+            const imageElement = document.getElementById(`design-${imageData.id}`);
+            if (imageElement) {
+                this.updateImageStyle(imageElement, imageData);
+            }
+        };
+        tempImg.src = imageData.src;
     }
     
+
     updateImageStyle(imageElement, imageData) {
-        // Las coordenadas están en porcentaje del design-zone (20%-80%)
-        // Convertir a porcentaje del sublimation-limits (0%-100%)
-        const relativeX = (imageData.x - 20) * (100/60); // Convertir de design-zone a sublimation-limits
-        const relativeY = (imageData.y - 20) * (100/60);
-        
-        imageElement.style.left = `${relativeX}%`;
-        imageElement.style.top = `${relativeY}%`;
+        const mirrorScale = imageData.mirrored ? 'scaleX(-1)' : 'scaleX(1)';
+        imageElement.style.left = `${imageData.x}%`;
+        imageElement.style.top = `${imageData.y}%`;
         imageElement.style.width = `${imageData.size}px`;
         imageElement.style.height = 'auto';
-        imageElement.style.transform = `translate(-50%, -50%) rotate(${imageData.rotation}deg)`;
-        imageElement.style.transition = 'none';
+        imageElement.style.transform = `translate(-50%, -50%) rotate(${imageData.rotation}deg) ${mirrorScale}`;
         imageElement.style.position = 'absolute';
     }
     
     setupImageInteraction(imageElement, imageData) {
         let isDragging = false;
         let startX, startY, startLeft, startTop;
+        let dragThreshold = 5; // pixels
+        let hasMoved = false;
         
         // Click para seleccionar
         imageElement.addEventListener('click', (e) => {
             e.stopPropagation();
-            this.selectDesignImage(imageData.id);
+            if (!hasMoved) {
+                this.selectDesignImage(imageData.id);
+            }
         });
         
         // Mouse down para empezar drag
         imageElement.addEventListener('mousedown', (e) => {
-            e.preventDefault();
+            // No prevenir el default para permitir clicks
+            if (e.target.closest('.image-controls-overlay')) {
+                return; // No arrastrar si se hace click en los controles
+            }
+            
             isDragging = true;
+            hasMoved = false;
             
             this.selectDesignImage(imageData.id);
             
@@ -302,22 +477,28 @@ class ShirtDesigner {
         const onMouseMove = (e) => {
             if (!isDragging) return;
             
-            // El parent ahora es .sublimation-limits, necesitamos el design-zone para calcular
-            const sublimationLimits = imageElement.parentElement;
-            const guideLines = sublimationLimits.parentElement; 
-            const designZone = guideLines.parentElement; // sublimation-limits -> guide-lines -> design-zone
+            // Verificar si se ha movido lo suficiente para considerar un drag
+            const moveDistance = Math.sqrt(
+                Math.pow(e.clientX - startX, 2) + Math.pow(e.clientY - startY, 2)
+            );
+            
+            if (moveDistance > dragThreshold) {
+                hasMoved = true;
+            }
+            
+            // El parent ahora es design-zone
+            const designZone = imageElement.parentElement;
             const rect = designZone.getBoundingClientRect();
             
             const deltaX = ((e.clientX - startX) / rect.width) * 100;
             const deltaY = ((e.clientY - startY) / rect.height) * 100;
             
-            // Limitar movimiento al área segura (20% a 80% del design-zone)
-            imageData.x = Math.max(20, Math.min(80, startLeft + deltaX));
-            imageData.y = Math.max(20, Math.min(80, startTop + deltaY));
+            // Permitir movimiento libre dentro de la zona de diseño
+            imageData.x = Math.max(0, Math.min(100, startLeft + deltaX));
+            imageData.y = Math.max(0, Math.min(100, startTop + deltaY));
             
             this.updateImageStyle(imageElement, imageData);
             this.checkCenterGuides(imageData);
-            console.log('Moviendo imagen:', imageData.x, imageData.y);
         };
         
         const onMouseUp = () => {
@@ -325,6 +506,11 @@ class ShirtDesigner {
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
             this.hideCenterGuides();
+            
+            // Reset para el próximo click
+            setTimeout(() => {
+                hasMoved = false;
+            }, 10);
         };
         
         // Touch events para móvil
@@ -361,7 +547,15 @@ class ShirtDesigner {
         });
         
         this.selectedImage = null;
-        this.hideImageControls();
+        
+        // Solo ocultar controles si no hay imágenes en el diseño
+        const imagesInDesign = this.uploadedImages.filter(img => img.view);
+        if (imagesInDesign.length === 0) {
+            this.hideImageControls();
+        } else {
+            // Mantener controles visibles pero deshabilitados
+            this.updateControlValues();
+        }
     }
     
     showImageControls() {
@@ -369,34 +563,98 @@ class ShirtDesigner {
     }
     
     hideImageControls() {
-        document.getElementById('image-controls').style.display = 'none';
+        // Solo ocultar si no hay imágenes en el diseño
+        const imagesInDesign = this.uploadedImages.filter(img => img.view);
+        if (imagesInDesign.length === 0) {
+            document.getElementById('image-controls').style.display = 'none';
+        }
     }
     
     updateControlValues() {
-        if (!this.selectedImage) return;
+        const sizeSlider = document.getElementById('size-slider');
+        const sizeValue = document.getElementById('size-value');
+        const rotationSlider = document.getElementById('rotation-slider');
+        const rotationValue = document.getElementById('rotation-value');
+        
+        if (!this.selectedImage) {
+            // Si no hay imagen seleccionada, resetear valores pero mantener controles
+            if (sizeSlider) {
+                sizeSlider.value = 100;
+                sizeSlider.disabled = true;
+            }
+            if (sizeValue) {
+                sizeValue.textContent = '100px';
+            }
+            if (rotationSlider) {
+                rotationSlider.value = 0;
+                rotationSlider.disabled = true;
+            }
+            if (rotationValue) {
+                rotationValue.textContent = '0°';
+            }
+            return;
+        }
         
         const imageData = this.uploadedImages.find(img => img.id === this.selectedImage);
         if (!imageData) return;
         
-        document.getElementById('size-slider').value = imageData.size;
-        document.getElementById('size-value').textContent = `${imageData.size}%`;
-        document.getElementById('rotation-slider').value = imageData.rotation;
-        document.getElementById('rotation-value').textContent = `${imageData.rotation}°`;
+        if (sizeSlider) {
+            // Actualizar el máximo del slider según límites A3
+            const maxSize = this.maxImageSizePx || 300;
+            sizeSlider.max = maxSize;
+            sizeSlider.value = imageData.size;
+            sizeSlider.disabled = false;
+        }
+        if (sizeValue) {
+            sizeValue.textContent = `${imageData.size}px`;
+        }
+        if (rotationSlider) {
+            rotationSlider.value = imageData.rotation;
+            rotationSlider.disabled = false;
+        }
+        if (rotationValue) {
+            rotationValue.textContent = `${imageData.rotation}°`;
+        }
     }
     
     updateImageSize(size) {
         if (!this.selectedImage) return;
-        
+
         const imageData = this.uploadedImages.find(img => img.id === this.selectedImage);
         const imageElement = document.getElementById(`design-${this.selectedImage}`);
-        
+
         if (imageData && imageElement) {
-            imageData.size = parseInt(size);
+            let newSize = parseInt(size);
+            
+            // Aplicar límite A3 calculado dinámicamente
+            const maxSize = this.maxImageSizePx || 250; // Fallback
+            
+            if (newSize > maxSize) {
+                newSize = maxSize;
+                // Actualizar el slider al valor máximo permitido
+                const sizeSlider = document.getElementById('size-slider');
+                if (sizeSlider) {
+                    sizeSlider.value = maxSize;
+                }
+            }
+
+            imageData.size = newSize;
             this.updateImageStyle(imageElement, imageData);
-            document.getElementById('size-value').textContent = `${size}%`;
+            
+            console.log(`Tamaño actualizado: ${newSize}px (máximo A3: ${maxSize}px)`);            
+            
+            const sizeValue = document.getElementById('size-value');
+            if (sizeValue) {
+                sizeValue.textContent = `${Math.round(newSize)}px`;
+            }
+            // Actualizar el slider para que no supere el máximo
+            const sizeSlider = document.getElementById('size-slider');
+            if (sizeSlider.value > newSize) {
+                sizeSlider.value = newSize;
+            }
         }
     }
-    
+
     updateImageRotation(rotation) {
         if (!this.selectedImage) return;
         
@@ -406,185 +664,16 @@ class ShirtDesigner {
         if (imageData && imageElement) {
             imageData.rotation = parseInt(rotation);
             this.updateImageStyle(imageElement, imageData);
-            document.getElementById('rotation-value').textContent = `${rotation}°`;
-        }
-    }
-    
-    checkCenterGuides(imageData) {
-        const tolerance = 3; // 3% de tolerancia más estricta
-        const designZone = document.querySelector(`#${imageData.view}-design-zone`);
-        const imageElement = document.getElementById(`design-${imageData.id}`);
-        
-        const centerH = designZone.querySelector('.center-guide-h');
-        const centerV = designZone.querySelector('.center-guide-v');
-        
-        let isSnappedH = false;
-        let isSnappedV = false;
-        
-        // Mostrar guía horizontal solo cuando está exactamente centrada en Y
-        if (Math.abs(imageData.y - 50) < tolerance) {
-            centerH.classList.add('show');
-            imageData.y = 50; // Snap al centro exacto
-            isSnappedH = true;
-            console.log('Snap horizontal activado');
-        } else {
-            centerH.classList.remove('show');
-        }
-        
-        // Mostrar guía vertical solo cuando está exactamente centrada en X  
-        if (Math.abs(imageData.x - 50) < tolerance) {
-            centerV.classList.add('show');
-            imageData.x = 50; // Snap al centro exacto
-            isSnappedV = true;
-            console.log('Snap vertical activado');
-        } else {
-            centerV.classList.remove('show');
-        }
-        
-        // Aplicar clipping según la posición
-        if (imageElement) {
-            // Limpiar clases previas
-            imageElement.classList.remove('snapped-center-h', 'snapped-center-v', 'snapped-center-both');
-            
-            // Aplicar clipping según la posición
-            if (isSnappedH && isSnappedV) {
-                imageElement.classList.add('snapped-center-both');
-                console.log('Clipping aplicado: both');
-            } else if (isSnappedH) {
-                imageElement.classList.add('snapped-center-h');
-                console.log('Clipping aplicado: horizontal');
-            } else if (isSnappedV) {
-                imageElement.classList.add('snapped-center-v');
-                console.log('Clipping aplicado: vertical');
+            const rotationValue = document.getElementById('rotation-value');
+            if (rotationValue) {
+                rotationValue.textContent = `${rotation}°`;
             }
         }
     }
+
     
-    hideCenterGuides() {
-        document.querySelectorAll('.center-guide-h, .center-guide-v').forEach(guide => {
-            guide.classList.remove('show');
-        });
-        
-        // Quitar clipping de todas las imágenes
-        document.querySelectorAll('.design-image').forEach(img => {
-            img.classList.remove('snapped-center-h', 'snapped-center-v', 'snapped-center-both');
-        });
-    }
-    
-    centerImage() {
-        if (!this.selectedImage) return;
-        
-        const imageData = this.uploadedImages.find(img => img.id === this.selectedImage);
-        const imageElement = document.getElementById(`design-${this.selectedImage}`);
-        
-        if (imageData && imageElement) {
-            // Centrar en el área segura (center del 20%-80% = 50%)
-            imageData.x = 50;
-            imageData.y = 50;
-            this.updateImageStyle(imageElement, imageData);
-        }
-    }
-    
-    deleteSelectedImage() {
-        if (!this.selectedImage) return;
-        
-        this.removeImageFromDesign(this.selectedImage);
-        this.deselectImage();
-    }
-    
-    removeImageFromDesign(imageId) {
-        const imageElement = document.getElementById(`design-${imageId}`);
-        
-        if (imageElement) {
-            imageElement.remove();
-        }
-        
-        // Limpiar la vista de la imagen
-        const imageData = this.uploadedImages.find(img => img.id === imageId);
-        if (imageData) {
-            imageData.view = null;
-        }
-    }
-    
-    removeUploadedImage(imageId) {
-        this.removeImageFromDesign(imageId);
-        
-        // Remover de la lista de imágenes subidas
-        this.uploadedImages = this.uploadedImages.filter(img => img.id !== imageId);
-        
-        // Remover del DOM
-        const imageItem = document.querySelector(`[data-image-id="${imageId}"]`);
-        if (imageItem) {
-            imageItem.remove();
-        }
-        
-        if (this.selectedImage === imageId) {
-            this.deselectImage();
-        }
-    }
-    
-    selectUploadedImage(imageId) {
-        document.querySelectorAll('.uploaded-image-item').forEach(item => {
-            item.classList.remove('selected');
-        });
-        
-        document.querySelector(`[data-image-id="${imageId}"]`).classList.add('selected');
-    }
-    
-    saveDesign() {
-        const designData = {
-            images: this.uploadedImages.filter(img => img.view),
-            timestamp: new Date().toISOString()
-        };
-        
-        localStorage.setItem('shirtDesign', JSON.stringify(designData));
-        alert('Diseño guardado exitosamente');
-    }
-    
-    resetDesign() {
-        if (confirm('¿Estás seguro de que quieres reiniciar el diseño?')) {
-            // Remover todas las imágenes del diseño
-            document.querySelectorAll('.design-image').forEach(img => img.remove());
-            
-            // Limpiar las vistas de las imágenes
-            this.uploadedImages.forEach(img => {
-                img.view = null;
-                img.x = 50;
-                img.y = 50;
-                img.size = 100;
-                img.rotation = 0;
-            });
-            
-            this.deselectImage();
-        }
-    }
-    
-    orderShirt() {
-        const imagesInDesign = this.uploadedImages.filter(img => img.view);
-        
-        if (imagesInDesign.length === 0) {
-            alert('Agrega al menos una imagen al diseño antes de ordenar');
-            return;
-        }
-        
-        // Aquí podrías integrar con un sistema de órdenes
-        alert('¡Diseño listo para ordenar! (Esta funcionalidad se implementaría con un sistema de órdenes)');
-    }
-    
-    // Nuevas funciones para controles de imagen
-    rotateImage(imageId) {
-        const imageData = this.uploadedImages.find(img => img.id === imageId);
-        const imageElement = document.getElementById(`design-${imageId}`);
-        
-        if (imageData && imageElement) {
-            imageData.rotation = (imageData.rotation + 90) % 360;
-            this.updateImageStyle(imageElement, imageData);
-            this.selectDesignImage(imageId);
-            this.updateControlValues();
-        }
-    }
-    
-    toggleResizeMode(imageId) {
+
+        toggleResizeMode(imageId) {
         // Activar modo de redimensionamiento rápido
         this.selectDesignImage(imageId);
         const imageData = this.uploadedImages.find(img => img.id === imageId);
@@ -618,9 +707,141 @@ class ShirtDesigner {
         this.selectDesignImage(duplicatedImage.id);
     }
     
-    deleteImage(imageId) {
-        this.removeImageFromDesign(imageId);
-        this.deselectImage();
+    // Nuevas funciones para canvas clipping y control de talles
+    updateShirtSize(newSize) {
+        this.currentShirtSize = newSize;
+        this.updateShirtSizeLimits();
+        this.updateCanvasClipping();
+        console.log(`Talle cambiado a: ${newSize}`);
+    }
+    
+    updateShirtSizeLimits() {
+        const currentSize = this.shirtSizes[this.currentShirtSize];
+        const a3 = this.a3Size;
+        
+        // Calcular porcentaje del área A3 respecto al talle de remera
+        // A3 = 29.7cm x 42cm (ancho x alto)
+        this.maxImageWidthPercent = (a3.width / currentSize.width) * 100;
+        this.maxImageHeightPercent = (a3.height / currentSize.height) * 100;
+        
+        // Limitar las imágenes al tamaño máximo A3
+        this.maxImageSizePx = Math.min(
+            (this.maxImageWidthPercent / 100) * 400, // 400px es el ancho aproximado del canvas
+            (this.maxImageHeightPercent / 100) * 600  // 600px es el alto aproximado del canvas
+        );
+        
+        // Actualizar guías de sublimación
+        this.updateSublimationGuides();
+        
+        console.log(`Límites A3 para talle ${this.currentShirtSize}:`);
+        console.log(`- Ancho máximo: ${this.maxImageWidthPercent.toFixed(1)}% (${a3.width}cm)`);
+        console.log(`- Alto máximo: ${this.maxImageHeightPercent.toFixed(1)}% (${a3.height}cm)`);
+        console.log(`- Tamaño máximo imagen: ${this.maxImageSizePx.toFixed(0)}px`);
+    }
+    
+    updateSublimationGuides() {
+        const guides = document.querySelectorAll('.sublimation-guide');
+        guides.forEach(guide => {
+            guide.style.width = `${this.maxImageWidthPercent}%`;
+            guide.style.height = `${this.maxImageHeightPercent}%`;
+            guide.style.left = '50%';
+            guide.style.top = '50%';
+            guide.style.transform = 'translate(-50%, -50%)';
+        });
+    }
+    
+    setupCanvasClipping() {
+        // Configurar clipping para ambas vistas
+        const frontZone = document.querySelector('#front-design-zone');
+        const backZone = document.querySelector('#back-design-zone');
+        
+        if (frontZone) {
+            frontZone.style.clipPath = 'url(#shirt-clip-front)';
+            frontZone.style.overflow = 'hidden';
+        }
+        
+        if (backZone) {
+            backZone.style.clipPath = 'url(#shirt-clip-back)';
+            backZone.style.overflow = 'hidden';
+        }
+        
+        this.createSVGClipPaths();
+    }
+    
+    createSVGClipPaths() {
+        // Crear SVG con clip paths para las formas de remera
+        let svgDefs = document.querySelector('#shirt-clip-svg');
+        if (!svgDefs) {
+            svgDefs = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svgDefs.id = 'shirt-clip-svg';
+            svgDefs.style.position = 'absolute';
+            svgDefs.style.width = '0';
+            svgDefs.style.height = '0';
+            svgDefs.innerHTML = `
+                <defs>
+                    <clipPath id="shirt-clip-front" clipPathUnits="objectBoundingBox">
+                        <path d="M0.15,0.1 L0.85,0.1 L0.85,0.25 L0.9,0.25 L0.9,0.9 L0.1,0.9 L0.1,0.25 L0.15,0.25 Z"/>
+                    </clipPath>
+                    <clipPath id="shirt-clip-back" clipPathUnits="objectBoundingBox">
+                        <path d="M0.15,0.1 L0.85,0.1 L0.85,0.25 L0.9,0.25 L0.9,0.9 L0.1,0.9 L0.1,0.25 L0.15,0.25 Z"/>
+                    </clipPath>
+                </defs>
+            `;
+            document.body.appendChild(svgDefs);
+        }
+    }
+    
+    updateCanvasClipping() {
+        // Actualizar las dimensiones del clipping según el talle
+        this.setupCanvasClipping();
+    }
+    
+    // Override de la función de renderizado para aplicar clipping
+    renderDesignImage(imageData) {
+        const designZone = document.querySelector(`#${imageData.view}-design-zone`);
+        if (!designZone) {
+            console.error(`No se encontró .design-zone para la vista: ${imageData.view}`);
+            return;
+        }
+
+        const imageElement = document.createElement('img');
+        imageElement.className = 'design-image';
+        imageElement.id = `design-${imageData.id}`;
+        imageElement.src = imageData.src;
+        imageElement.alt = imageData.name;
+
+        const controlsOverlay = document.createElement('div');
+        controlsOverlay.className = 'image-controls-overlay';
+        controlsOverlay.innerHTML = `
+            <button class="control-icon rotate" title="Rotar" onclick="shirtDesigner.rotateImage('${imageData.id}')">
+                <i class="fas fa-redo"></i>
+            </button>
+            <button class="control-icon resize" title="Redimensionar" onclick="shirtDesigner.toggleResizeMode('${imageData.id}')">
+                <i class="fas fa-expand-arrows-alt"></i>
+            </button>
+            <button class="control-icon duplicate" title="Duplicar" onclick="shirtDesigner.duplicateImage('${imageData.id}')">
+                <i class="fas fa-copy"></i>
+            </button>
+            <button class="control-icon delete" title="Eliminar" onclick="shirtDesigner.deleteImage('${imageData.id}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+
+        imageElement.appendChild(controlsOverlay);
+        this.updateImageStyle(imageElement, imageData);
+        this.setupImageInteraction(imageElement, imageData);
+        
+        // Aplicar clipping automático
+        this.applyImageClipping(imageElement);
+        
+        designZone.appendChild(imageElement);
+        this.updateImageLayers();
+    }
+    
+    applyImageClipping(imageElement) {
+        // El clipping se maneja a nivel de la zona de diseño
+        // Esto asegura que cualquier imagen fuera del área de la remera se recorte
+        imageElement.style.clipPath = 'inherit';
     }
 }
 
@@ -646,7 +867,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Click fuera para deseleccionar
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.design-image') && !e.target.closest('.uploaded-image-item')) {
+        if (!e.target.closest('.design-image') && 
+            !e.target.closest('.uploaded-image-item') && 
+            !e.target.closest('.image-controls') &&
+            !e.target.closest('.image-controls-overlay')) {
             shirtDesigner.deselectImage();
         }
     });
@@ -684,4 +908,11 @@ function orderShirt() {
     shirtDesigner.orderShirt();
 }
 
-// Última actualización: 2025-06-27 15:48 - Guías dinámicas y clipping implementados
+function updateShirtSize() {
+    const sizeSelector = document.getElementById('shirt-size');
+    if (sizeSelector) {
+        shirtDesigner.updateShirtSize(sizeSelector.value);
+    }
+}
+
+// Última actualización: 2025-06-30 - Canvas clipping y control de talles implementado
