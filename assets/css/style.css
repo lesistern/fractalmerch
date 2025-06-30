@@ -241,8 +241,8 @@ body {
 .theme-switch {
     position: relative;
     display: inline-block;
-    width: 24px; /* Más pequeño */
-    height: 48px; /* Más pequeño */
+    width: 24px; /* Ancho para toggle vertical */
+    height: 48px; /* Alto para toggle vertical */
 }
 
 .theme-switch input {
@@ -310,11 +310,11 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-    transform: translateY(-24px);
+    transform: translateY(22px);
 }
 
 input:checked + .slider .icon-container {
-    transform: translateY(-24px);
+    transform: translateY(22px);
 }
 
 .dark-mode .sun-icon {
@@ -1336,8 +1336,8 @@ input:checked + .slider .icon-container {
 
 .designer-main {
     display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 2rem;
+    grid-template-columns: 250px 1fr;
+    gap: 1.5rem;
     min-height: 70vh;
 }
 
@@ -1345,7 +1345,7 @@ input:checked + .slider .icon-container {
 .control-panel {
     background: var(--bg-secondary);
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1.25rem;
     box-shadow: 0 4px 12px var(--shadow);
     height: fit-content;
     position: sticky;
@@ -1520,19 +1520,54 @@ input:checked + .slider .icon-container {
     transition: all 0.3s;
 }
 
+/* Vista Previa - Azul moderno */
+.action-btn.preview {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.action-btn.preview:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Guardar - Verde elegante */
 .action-btn.primary {
-    background: #007bff;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
     color: white;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
 }
 
+.action-btn.primary:hover {
+    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+    box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+}
+
+/* Reiniciar - Naranja cálido */
 .action-btn.secondary {
-    background: #6c757d;
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
     color: white;
+    box-shadow: 0 4px 15px rgba(237, 137, 54, 0.3);
 }
 
+.action-btn.secondary:hover {
+    background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%);
+    box-shadow: 0 6px 20px rgba(237, 137, 54, 0.4);
+}
+
+/* Ordenar - Dorado premium */
 .action-btn.success {
-    background: #28a745;
+    background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
     color: white;
+    box-shadow: 0 4px 15px rgba(246, 173, 85, 0.3);
+    border: 2px solid #f6e05e;
+}
+
+.action-btn.success:hover {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+    box-shadow: 0 6px 20px rgba(246, 173, 85, 0.4);
+    border-color: #ecc94b;
 }
 
 .action-btn:hover {
@@ -1544,7 +1579,7 @@ input:checked + .slider .icon-container {
 .design-area {
     background: var(--bg-secondary);
     border-radius: 12px;
-    padding: 2rem;
+    padding: 1.5rem;
     box-shadow: 0 4px 12px var(--shadow);
     display: flex;
     flex-direction: column;
@@ -1553,7 +1588,7 @@ input:checked + .slider .icon-container {
 
 .shirt-canvas {
     position: relative;
-    max-width: 500px;
+    max-width: 600px;
     width: 100%;
     margin-bottom: 2rem;
 }
@@ -2162,7 +2197,6 @@ input:checked + .slider .icon-container {
         font-size: 0.85rem;
         gap: 0.4rem;
     }
-}
     
     .designer-main {
         grid-template-columns: 1fr;
@@ -2194,6 +2228,7 @@ input:checked + .slider .icon-container {
     .admin-container {
         grid-template-columns: 1fr;
     }
+}
     
     .nav-container {
         flex-direction: row;
@@ -2225,6 +2260,26 @@ input:checked + .slider .icon-container {
     
     .stats-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Media query para tablets y desktop - mantener layout horizontal del editor */
+@media (min-width: 769px) {
+    .designer-main {
+        display: grid !important;
+        grid-template-columns: 250px 1fr !important;
+        gap: 1.5rem !important;
+    }
+    
+    .control-panel {
+        position: sticky !important;
+        top: 1rem !important;
+        order: initial !important;
+    }
+    
+    .design-area {
+        order: initial !important;
+        padding: 1.5rem !important;
     }
 }
 

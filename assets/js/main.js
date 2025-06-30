@@ -13,10 +13,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- FUNCIONES DE MODO OSCURO ---
     function initDarkMode() {
         const themeToggle = document.getElementById('checkbox');
-        const themeIcon = document.querySelector('.theme-icon');
+        const sunIcon = document.querySelector('.sun-icon');
+        const moonIcon = document.querySelector('.moon-icon');
         const body = document.body;
 
-        if (!themeToggle || !themeIcon || !body) {
+        if (!themeToggle || !sunIcon || !moonIcon || !body) {
             console.error('Theme toggle elements not found');
             return;
         }
@@ -33,30 +34,35 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('darkMode', isDarkMode.toString());
         }
 
-        updateTheme(isDarkMode, body, themeToggle, themeIcon);
+        updateTheme(isDarkMode, body, themeToggle, sunIcon, moonIcon);
 
         themeToggle.addEventListener('change', function() {
             const isChecked = this.checked;
             localStorage.setItem('darkMode', isChecked.toString());
-            updateTheme(isChecked, body, themeToggle, themeIcon);
+            updateTheme(isChecked, body, themeToggle, sunIcon, moonIcon);
         });
 
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
             if (localStorage.getItem('darkMode') === null) {
                 const newIsDarkMode = e.matches;
                 localStorage.setItem('darkMode', newIsDarkMode.toString());
-                updateTheme(newIsDarkMode, body, themeToggle, themeIcon);
+                updateTheme(newIsDarkMode, body, themeToggle, sunIcon, moonIcon);
             }
         });
     }
 
-    function updateTheme(isDarkMode, body, toggle, icon) {
+    function updateTheme(isDarkMode, body, toggle, sunIcon, moonIcon) {
         body.classList.toggle('dark-mode', isDarkMode);
         toggle.checked = isDarkMode;
         
-        // Asegurarse de que el ícono correcto esté presente
-        icon.classList.toggle('sun-icon', !isDarkMode);
-        icon.classList.toggle('moon-icon', isDarkMode);
+        // Mostrar/ocultar iconos correctos
+        if (isDarkMode) {
+            sunIcon.style.opacity = '0';
+            moonIcon.style.opacity = '1';
+        } else {
+            sunIcon.style.opacity = '1';
+            moonIcon.style.opacity = '0';
+        }
     }
 
     // --- FUNCIONALIDAD DE TABS ---

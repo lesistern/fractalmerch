@@ -6,6 +6,7 @@
     <title><?php echo isset($page_title) ? $page_title . ' - ' . SITE_NAME : SITE_NAME; ?></title>
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="assets/js/main.js?v=<?php echo time(); ?>"></script>
 </head>
 <body class="">
     <nav class="navbar">
