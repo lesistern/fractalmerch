@@ -80,33 +80,88 @@ $page_title = '💬 Gestionar Comentarios - Panel Admin';
 include 'admin-dashboard-header.php';
 ?>
 
-<div class="admin-container">
-    <div class="admin-sidebar">
-        <h3>Panel Admin</h3>
-        <ul class="admin-menu">
-            <li><a href="dashboard.php">Dashboard</a></li>
-            <li><a href="manage-users.php">Gestionar Usuarios</a></li>
-            <li><a href="manage-posts.php">Gestionar Posts</a></li>
-            <li><a href="manage-comments.php" class="active">Gestionar Comentarios</a></li>
-            <li><a href="manage-products.php">📦 Gestionar Productos</a></li>
-            <li><a href="manage-categories.php">Categorías</a></li>
-            <li><a href="generate-images.php">🎨 Generar Imágenes</a></li>
-            <li><a href="../index.php">Volver al Sitio</a></li>
-        </ul>
+<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
+
+<div class="modern-admin-container">
+    <!-- Sidebar -->
+    <div class="modern-admin-sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-cube"></i> Panel Admin</h3>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.php" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="manage-users.php" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Usuarios</span>
+            </a>
+            <a href="manage-posts.php" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Posts</span>
+            </a>
+            <a href="manage-comments.php" class="nav-item active">
+                <i class="fas fa-comments"></i>
+                <span>Comentarios</span>
+            </a>
+            <a href="manage-products.php" class="nav-item">
+                <i class="fas fa-box"></i>
+                <span>Productos</span>
+            </a>
+            <a href="manage-categories.php" class="nav-item">
+                <i class="fas fa-tags"></i>
+                <span>Categorías</span>
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="../index.php" class="nav-item">
+                <i class="fas fa-arrow-left"></i>
+                <span>Volver al Sitio</span>
+            </a>
+        </nav>
     </div>
     
-    <div class="admin-main">
-        <h2>Gestionar Comentarios</h2>
+    <!-- Main Content -->
+    <div class="modern-admin-main">
+        <!-- Header -->
+        <div class="admin-header">
+            <div class="header-title">
+                <h1><i class="fas fa-comments"></i> Gestionar Comentarios</h1>
+                <p>Modera y administra comentarios de los posts</p>
+            </div>
+        </div>
         
-        <div class="comment-stats">
-            <div class="stat-item">
-                <strong>Pendientes:</strong> <?php echo $comment_counts['pending'] ?? 0; ?>
+        <!-- Comment Stats -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3><?php echo $comment_counts['pending'] ?? 0; ?></h3>
+                    <p>Pendientes</p>
+                    <span class="stat-trend warning">Requiere acción</span>
+                </div>
             </div>
-            <div class="stat-item">
-                <strong>Aprobados:</strong> <?php echo $comment_counts['approved'] ?? 0; ?>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3><?php echo $comment_counts['approved'] ?? 0; ?></h3>
+                    <p>Aprobados</p>
+                    <span class="stat-trend positive">Activos</span>
+                </div>
             </div>
-            <div class="stat-item">
-                <strong>Rechazados:</strong> <?php echo $comment_counts['rejected'] ?? 0; ?>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-times"></i>
+                </div>
+                <div class="stat-content">
+                    <h3><?php echo $comment_counts['rejected'] ?? 0; ?></h3>
+                    <p>Rechazados</p>
+                    <span class="stat-trend negative">Bloqueados</span>
+                </div>
             </div>
         </div>
         

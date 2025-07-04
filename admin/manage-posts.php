@@ -98,23 +98,62 @@ $page_title = '📝 Gestionar Posts - Panel Admin';
 include 'admin-dashboard-header.php';
 ?>
 
-<div class="admin-container">
-    <div class="admin-sidebar">
-        <h3>Panel Admin</h3>
-        <ul class="admin-menu">
-            <li><a href="dashboard.php">Dashboard</a></li>
-            <li><a href="manage-users.php">Gestionar Usuarios</a></li>
-            <li><a href="manage-posts.php" class="active">Gestionar Posts</a></li>
-            <li><a href="manage-comments.php">Gestionar Comentarios</a></li>
-            <li><a href="manage-products.php">📦 Gestionar Productos</a></li>
-            <li><a href="manage-categories.php">Categorías</a></li>
-            <li><a href="generate-images.php">🎨 Generar Imágenes</a></li>
-            <li><a href="../index.php">Volver al Sitio</a></li>
-        </ul>
+<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
+
+<div class="modern-admin-container">
+    <!-- Sidebar -->
+    <div class="modern-admin-sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-cube"></i> Panel Admin</h3>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.php" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="manage-users.php" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Usuarios</span>
+            </a>
+            <a href="manage-posts.php" class="nav-item active">
+                <i class="fas fa-file-alt"></i>
+                <span>Posts</span>
+            </a>
+            <a href="manage-comments.php" class="nav-item">
+                <i class="fas fa-comments"></i>
+                <span>Comentarios</span>
+            </a>
+            <a href="manage-products.php" class="nav-item">
+                <i class="fas fa-box"></i>
+                <span>Productos</span>
+            </a>
+            <a href="manage-categories.php" class="nav-item">
+                <i class="fas fa-tags"></i>
+                <span>Categorías</span>
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="../index.php" class="nav-item">
+                <i class="fas fa-arrow-left"></i>
+                <span>Volver al Sitio</span>
+            </a>
+        </nav>
     </div>
     
-    <div class="admin-main">
-        <h2>Gestionar Posts</h2>
+    <!-- Main Content -->
+    <div class="modern-admin-main">
+        <!-- Header -->
+        <div class="admin-header">
+            <div class="header-title">
+                <h1><i class="fas fa-file-alt"></i> Gestionar Posts</h1>
+                <p>Administra artículos, contenido y publicaciones del sitio</p>
+            </div>
+            <div class="header-actions">
+                <a href="../create-post.php" class="btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nuevo Post
+                </a>
+            </div>
+        </div>
         
         <div class="admin-filters">
             <form method="GET" action="" class="filter-form">

@@ -1,0 +1,58 @@
+# Archivos y directorios a ignorar en el deployment
+.git
+.gitignore
+README.md
+node_modules/
+npm-debug.log
+.nyc_output
+coverage/
+
+# Archivos de desarrollo
+.env
+.env.local
+*.log
+debug.php
+test*.php
+
+# Archivos temporales
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Archivos de backup
+*_backup.*
+backup/
+backups/
+
+# Archivos de configuración local
+config/local.php
+.vscode/
+.idea/
+
+# Archivos específicos del proyecto
+assets/images/temp/
+assets/images/uploads/test*
+
+# Scripts de desarrollo
+dev-setup.sh
+sync-to-xampp.sh
+setup-lan.sh
+update-lan-ip.sh
+auto-backup.sh
+
+# Archivos MCP (si no son necesarios en producción)
+mcp-media-generator/
+mcp-integration.php
+
+# Archivos de testing
+test-*.php
+check-database.php
+
+# Archivos originales de imágenes
+assets/images/Originals/
+assets/images/photothumb.db
+
+# Archivos de configuración Windows
+*.bat
+bs-config.js

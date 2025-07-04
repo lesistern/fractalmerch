@@ -1,0 +1,21 @@
+# Configuración para Cloud Storage (archivos grandes)
+# Para usar con imagenes subidas por usuarios
+
+bucket_name: "proyecto-remeras-uploads"
+location: "us-central1"
+
+# Configuración de CORS para el bucket
+cors:
+  - origin: ["*"]
+    method: ["GET", "POST", "PUT", "DELETE"]
+    responseHeader: ["Content-Type"]
+    maxAgeSeconds: 3600
+
+# Lifecycle para limpiar archivos temporales
+lifecycle:
+  rule:
+    - action:
+        type: Delete
+      condition:
+        age: 30  # Eliminar archivos después de 30 días
+        matchesPrefix: ["temp/"]

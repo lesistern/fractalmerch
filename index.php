@@ -6,23 +6,23 @@ include 'includes/header.php';
 ?>
 
 <section class="hero-section">
-            <!-- Sección izquierda - Empresas -->
+            <!-- Sección izquierda - Editor de Remeras -->
             <div class="hero-left">
                 <div class="hero-slider left-slider">
                     <div class="hero-slide active">
-                        <img src="assets/images/corp1.png" alt="Soluciones Empresariales" class="hero-bg-image">
+                        <img src="assets/images/corp1.png" alt="Editor de Remeras" class="hero-bg-image">
                     </div>
                     <div class="hero-slide">
-                        <img src="assets/images/corp2.png" alt="Soluciones Empresariales" class="hero-bg-image">
+                        <img src="assets/images/corp2.png" alt="Editor de Remeras" class="hero-bg-image">
                     </div>
                 </div>
                 
                 <div class="hero-content left-content">
-                    <h2>Soluciones Empresariales</h2>
-                    <p>Equipos industriales y soporte especializado para hacer crecer tu negocio</p>
-                    <a href="empresas.php" class="cta-button business">
-                        <i class="fas fa-building"></i>
-                        Para Empresas
+                    <h2>Editor de Remeras</h2>
+                    <p>Diseña y personaliza tus remeras con nuestro editor interactivo. Crea diseños únicos con tus propias imágenes</p>
+                    <a href="customize-shirt.php" class="cta-button business">
+                        <i class="fas fa-tshirt"></i>
+                        Personalizar Remera
                     </a>
                 </div>
                 
@@ -54,11 +54,11 @@ include 'includes/header.php';
                 </div>
                 
                 <div class="hero-content right-content">
-                    <h2>Para Creativos</h2>
-                    <p>Todo lo que necesitas para dar vida a tus ideas más creativas</p>
+                    <h2>Selector de Productos</h2>
+                    <p>Explora nuestra amplia gama de productos personalizables. Encuentra exactamente lo que necesitas</p>
                     <a href="particulares.php" class="cta-button personal">
-                        <i class="fas fa-user"></i>
-                        Para Particulares
+                        <i class="fas fa-shopping-bag"></i>
+                        Ver Productos
                     </a>
                 </div>
                 
@@ -75,21 +75,31 @@ include 'includes/header.php';
 
         <section class="features-section">
             <div class="container">
+                <div class="section-header">
+                    <h2>¿Por qué elegirnos?</h2>
+                    <p>Ofrecemos la mejor experiencia en personalización de productos</p>
+                </div>
                 <div class="features-grid">
                     <div class="feature-card">
-                        <i class="fas fa-shipping-fast"></i>
+                        <div class="feature-icon">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
                         <h3>Envío rápido</h3>
-                        <p>Recibe tus productos en tiempo récord</p>
+                        <p>Recibe tus productos en tiempo récord con seguimiento completo</p>
                     </div>
                     <div class="feature-card">
-                        <i class="fas fa-shield-alt"></i>
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
                         <h3>Compra segura</h3>
-                        <p>Tus datos están protegidos</p>
+                        <p>Tus datos están protegidos con encriptación de nivel bancario</p>
                     </div>
                     <div class="feature-card">
-                        <i class="fas fa-headset"></i>
+                        <div class="feature-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
                         <h3>Soporte 24/7</h3>
-                        <p>Estamos aquí para ayudarte</p>
+                        <p>Estamos aquí para ayudarte en cada paso del proceso</p>
                     </div>
                 </div>
             </div>

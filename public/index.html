@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sublime - Personalizador de Remeras</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <!-- El contenido se cargará dinámicamente -->
+        <div class="loading">
+            <h2>Cargando Sublime...</h2>
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        // Redireccionar a la aplicación principal
+        setTimeout(() => {
+            // Si Firebase hosting, aquí iría la lógica de la app
+            // Por ahora, mostrar mensaje
+            document.getElementById('app').innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <h1>🎨 Sublime - Personalizador de Remeras</h1>
+                    <p>Versión estática para Firebase Hosting</p>
+                    <a href="../customize-shirt.php" style="background: #007bff; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 8px;">
+                        Ir al Editor de Remeras
+                    </a>
+                </div>
+            `;
+        }, 1000);
+    </script>
+
+    <style>
+        .loading { text-align: center; padding: 4rem; }
+        .spinner { 
+            width: 40px; height: 40px; margin: 1rem auto;
+            border: 4px solid #f3f3f3; border-top: 4px solid #007bff;
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</body>
+</html>

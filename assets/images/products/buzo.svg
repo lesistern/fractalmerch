@@ -1,0 +1,6 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="100" height="100" fill="#f8f9fa"/>
+<path d="M20 25 L30 25 L30 15 L70 15 L70 25 L80 25 L80 85 L20 85 Z" fill="#007bff" opacity="0.8"/>
+<path d="M35 20 L65 20 L65 30 L35 30 Z" fill="#0056b3"/>
+<text x="50" y="95" text-anchor="middle" font-family="Arial" font-size="8" fill="#666">Buzo</text>
+</svg>

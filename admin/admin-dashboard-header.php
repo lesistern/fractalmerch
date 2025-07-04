@@ -6,32 +6,20 @@
     <title><?php echo isset($page_title) ? $page_title . ' - ' . SITE_NAME : SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="includes/admin-functions.js?v=<?php echo time(); ?>"></script>
 </head>
-<body class="light-mode admin-body">
+<body class="admin-page admin-body">
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="../index.php">Sublime</a>
             </div>
-            <div class="nav-menu">
-                <!-- Búsqueda expandible -->
-                <div class="search-container">
-                    <button class="search-btn" onclick="toggleSearch()">
-                        <i class="fas fa-search"></i>
-                    </button>
-                    <div class="search-input-container">
-                        <input type="text" class="search-input" placeholder="¿Qué deseas buscar?">
-                        <button class="search-submit" onclick="performSearch()">
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-                
+            <div class="nav-menu admin-nav-menu">
                 <!-- Botón de ingresar/perfil -->
                 <div class="user-container">
                     <?php if (is_logged_in()): ?>
                         <div class="user-dropdown">
-                            <button class="user-btn" onclick="toggleUserMenu()">
+                            <button class="nav-btn user-btn" onclick="toggleUserMenu()">
                                 <i class="fas fa-user"></i>
                                 <span><?php echo htmlspecialchars($_SESSION['username']); ?></span>
                                 <i class="fas fa-chevron-down"></i>
@@ -46,33 +34,17 @@
                             </div>
                         </div>
                     <?php else: ?>
-                        <a href="../login.php" class="login-btn">
+                        <a href="../login.php" class="nav-btn login-btn">
                             <i class="fas fa-sign-in-alt"></i>
                             <span>Ingresar</span>
                         </a>
                     <?php endif; ?>
                 </div>
                 
-                <!-- Carrito -->
-                <div class="cart-container">
-                    <button class="cart-btn" onclick="toggleCart()">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-badge" id="cart-badge">0</span>
-                    </button>
-                    
-                    <!-- Dropdown del carrito -->
-                    <div class="cart-dropdown" id="cart-dropdown">
-                        <div class="cart-header">
-                            <h3>Carrito de compras</h3>
-                        </div>
-                        <div class="cart-items" id="cart-items">
-                            <p>Tu carrito está vacío</p>
-                        </div>
-                        <div class="cart-footer">
-                            <button class="btn-view-cart" onclick="viewCart()">Ver carrito</button>
-                        </div>
-                    </div>
-                </div>
+                <!-- Toggle de modo oscuro/claro -->
+                <button class="nav-btn theme-toggle" onclick="toggleAdminTheme()" id="theme-toggle">
+                    <i class="fas fa-sun" id="theme-icon"></i>
+                </button>
             </div>
         </div>
     </nav>
@@ -94,28 +66,26 @@
 
     <!-- Mostrar mensajes flash -->
     <?php 
-    $flash_messages = get_flash_messages();
-    if (!empty($flash_messages)): 
+    $flash_message = get_flash_message();
+    if ($flash_message): 
     ?>
         <div class="flash-messages-container">
             <div class="container">
-                <?php foreach ($flash_messages as $flash): ?>
-                    <div class="alert alert-<?php echo $flash['type']; ?> alert-dismissible">
-                        <?php
-                        $icon = 'info-circle';
-                        switch($flash['type']) {
-                            case 'success': $icon = 'check-circle'; break;
-                            case 'error': $icon = 'exclamation-circle'; break;
-                            case 'warning': $icon = 'exclamation-triangle'; break;
-                        }
-                        ?>
-                        <i class="fas fa-<?php echo $icon; ?>"></i> 
-                        <?php echo htmlspecialchars($flash['message']); ?>
-                        <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                <?php endforeach; ?>
+                <div class="alert alert-<?php echo $flash_message['type']; ?> alert-dismissible">
+                    <?php
+                    $icon = 'info-circle';
+                    switch($flash_message['type']) {
+                        case 'success': $icon = 'check-circle'; break;
+                        case 'error': $icon = 'exclamation-circle'; break;
+                        case 'warning': $icon = 'exclamation-triangle'; break;
+                    }
+                    ?>
+                    <i class="fas fa-<?php echo $icon; ?>"></i> 
+                    <?php echo htmlspecialchars($flash_message['message']); ?>
+                    <button type="button" class="alert-close" onclick="this.parentElement.parentElement.parentElement.style.display='none'">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
         </div>
     <?php endif; ?>
@@ -125,6 +95,154 @@
 .admin-body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
+    transition: all 0.3s ease;
+}
+
+.admin-body.dark-mode {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.admin-body.dark-mode .admin-sidebar,
+.admin-body.dark-mode .admin-main {
+    background: rgba(20, 20, 30, 0.95);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e2e8f0;
+}
+
+.admin-body.dark-mode .admin-sidebar h3,
+.admin-body.dark-mode .admin-main h2 {
+    color: #e2e8f0;
+}
+
+.admin-body.dark-mode .admin-menu a {
+    color: #cbd5e0;
+}
+
+.admin-body.dark-mode .admin-menu a:hover {
+    background: rgba(102, 126, 234, 0.2);
+    color: #a3bffa;
+}
+
+.admin-body.dark-mode .stat-card,
+.admin-body.dark-mode .admin-section {
+    background: rgba(30, 30, 40, 0.8);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e2e8f0;
+}
+
+.admin-body.dark-mode .admin-table th {
+    background: rgba(40, 40, 50, 0.8);
+    color: #e2e8f0;
+}
+
+.admin-body.dark-mode .admin-table tr:hover {
+    background: rgba(40, 40, 50, 0.5);
+}
+
+.admin-body.dark-mode .admin-table a {
+    color: #a3bffa;
+}
+
+.admin-body.dark-mode .admin-table td {
+    border-bottom-color: rgba(255,255,255,0.1);
+}
+
+.admin-body.dark-mode .admin-section h3 {
+    border-bottom-color: rgba(255,255,255,0.2);
+}
+
+.admin-body.dark-mode .admin-sidebar h3 {
+    border-bottom-color: rgba(255,255,255,0.2);
+}
+
+.admin-body.dark-mode .navbar {
+    background: rgba(20, 20, 30, 0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.admin-body.dark-mode .admin-breadcrumb-nav {
+    background: rgba(20, 20, 30, 0.4);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: rotate(15deg) scale(1.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.admin-body.dark-mode .nav-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-body.dark-mode .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.theme-toggle {
+    padding: 0.6rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+}
+
+.user-btn {
+    padding: 0.5rem 0.8rem;
+}
+
+.user-btn span {
+    font-size: 0.85rem;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Header Admin Ultra Compacto */
+.admin-body .navbar {
+    padding: 0.15rem 0; /* Ultra compacto */
+}
+
+.admin-body .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 1px 1rem; /* Solo 1px arriba y abajo */
+    height: 36px; /* Altura mínima */
+    position: relative;
+    gap: 2rem;
+    overflow: visible;
+}
+
+/* Eliminar breadcrumb completamente */
+.admin-breadcrumb-nav {
+    display: none; /* Ocultar breadcrumb para más espacio */
 }
 
 .admin-breadcrumb-nav {
@@ -444,86 +562,101 @@
 </style>
 
 <script>
-// Scripts del header del proyecto
-function toggleSearch() {
-    const container = document.querySelector('.search-container');
-    const input = document.querySelector('.search-input');
-    
-    container.classList.toggle('active');
-    
-    if (container.classList.contains('active')) {
-        setTimeout(() => input.focus(), 300);
-    }
-}
-
-function performSearch() {
-    const searchTerm = document.querySelector('.search-input').value.trim();
-    if (searchTerm) {
-        window.location.href = `../index.php?search=${encodeURIComponent(searchTerm)}`;
-    }
-}
-
+// Scripts del header admin
 function toggleUserMenu() {
     const dropdown = document.querySelector('.user-dropdown');
     dropdown.classList.toggle('active');
 }
 
-function toggleCart() {
-    const dropdown = document.getElementById('cart-dropdown');
-    dropdown.classList.toggle('active');
-    updateCartDisplay();
-}
-
-function viewCart() {
-    window.location.href = '../particulares.php#carrito';
-}
-
-// Actualizar badge del carrito
-function updateCartBadge() {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const badge = document.getElementById('cart-badge');
-    if (badge) {
-        badge.textContent = cart.length;
-        badge.style.display = cart.length > 0 ? 'flex' : 'none';
-    }
-}
-
-// Actualizar display del carrito
-function updateCartDisplay() {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const cartItems = document.getElementById('cart-items');
-    
-    if (cart.length === 0) {
-        cartItems.innerHTML = '<p>Tu carrito está vacío</p>';
-    } else {
-        let html = '';
-        cart.forEach(item => {
-            html += `
-                <div class="cart-item">
-                    <span class="item-name">${item.name}</span>
-                    <span class="item-price">$${item.price.toLocaleString()}</span>
-                </div>
-            `;
-        });
-        cartItems.innerHTML = html;
-    }
-}
-
 // Cerrar dropdowns al hacer click fuera
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('.search-container')) {
-        document.querySelector('.search-container').classList.remove('active');
-    }
     if (!e.target.closest('.user-dropdown')) {
         document.querySelector('.user-dropdown')?.classList.remove('active');
     }
-    if (!e.target.closest('.cart-container')) {
-        document.getElementById('cart-dropdown')?.classList.remove('active');
-    }
 });
 
-// Inicializar carrito al cargar
+// Función para alternar tema en admin
+function toggleAdminTheme() {
+    const html = document.documentElement;
+    const body = document.body;
+    const themeIcon = document.getElementById('theme-icon');
+    const isDarkMode = html.classList.contains('dark-mode');
+    
+    if (isDarkMode) {
+        // Cambiar a modo claro
+        html.classList.remove('dark-mode');
+        body.classList.remove('dark-mode');
+        themeIcon.className = 'fas fa-sun';
+        localStorage.setItem('adminDarkMode', 'false');
+        localStorage.setItem('darkMode', 'false');
+    } else {
+        // Cambiar a modo oscuro
+        html.classList.add('dark-mode');
+        body.classList.add('dark-mode');
+        themeIcon.className = 'fas fa-moon';
+        localStorage.setItem('adminDarkMode', 'true');
+        localStorage.setItem('darkMode', 'true');
+    }
+}
+
+// Inicializar al cargar
 document.addEventListener('DOMContentLoaded', function() {
-    updateCartBadge();
+    // Inicializar tema
+    const html = document.documentElement;
+    const body = document.body;
+    const themeIcon = document.getElementById('theme-icon');
+    const savedTheme = localStorage.getItem('adminDarkMode') || localStorage.getItem('darkMode');
+    
+    if (savedTheme === 'true') {
+        html.classList.add('dark-mode');
+        body.classList.add('dark-mode');
+        if (themeIcon) themeIcon.className = 'fas fa-moon';
+    } else {
+        html.classList.remove('dark-mode');
+        body.classList.remove('dark-mode');
+        if (themeIcon) themeIcon.className = 'fas fa-sun';
+    }
+    
+    // Backup sidebar initialization in case admin-functions.js doesn't load
+    setTimeout(function() {
+        if (!window.AdminFunctions) {
+            console.log('Initializing fallback sidebar functionality');
+            
+            // Remove existing listeners first
+            document.querySelectorAll('.nav-expandable').forEach(navExpandable => {
+                const newNavExpandable = navExpandable.cloneNode(true);
+                navExpandable.parentNode.replaceChild(newNavExpandable, navExpandable);
+            });
+            
+            // Add fresh event listeners
+            document.querySelectorAll('.nav-expandable').forEach(navExpandable => {
+                navExpandable.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const parent = this.closest('.nav-item-expandable');
+                    if (parent) {
+                        const menuName = parent.querySelector('span')?.textContent.trim() || 'Unknown';
+                        const wasActive = parent.classList.contains('active');
+                        
+                        parent.classList.toggle('active');
+                        console.log(`Sidebar menu "${menuName}" ${wasActive ? 'collapsed' : 'expanded'} (fallback)`);
+                        
+                        // Force CSS recalculation
+                        const submenu = parent.querySelector('.nav-submenu');
+                        if (submenu) {
+                            submenu.style.display = 'block';
+                            void submenu.offsetHeight; // Trigger reflow
+                            submenu.style.display = '';
+                        }
+                    }
+                });
+            });
+            
+            console.log('✅ Fallback sidebar initialization complete');
+        } else {
+            console.log('AdminFunctions loaded, skipping fallback');
+        }
+    }, 200);
 });
 </script>

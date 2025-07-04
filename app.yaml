@@ -1,0 +1,47 @@
+runtime: php81
+
+# Configuración para Google App Engine
+env_variables:
+  # Variables de entorno para producción
+  DB_HOST: "/cloudsql/INSTANCE_CONNECTION_NAME"
+  DB_NAME: "proyecto_web"
+  DB_USER: "root"
+  DB_PASSWORD: "your-secure-password"
+  APP_ENV: "production"
+
+# Archivos estáticos
+handlers:
+# Assets (CSS, JS, imágenes)
+- url: /assets
+  static_dir: assets
+  expiration: "7d"
+
+# Archivos de imágenes específicos
+- url: /assets/images
+  static_dir: assets/images
+  expiration: "30d"
+
+# Archivos estáticos específicos
+- url: /(.+\.(css|js|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|ttf|eot))$
+  static_files: \1
+  upload: (.+\.(css|js|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|ttf|eot))$
+  expiration: "7d"
+
+# Favicon
+- url: /favicon\.ico
+  static_files: assets/images/favicon.ico
+  upload: assets/images/favicon\.ico
+
+# Aplicación PHP principal
+- url: /.*
+  script: auto
+
+# Configuración de escalado automático
+automatic_scaling:
+  min_instances: 1
+  max_instances: 5
+  target_cpu_utilization: 0.6
+
+# Beta features
+beta_settings:
+  cloud_sql_instances: "PROJECT_ID:REGION:INSTANCE_NAME"

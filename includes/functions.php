@@ -230,7 +230,8 @@ function get_products($search = null, $category_id = null) {
     global $pdo;
 
     $sql = "SELECT p.*, c.name as category_name, 
-                   SUM(pv.stock) as total_stock
+                   SUM(pv.stock) as total_stock,
+                   p.updated_at
             FROM products p
             LEFT JOIN categories c ON p.category_id = c.id
             LEFT JOIN product_variants pv ON p.id = pv.product_id
@@ -249,12 +250,19 @@ function get_products($search = null, $category_id = null) {
         $params[] = $category_id;
     }
 
-    $sql .= " GROUP BY p.id ORDER BY p.created_at DESC";
+    $sql .= " GROUP BY p.id ORDER BY p.updated_at DESC, p.created_at DESC";
 
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll();
+        $products = $stmt->fetchAll();
+        
+        // Agregar timestamp de caché para cada producto
+        foreach ($products as &$product) {
+            $product['cache_key'] = 'product_' . $product['id'] . '_' . strtotime($product['updated_at'] ?? $product['created_at']);
+        }
+        
+        return $products;
     } catch (PDOException $e) {
         error_log("Error getting products: " . $e->getMessage());
         return [];
@@ -317,7 +325,7 @@ function update_product($product_id, $name, $description, $price, $cost, $sku, $
     try {
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare("UPDATE products SET name = ?, description = ?, price = ?, cost = ?, sku = ?, main_image_url = ?, category_id = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE products SET name = ?, description = ?, price = ?, cost = ?, sku = ?, main_image_url = ?, category_id = ?, updated_at = NOW() WHERE id = ?");
         $stmt->execute([$name, $description, $price, $cost, $sku, $main_image_url, $category_id, $product_id]);
 
         // Eliminar variantes existentes y añadir las nuevas
@@ -336,6 +344,12 @@ function update_product($product_id, $name, $description, $price, $cost, $sku, $
         }
 
         $pdo->commit();
+        
+        // Limpiar caché si existe
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
+        }
+        
         return true;
     } catch (PDOException $e) {
         $pdo->rollBack();
@@ -360,6 +374,64 @@ function delete_product($product_id) {
         $pdo->rollBack();
         error_log("Error deleting product: " . $e->getMessage());
         return false;
+    }
+}
+
+// Funciones auxiliares para el sistema administrativo que no están en config.php
+function get_flash_message() {
+    if (isset($_SESSION['flash_message'])) {
+        $message = $_SESSION['flash_message'];
+        unset($_SESSION['flash_message']);
+        return $message;
+    }
+    return null;
+}
+
+function get_user_count() {
+    global $pdo;
+    
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) FROM users");
+        return $stmt->fetchColumn();
+    } catch (PDOException $e) {
+        error_log("Error getting user count: " . $e->getMessage());
+        return 0;
+    }
+}
+
+function get_post_count() {
+    global $pdo;
+    
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) FROM posts");
+        return $stmt->fetchColumn();
+    } catch (PDOException $e) {
+        error_log("Error getting post count: " . $e->getMessage());
+        return 0;
+    }
+}
+
+function get_product_count() {
+    global $pdo;
+    
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) FROM products");
+        return $stmt->fetchColumn();
+    } catch (PDOException $e) {
+        error_log("Error getting product count: " . $e->getMessage());
+        return 0;
+    }
+}
+
+function get_category_count() {
+    global $pdo;
+    
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) FROM categories");
+        return $stmt->fetchColumn();
+    } catch (PDOException $e) {
+        error_log("Error getting category count: " . $e->getMessage());
+        return 0;
     }
 }
 ?>

@@ -42,7 +42,10 @@ function is_moderator() {
 }
 
 function flash_message($type, $message) {
-    $_SESSION['flash'][] = ['type' => $type, 'message' => $message];
+    $_SESSION['flash_message'] = [
+        'type' => $type,
+        'message' => $message
+    ];
 }
 
 function get_flash_messages() {

@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/functions.php';
+require_once '../config/database.php';
 
 if (!is_logged_in() || !is_admin()) {
     flash_message('error', 'No tienes permisos para acceder al panel de administración');
@@ -13,8 +14,6 @@ if ($_POST && isset($_POST['create_user'])) {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     $role = sanitize_input($_POST['role']);
-    $first_name = sanitize_input($_POST['first_name']);
-    $last_name = sanitize_input($_POST['last_name']);
     
     $errors = [];
     
@@ -50,9 +49,9 @@ if ($_POST && isset($_POST['create_user'])) {
     
     if (empty($errors)) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, first_name, last_name, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, ?, NOW())");
         
-        if ($stmt->execute([$username, $email, $hashed_password, $role, $first_name, $last_name])) {
+        if ($stmt->execute([$username, $email, $hashed_password, $role])) {
             flash_message('success', "Usuario $username creado exitosamente como $role");
         } else {
             flash_message('error', 'Error al crear el usuario');
@@ -116,423 +115,655 @@ if (isset($_GET['action'])) {
     redirect('manage-users.php');
 }
 
-// Obtener usuarios
+// Obtener usuarios con conteo de posts
 $search = isset($_GET['search']) ? sanitize_input($_GET['search']) : '';
 $role_filter = isset($_GET['role']) ? sanitize_input($_GET['role']) : '';
 
-$sql = "SELECT * FROM users WHERE 1=1";
+$sql = "SELECT u.*, 
+               (SELECT COUNT(*) FROM posts WHERE user_id = u.id) as post_count
+        FROM users u WHERE 1=1";
 $params = [];
 
 if ($search) {
-    $sql .= " AND (username LIKE ? OR email LIKE ?)";
+    $sql .= " AND (u.username LIKE ? OR u.email LIKE ?)";
     $params[] = "%$search%";
     $params[] = "%$search%";
 }
 
 if ($role_filter) {
-    $sql .= " AND role = ?";
+    $sql .= " AND u.role = ?";
     $params[] = $role_filter;
 }
 
-$sql .= " ORDER BY created_at DESC";
+$sql .= " ORDER BY u.created_at DESC";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $users = $stmt->fetchAll();
 
+// Estadísticas de usuarios
+$stats = [
+    'total' => count($users),
+    'admins' => count(array_filter($users, fn($u) => $u['role'] === 'admin')),
+    'moderators' => count(array_filter($users, fn($u) => $u['role'] === 'moderator')),
+    'users' => count(array_filter($users, fn($u) => $u['role'] === 'user'))
+];
+
 $page_title = '👥 Gestionar Usuarios - Panel Admin';
 include 'admin-dashboard-header.php';
 ?>
 
-<div class="admin-container">
-    <div class="admin-sidebar">
-        <h3>Panel Admin</h3>
-        <ul class="admin-menu">
-            <li><a href="dashboard.php">Dashboard</a></li>
-            <li><a href="manage-users.php" class="active">Gestionar Usuarios</a></li>
-            <li><a href="manage-posts.php">Gestionar Posts</a></li>
-            <li><a href="manage-comments.php">Gestionar Comentarios</a></li>
-            <li><a href="manage-products.php">📦 Gestionar Productos</a></li>
-            <li><a href="manage-categories.php">Categorías</a></li>
-            <li><a href="generate-images.php">🎨 Generar Imágenes</a></li>
-            <li><a href="../index.php">Volver al Sitio</a></li>
-        </ul>
-    </div>
-    
-    <div class="admin-main">
-        <h2>Gestionar Usuarios</h2>
-        
-        <!-- Botón para mostrar/ocultar formulario de crear usuario -->
-        <div class="admin-actions" style="margin-bottom: 2rem;">
-            <button onclick="toggleCreateUserForm()" class="btn btn-success" id="toggleCreateBtn">
-                <i class="fas fa-user-plus"></i> Crear Nuevo Usuario
-            </button>
+<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
+
+<div class="modern-admin-container">
+    <?php include 'includes/admin-sidebar.php'; ?>
+
+    <div class="modern-admin-main">
+        <div class="tiendanube-header">
+            <div class="header-left">
+                <h1><i class="fas fa-users"></i> Usuarios</h1>
+                <p class="header-subtitle">Administra usuarios, roles y permisos del sistema</p>
+            </div>
+            <div class="header-actions">
+                <button onclick="toggleUserForm()" class="tn-btn tn-btn-primary">
+                    <i class="fas fa-user-plus"></i> Nuevo usuario
+                </button>
+                <button onclick="exportUsers()" class="tn-btn tn-btn-secondary">
+                    <i class="fas fa-download"></i> Exportar
+                </button>
+            </div>
         </div>
-        
-        <!-- Formulario de crear usuario (oculto por defecto) -->
-        <div id="createUserForm" class="create-user-form" style="display: none;">
-            <div class="form-card">
-                <h3><i class="fas fa-user-plus"></i> Crear Nuevo Usuario</h3>
-                
-                <form method="POST" action="" class="user-creation-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="first_name">Nombre:</label>
-                            <input type="text" id="first_name" name="first_name" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="last_name">Apellido:</label>
-                            <input type="text" id="last_name" name="last_name" required>
-                        </div>
+
+        <!-- Estadísticas de usuarios -->
+        <section class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number"><?php echo $stats['total']; ?></span>
+                    <span class="stat-label">Total usuarios</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon admin">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number"><?php echo $stats['admins']; ?></span>
+                    <span class="stat-label">Administradores</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon moderator">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number"><?php echo $stats['moderators']; ?></span>
+                    <span class="stat-label">Moderadores</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon user">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number"><?php echo $stats['users']; ?></span>
+                    <span class="stat-label">Usuarios</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Formulario de usuario (inicialmente oculto) -->
+        <section class="tn-card user-form-section" id="userForm" style="display: none;">
+            <div class="tn-card-header">
+                <h2>Nuevo usuario</h2>
+                <button onclick="closeUserForm()" class="tn-btn-ghost">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="POST" action="" class="tn-form">
+                <div class="tn-form-grid">
+                    <div class="tn-form-group">
+                        <label for="username" class="tn-label">Nombre de usuario *</label>
+                        <input type="text" id="username" name="username" class="tn-input" required minlength="3"
+                               placeholder="Mínimo 3 caracteres">
                     </div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="username">Nombre de Usuario:</label>
-                            <input type="text" id="username" name="username" required minlength="3">
-                            <small>Mínimo 3 caracteres</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="email">Email:</label>
-                            <input type="email" id="email" name="email" required>
-                        </div>
+                    <div class="tn-form-group">
+                        <label for="email" class="tn-label">Email *</label>
+                        <input type="email" id="email" name="email" class="tn-input" required
+                               placeholder="usuario@ejemplo.com">
                     </div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="password">Contraseña:</label>
-                            <input type="password" id="password" name="password" required minlength="6">
-                            <small>Mínimo 6 caracteres</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="confirm_password">Confirmar Contraseña:</label>
-                            <input type="password" id="confirm_password" name="confirm_password" required>
-                        </div>
+                    <div class="tn-form-group">
+                        <label for="password" class="tn-label">Contraseña *</label>
+                        <input type="password" id="password" name="password" class="tn-input" required minlength="6"
+                               placeholder="Mínimo 6 caracteres">
                     </div>
                     
-                    <div class="form-group">
-                        <label for="role">Rol del Usuario:</label>
-                        <select id="role" name="role" required>
+                    <div class="tn-form-group">
+                        <label for="confirm_password" class="tn-label">Confirmar contraseña *</label>
+                        <input type="password" id="confirm_password" name="confirm_password" class="tn-input" required
+                               placeholder="Repetir contraseña">
+                    </div>
+                    
+                    <div class="tn-form-group full-width">
+                        <label for="role" class="tn-label">Rol del usuario *</label>
+                        <select id="role" name="role" class="tn-select" required>
+                            <option value="">Seleccionar rol...</option>
                             <option value="user">👤 Usuario Regular</option>
                             <option value="moderator">🛡️ Moderador</option>
                             <option value="admin">⚡ Administrador</option>
                         </select>
                     </div>
+                </div>
+                
+                <div class="tn-form-actions">
+                    <button type="submit" name="create_user" class="tn-btn tn-btn-primary">
+                        <i class="fas fa-user-plus"></i> Crear usuario
+                    </button>
+                    <button type="button" onclick="closeUserForm()" class="tn-btn tn-btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Lista de usuarios -->
+        <section class="tn-card">
+            <div class="tn-card-header">
+                <div class="header-left">
+                    <h2>Lista de usuarios</h2>
+                    <span class="tn-badge tn-badge-neutral"><?php echo count($users); ?> usuarios</span>
+                </div>
+                <div class="tn-search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar usuarios..." id="userSearch" value="<?php echo htmlspecialchars($search); ?>">
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="tn-filters">
+                <form method="GET" action="" class="filter-form">
+                    <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
                     
-                    <div class="form-actions">
-                        <button type="submit" name="create_user" class="btn btn-success">
-                            <i class="fas fa-user-plus"></i> Crear Usuario
-                        </button>
-                        <button type="button" onclick="toggleCreateUserForm()" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Cancelar
-                        </button>
+                    <div class="filter-group">
+                        <label for="role_filter">Filtrar por rol:</label>
+                        <select name="role" id="role_filter" onchange="this.form.submit()">
+                            <option value="">Todos los roles</option>
+                            <option value="admin" <?php echo $role_filter == 'admin' ? 'selected' : ''; ?>>Administradores</option>
+                            <option value="moderator" <?php echo $role_filter == 'moderator' ? 'selected' : ''; ?>>Moderadores</option>
+                            <option value="user" <?php echo $role_filter == 'user' ? 'selected' : ''; ?>>Usuarios</option>
+                        </select>
                     </div>
+                    
+                    <?php if ($role_filter || $search): ?>
+                        <a href="manage-users.php" class="tn-btn tn-btn-ghost">
+                            <i class="fas fa-times"></i> Limpiar filtros
+                        </a>
+                    <?php endif; ?>
                 </form>
             </div>
-        </div>
-        
-        <div class="admin-filters">
-            <form method="GET" action="" class="filter-form">
-                <input type="text" name="search" placeholder="Buscar usuarios..." 
-                       value="<?php echo $search; ?>">
-                
-                <select name="role">
-                    <option value="">Todos los roles</option>
-                    <option value="admin" <?php echo $role_filter == 'admin' ? 'selected' : ''; ?>>Administrador</option>
-                    <option value="moderator" <?php echo $role_filter == 'moderator' ? 'selected' : ''; ?>>Moderador</option>
-                    <option value="user" <?php echo $role_filter == 'user' ? 'selected' : ''; ?>>Usuario</option>
-                </select>
-                
-                <button type="submit" class="btn btn-primary">Filtrar</button>
-            </form>
-        </div>
-        
-        <div class="admin-table-container">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Usuario</th>
-                        <th>Email</th>
-                        <th>Rol</th>
-                        <th>Fecha Registro</th>
-                        <th>Posts</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($users as $user): ?>
-                        <?php
-                        // Contar posts del usuario
-                        $stmt = $pdo->prepare("SELECT COUNT(*) FROM posts WHERE user_id = ?");
-                        $stmt->execute([$user['id']]);
-                        $post_count = $stmt->fetchColumn();
-                        ?>
-                        <tr>
-                            <td><?php echo $user['id']; ?></td>
-                            <td><?php echo $user['username']; ?></td>
-                            <td><?php echo $user['email']; ?></td>
-                            <td>
-                                <span class="role-badge role-<?php echo $user['role']; ?>">
-                                    <?php echo ucfirst($user['role']); ?>
-                                </span>
-                            </td>
-                            <td><?php echo date('d/m/Y', strtotime($user['created_at'])); ?></td>
-                            <td><?php echo $post_count; ?></td>
-                            <td>
-                                <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                    <div class="action-buttons">
-                                        <?php if ($user['role'] == 'user'): ?>
-                                            <a href="?action=make_moderator&user_id=<?php echo $user['id']; ?>" 
-                                               class="btn btn-small">Hacer Moderador</a>
-                                            <a href="?action=promote&user_id=<?php echo $user['id']; ?>" 
-                                               class="btn btn-small">Hacer Admin</a>
-                                        <?php elseif ($user['role'] == 'moderator'): ?>
-                                            <a href="?action=promote&user_id=<?php echo $user['id']; ?>" 
-                                               class="btn btn-small">Hacer Admin</a>
-                                            <a href="?action=demote&user_id=<?php echo $user['id']; ?>" 
-                                               class="btn btn-small">Degradar</a>
-                                        <?php elseif ($user['role'] == 'admin'): ?>
-                                            <a href="?action=demote&user_id=<?php echo $user['id']; ?>" 
-                                               class="btn btn-small">Degradar</a>
+
+            <?php if (empty($users)): ?>
+                <div class="tn-empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>No hay usuarios</h3>
+                    <p>No se encontraron usuarios con los filtros aplicados</p>
+                    <a href="manage-users.php" class="tn-btn tn-btn-primary">
+                        <i class="fas fa-refresh"></i> Ver todos
+                    </a>
+                </div>
+            <?php else: ?>
+                <div class="tn-table-container">
+                    <table class="tn-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Posts</th>
+                                <th>Registrado</th>
+                                <th class="tn-table-actions">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <?php foreach ($users as $user): ?>
+                                <tr class="tn-table-row">
+                                    <td>
+                                        <div class="tn-table-cell-content">
+                                            <div class="user-info">
+                                                <strong class="user-name"><?php echo htmlspecialchars($user['username']); ?></strong>
+                                                <span class="user-id">#<?php echo $user['id']; ?></span>
+                                                <?php if ($user['id'] == $_SESSION['user_id']): ?>
+                                                    <span class="tn-badge tn-badge-primary">Tú</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="user-email"><?php echo htmlspecialchars($user['email']); ?></span>
+                                    </td>
+                                    <td>
+                                        <span class="tn-badge tn-badge-<?php echo $user['role']; ?>">
+                                            <?php 
+                                            $role_icons = ['admin' => '⚡', 'moderator' => '🛡️', 'user' => '👤'];
+                                            echo $role_icons[$user['role']] . ' ' . ucfirst($user['role']); 
+                                            ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="tn-metric">
+                                            <span class="metric-value"><?php echo $user['post_count']; ?></span>
+                                            <span class="metric-label">posts</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="tn-date">
+                                            <?php echo date('d M Y', strtotime($user['created_at'])); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                            <div class="tn-action-group">
+                                                <div class="dropdown">
+                                                    <button class="tn-btn-action" onclick="toggleUserDropdown(<?php echo $user['id']; ?>)">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu" id="dropdown-<?php echo $user['id']; ?>">
+                                                        <?php if ($user['role'] == 'user'): ?>
+                                                            <a href="?action=make_moderator&user_id=<?php echo $user['id']; ?>" class="dropdown-item">
+                                                                <i class="fas fa-arrow-up"></i> Hacer Moderador
+                                                            </a>
+                                                            <a href="?action=promote&user_id=<?php echo $user['id']; ?>" class="dropdown-item">
+                                                                <i class="fas fa-crown"></i> Hacer Admin
+                                                            </a>
+                                                        <?php elseif ($user['role'] == 'moderator'): ?>
+                                                            <a href="?action=promote&user_id=<?php echo $user['id']; ?>" class="dropdown-item">
+                                                                <i class="fas fa-crown"></i> Hacer Admin
+                                                            </a>
+                                                            <a href="?action=demote&user_id=<?php echo $user['id']; ?>" class="dropdown-item">
+                                                                <i class="fas fa-arrow-down"></i> Degradar a Usuario
+                                                            </a>
+                                                        <?php elseif ($user['role'] == 'admin'): ?>
+                                                            <a href="?action=demote&user_id=<?php echo $user['id']; ?>" class="dropdown-item">
+                                                                <i class="fas fa-arrow-down"></i> Degradar a Usuario
+                                                            </a>
+                                                        <?php endif; ?>
+                                                        
+                                                        <div class="dropdown-divider"></div>
+                                                        <button onclick="deleteUser(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['username'], ENT_QUOTES); ?>')"
+                                                                class="dropdown-item danger">
+                                                            <i class="fas fa-trash"></i> Eliminar Usuario
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="tn-badge tn-badge-info">Tu cuenta</span>
                                         <?php endif; ?>
-                                        
-                                        <a href="?action=delete&user_id=<?php echo $user['id']; ?>" 
-                                           class="btn btn-small btn-danger"
-                                           onclick="return confirm('¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.')">
-                                            Eliminar
-                                        </a>
-                                    </div>
-                                <?php else: ?>
-                                    <span class="current-user">Tu cuenta</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="admin-stats">
-            <p>Total de usuarios: <?php echo count($users); ?></p>
-        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </section>
     </div>
 </div>
 
-<footer class="admin-footer">
-    <div class="container">
-        <p>&copy; 2025 <?php echo SITE_NAME; ?> - Panel de Administración</p>
-    </div>
-</footer>
-
-<style>
-/* Estilos específicos para el formulario de crear usuario */
-.create-user-form {
-    margin-bottom: 2rem;
-}
-
-.form-card {
-    background: rgba(255,255,255,0.95);
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-    margin-bottom: 2rem;
-}
-
-.form-card h3 {
-    color: #1f2937;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.user-creation-form {
-    display: grid;
-    gap: 1.5rem;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #374151;
-    font-size: 0.95rem;
-}
-
-.form-group input,
-.form-group select {
-    padding: 0.875rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    background: white;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    outline: none;
-    border-color: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.form-group small {
-    color: #6b7280;
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-}
-
-.form-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-start;
-    margin-top: 1rem;
-}
-
-.btn-success {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    border: none;
-    padding: 0.875rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-}
-
-.btn-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-}
-
-.btn-secondary {
-    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-    color: white;
-    border: none;
-    padding: 0.875rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-secondary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-@media (max-width: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-    }
-}
-
-/* Animación de mostrar/ocultar formulario */
-.create-user-form {
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-</style>
-
 <script>
-function toggleCreateUserForm() {
-    const form = document.getElementById('createUserForm');
-    const btn = document.getElementById('toggleCreateBtn');
-    
-    if (form.style.display === 'none' || form.style.display === '') {
+// Funciones de la página
+function toggleUserForm() {
+    const form = document.getElementById('userForm');
+    if (form.style.display === 'none') {
         form.style.display = 'block';
-        btn.innerHTML = '<i class="fas fa-times"></i> Cancelar';
-        btn.className = 'btn btn-secondary';
-        
-        // Focus en el primer campo
-        setTimeout(() => {
-            document.getElementById('first_name').focus();
-        }, 100);
+        form.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('username').focus();
     } else {
         form.style.display = 'none';
-        btn.innerHTML = '<i class="fas fa-user-plus"></i> Crear Nuevo Usuario';
-        btn.className = 'btn btn-success';
-        
-        // Limpiar formulario
-        document.querySelector('.user-creation-form').reset();
     }
 }
 
-// Validación en tiempo real de contraseñas
+function closeUserForm() {
+    document.getElementById('userForm').style.display = 'none';
+    // Clear form
+    document.querySelector('.tn-form').reset();
+    // Reset password validation styles
+    document.getElementById('password').style.borderColor = '';
+    document.getElementById('confirm_password').style.borderColor = '';
+}
+
+function deleteUser(id, username) {
+    if (confirm(`¿Estás seguro de que quieres eliminar al usuario "${username}"?\n\nEsta acción eliminará también todos sus posts y comentarios.\n\nEsta acción no se puede deshacer.`)) {
+        window.location.href = `?action=delete&user_id=${id}`;
+    }
+}
+
+function exportUsers() {
+    console.log('Export users functionality');
+    toast.info('Función pendiente', 'La exportación estará disponible pronto');
+}
+
+function toggleUserDropdown(userId) {
+    const dropdown = document.getElementById(`dropdown-${userId}`);
+    // Close all other dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (menu !== dropdown) {
+            menu.classList.remove('show');
+        }
+    });
+    dropdown.classList.toggle('show');
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    }
+});
+
+// Búsqueda de usuarios
 document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('userSearch');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#usersTableBody .tn-table-row');
+                
+                rows.forEach(row => {
+                    const userName = row.querySelector('.user-name')?.textContent.toLowerCase() || '';
+                    const userEmail = row.querySelector('.user-email')?.textContent.toLowerCase() || '';
+                    
+                    const matches = userName.includes(searchTerm) || userEmail.includes(searchTerm);
+                    row.style.display = matches ? '' : 'none';
+                });
+            }, 300);
+        });
+    }
+    
+    // Validación de contraseñas en tiempo real
     const password = document.getElementById('password');
     const confirmPassword = document.getElementById('confirm_password');
     
     function validatePasswords() {
         if (password.value && confirmPassword.value) {
             if (password.value === confirmPassword.value) {
-                confirmPassword.style.borderColor = '#10b981';
-                confirmPassword.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                confirmPassword.style.borderColor = 'var(--tn-success)';
+                confirmPassword.style.boxShadow = '0 0 0 3px rgba(34, 197, 94, 0.1)';
             } else {
-                confirmPassword.style.borderColor = '#ef4444';
+                confirmPassword.style.borderColor = 'var(--tn-danger)';
                 confirmPassword.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
             }
+        } else {
+            confirmPassword.style.borderColor = '';
+            confirmPassword.style.boxShadow = '';
         }
     }
     
-    password.addEventListener('input', validatePasswords);
-    confirmPassword.addEventListener('input', validatePasswords);
-    
-    // Validación de username en tiempo real
-    const username = document.getElementById('username');
-    username.addEventListener('input', function() {
-        if (this.value.length >= 3) {
-            this.style.borderColor = '#10b981';
-        } else if (this.value.length > 0) {
-            this.style.borderColor = '#ef4444';
-        }
-    });
+    if (password && confirmPassword) {
+        password.addEventListener('input', validatePasswords);
+        confirmPassword.addEventListener('input', validatePasswords);
+    }
 });
 </script>
+
+<style>
+/* Estilos específicos para gestión de usuarios */
+.user-form-section {
+    margin-bottom: 2rem;
+}
+
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid var(--tn-border);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: var(--tn-primary);
+    color: white;
+}
+
+.stat-icon.admin {
+    background: var(--tn-danger);
+}
+
+.stat-icon.moderator {
+    background: var(--tn-warning);
+}
+
+.stat-icon.user {
+    background: var(--tn-info);
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--tn-text-primary);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--tn-text-muted);
+    font-weight: 500;
+}
+
+.tn-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.tn-form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--tn-text-primary);
+}
+
+.user-id {
+    font-size: 0.75rem;
+    color: var(--tn-text-muted);
+    font-weight: 400;
+}
+
+.user-email {
+    color: var(--tn-text-secondary);
+    font-size: 0.9rem;
+}
+
+.tn-badge-admin {
+    background: var(--tn-danger);
+    color: white;
+}
+
+.tn-badge-moderator {
+    background: var(--tn-warning);
+    color: white;
+}
+
+.tn-badge-user {
+    background: var(--tn-info);
+    color: white;
+}
+
+.tn-filters {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--tn-border);
+    margin-bottom: 1rem;
+}
+
+.filter-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-size: 0.9rem;
+    color: var(--tn-text-secondary);
+    white-space: nowrap;
+}
+
+.filter-group select {
+    padding: 0.5rem;
+    border: 1px solid var(--tn-border);
+    border-radius: 6px;
+    background: white;
+    font-size: 0.9rem;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid var(--tn-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 180px;
+    z-index: 1000;
+    display: none;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: var(--tn-text-primary);
+    font-size: 0.9rem;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background: var(--tn-bg-secondary);
+}
+
+.dropdown-item.danger {
+    color: var(--tn-danger);
+}
+
+.dropdown-item.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--tn-border);
+    margin: 0.25rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tn-form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .tiendanube-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+}
+
+/* Optimización compacta */
+.modern-admin-main { padding: 1.5rem !important; }
+.tiendanube-header { padding: 1rem 1.5rem !important; }
+.tn-card { padding: 1.5rem !important; }
+.tn-form-actions { margin-top: 1.5rem !important; }
+.stats-overview { margin-bottom: 1.5rem !important; }
+</style>
 
 </body>
 </html>

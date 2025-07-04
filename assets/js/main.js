@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     // --- INICIALIZACIÓN GENERAL ---
-    initDarkMode();
     initializeTabs();
     initializeAlerts();
     initializeDeleteConfirmations();
@@ -10,60 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFormValidation();
     initializeCharCounters();
 
-    // --- FUNCIONES DE MODO OSCURO ---
-    function initDarkMode() {
-        const themeToggle = document.getElementById('checkbox');
-        const sunIcon = document.querySelector('.sun-icon');
-        const moonIcon = document.querySelector('.moon-icon');
-        const body = document.body;
-
-        if (!themeToggle || !sunIcon || !moonIcon || !body) {
-            console.error('Theme toggle elements not found');
-            return;
-        }
-
-        const userPreference = localStorage.getItem('darkMode');
-        const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        let isDarkMode;
-
-        if (userPreference !== null) {
-            isDarkMode = userPreference === 'true';
-        } else {
-            isDarkMode = systemPreference;
-            localStorage.setItem('darkMode', isDarkMode.toString());
-        }
-
-        updateTheme(isDarkMode, body, themeToggle, sunIcon, moonIcon);
-
-        themeToggle.addEventListener('change', function() {
-            const isChecked = this.checked;
-            localStorage.setItem('darkMode', isChecked.toString());
-            updateTheme(isChecked, body, themeToggle, sunIcon, moonIcon);
-        });
-
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            if (localStorage.getItem('darkMode') === null) {
-                const newIsDarkMode = e.matches;
-                localStorage.setItem('darkMode', newIsDarkMode.toString());
-                updateTheme(newIsDarkMode, body, themeToggle, sunIcon, moonIcon);
-            }
-        });
-    }
-
-    function updateTheme(isDarkMode, body, toggle, sunIcon, moonIcon) {
-        body.classList.toggle('dark-mode', isDarkMode);
-        toggle.checked = isDarkMode;
-        
-        // Mostrar/ocultar iconos correctos
-        if (isDarkMode) {
-            sunIcon.style.opacity = '0';
-            moonIcon.style.opacity = '1';
-        } else {
-            sunIcon.style.opacity = '1';
-            moonIcon.style.opacity = '0';
-        }
-    }
+    // --- MODO OSCURO (manejado en header.php) ---
+    // Las funciones del modo oscuro ahora están en header.php
 
     // --- FUNCIONALIDAD DE TABS ---
     function initializeTabs() {
