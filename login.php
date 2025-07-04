@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/functions.php';
+require_once 'includes/oauth/OAuthManager.php';
 
 if (is_logged_in()) {
     redirect('index.php');
@@ -43,6 +44,39 @@ include 'includes/header.php';
             
             <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
         </form>
+        
+        <!-- Divisor -->
+        <div class="auth-divider">
+            <span>O continúa con</span>
+        </div>
+        
+        <!-- Botones OAuth -->
+        <div class="oauth-buttons">
+            <a href="auth/oauth-login.php?provider=google" class="oauth-btn google-btn">
+                <i class="fab fa-google"></i>
+                <span>Google</span>
+            </a>
+            
+            <a href="auth/oauth-login.php?provider=facebook" class="oauth-btn facebook-btn">
+                <i class="fab fa-facebook-f"></i>
+                <span>Facebook</span>
+            </a>
+            
+            <a href="auth/oauth-login.php?provider=github" class="oauth-btn github-btn">
+                <i class="fab fa-github"></i>
+                <span>GitHub</span>
+            </a>
+            
+            <a href="auth/oauth-login.php?provider=apple" class="oauth-btn apple-btn">
+                <i class="fab fa-apple"></i>
+                <span>Apple</span>
+            </a>
+            
+            <a href="auth/oauth-login.php?provider=microsoft" class="oauth-btn microsoft-btn">
+                <i class="fab fa-microsoft"></i>
+                <span>Microsoft</span>
+            </a>
+        </div>
         
         <p class="auth-link">
             ¿No tienes cuenta? <a href="register.php">Regístrate aquí</a>

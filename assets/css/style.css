@@ -1073,6 +1073,155 @@ html.dark-mode .nav-logo a:hover {
     text-decoration: none;
 }
 
+/* OAuth Buttons */
+.auth-divider {
+    margin: 1.5rem 0 1rem;
+    text-align: center;
+    position: relative;
+}
+
+.auth-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-color);
+    z-index: 1;
+}
+
+.auth-divider span {
+    background: var(--bg-primary);
+    padding: 0 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 2;
+}
+
+.oauth-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.oauth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.oauth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.oauth-btn i {
+    font-size: 1.1rem;
+}
+
+/* Google OAuth Button */
+.google-btn {
+    background: #fff;
+    color: #757575;
+    border-color: #dadce0;
+}
+
+.google-btn:hover {
+    background: #f8f9fa;
+    border-color: #dadce0;
+    color: #3c4043;
+}
+
+/* Facebook OAuth Button */
+.facebook-btn {
+    background: #1877f2;
+    color: white;
+}
+
+.facebook-btn:hover {
+    background: #166fe5;
+}
+
+/* GitHub OAuth Button */
+.github-btn {
+    background: #24292e;
+    color: white;
+}
+
+.github-btn:hover {
+    background: #1b1f23;
+}
+
+/* Apple OAuth Button */
+.apple-btn {
+    background: #000;
+    color: white;
+}
+
+.apple-btn:hover {
+    background: #1a1a1a;
+}
+
+/* Microsoft OAuth Button */
+.microsoft-btn {
+    background: #0078d4;
+    color: white;
+}
+
+.microsoft-btn:hover {
+    background: #106ebe;
+}
+
+/* OAuth Responsive */
+@media (max-width: 768px) {
+    .oauth-buttons {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .oauth-btn {
+        font-size: 0.85rem;
+        padding: 0.7rem 0.8rem;
+    }
+    
+    .oauth-btn span {
+        display: none;
+    }
+    
+    .oauth-btn i {
+        font-size: 1.3rem;
+    }
+}
+
+/* Dark Mode para OAuth */
+.dark-mode .auth-divider span {
+    background: var(--bg-primary);
+}
+
+.dark-mode .google-btn {
+    background: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #404040;
+}
+
+.dark-mode .google-btn:hover {
+    background: #353535;
+    border-color: #505050;
+}
+
 /* Página de inicio */
 .home-container {
     display: grid;

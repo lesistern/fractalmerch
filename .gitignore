@@ -36,6 +36,21 @@ assets/images/uploads/*
 # Config files (if they contain sensitive data)
 config/config.local.php
 
+# OAuth credentials (NEVER commit these!)
+config/oauth.php
+*.p8
+*.pem
+auth_keys/
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# OAuth debug logs
+oauth_debug.log
+security_audit.log
+
 # Backup files
 *.bak
 *.backup

@@ -4,6 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($page_title) ? $page_title . ' - ' . SITE_NAME : SITE_NAME; ?></title>
+    
+    <!-- Meta descripción y SEO -->
+    <meta name="description" content="<?php echo isset($page_description) ? $page_description : 'FractalMerch - Personalización de remeras y productos únicos. Diseña, crea y obtén productos personalizados de alta calidad.'; ?>">
+    <meta name="keywords" content="personalización remeras, diseño, sublimación, productos personalizados, argentina, fractal merch">
+    <meta name="author" content="FractalMerch">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="<?php echo isset($page_title) ? $page_title . ' - ' . SITE_NAME : SITE_NAME; ?>">
+    <meta property="og:description" content="<?php echo isset($page_description) ? $page_description : 'Personalización de remeras y productos únicos. Diseña, crea y obtén productos personalizados de alta calidad.'; ?>">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>">
+    <meta property="og:image" content="<?php echo SITE_URL; ?>assets/images/Fractal_Merch_Header.png">
+    <meta property="og:site_name" content="FractalMerch">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?php echo isset($page_title) ? $page_title . ' - ' . SITE_NAME : SITE_NAME; ?>">
+    <meta name="twitter:description" content="<?php echo isset($page_description) ? $page_description : 'Personalización de remeras y productos únicos.'; ?>">
+    <meta name="twitter:image" content="<?php echo SITE_URL; ?>assets/images/Fractal_Merch_Header.png">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="<?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/images/icon.ico">
+    <link rel="icon" type="image/png" href="assets/images/icon.png">
+    <link rel="apple-touch-icon" href="assets/images/icon.png">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>

@@ -18,10 +18,42 @@ function authenticate_user($email, $password) {
     $stmt->execute([$email]);
     $user = $stmt->fetch();
     
-    if ($user && password_verify($password, $user['password'])) {
+    // Verificar que el usuario existe y tiene contraseña (no es OAuth)
+    if ($user && $user['password'] && password_verify($password, $user['password'])) {
+        // Actualizar último login
+        $update_stmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+        $update_stmt->execute([$user['id']]);
+        
+        // Iniciar sesión
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
+        $_SESSION['user_name'] = $user['name'] ?? $user['username'];
+        $_SESSION['user_email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
+        $_SESSION['avatar_url'] = $user['avatar_url'];
+        $_SESSION['account_type'] = $user['account_type'] ?? 'local';
+        
+        return true;
+    }
+    
+    return false;
+}
+
+function authenticate_oauth_user($user_id) {
+    global $pdo;
+    
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$user_id]);
+    $user = $stmt->fetch();
+    
+    if ($user) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_name'] = $user['name'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['role'] = $user['role'];
+        $_SESSION['avatar_url'] = $user['avatar_url'];
+        $_SESSION['account_type'] = $user['account_type'];
+        $_SESSION['oauth_provider'] = $user['oauth_provider'];
+        
         return true;
     }
     

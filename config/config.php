@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-define('SITE_NAME', 'Mi Proyecto Web');
+define('SITE_NAME', 'FractalMerch');
 
 // Detectar automáticamente la URL base para funcionar en LAN
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
@@ -12,7 +12,11 @@ if ($path === '/' || $path === '\\') {
 }
 define('SITE_URL', $protocol . $host . $path . '/');
 
-define('ADMIN_EMAIL', 'admin@proyecto.com');
+define('ADMIN_EMAIL', 'admin@fractalmerch.com.ar');
+
+// Configuración de dominio para producción
+define('PRODUCTION_DOMAIN', 'fractalmerch.com.ar');
+define('PRODUCTION_URL', 'https://fractalmerch.com.ar/');
 
 define('POSTS_PER_PAGE', 10);
 define('COMMENTS_PER_PAGE', 20);
