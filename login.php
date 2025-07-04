@@ -62,11 +62,6 @@ include 'includes/header.php';
                 <span>Facebook</span>
             </a>
             
-            <a href="auth/oauth-login.php?provider=github" class="oauth-btn github-btn">
-                <i class="fab fa-github"></i>
-                <span>GitHub</span>
-            </a>
-            
             <a href="auth/oauth-login.php?provider=apple" class="oauth-btn apple-btn">
                 <i class="fab fa-apple"></i>
                 <span>Apple</span>
