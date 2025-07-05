@@ -1,0 +1,644 @@
+/**
+ * Critical CSS - Above the fold styles
+ * Optimizado para First Contentful Paint (FCP)
+ */
+
+/* Reset crítico */
+*,*::before,*::after{box-sizing:border-box}
+body,h1,h2,h3,p{margin:0;padding:0}
+
+/* Variables críticas - MODO CLARO E-COMMERCE PROFESIONAL */
+:root{
+    /* 1. Colores principales de fondo y superficies */
+    --bg-primary:#FAF9F6;           /* Blanco cálido */
+    --bg-secondary:#F5F0E8;         /* Beige muy claro */
+    --bg-tertiary:#FFF8F0;          /* Crema */
+    --bg-quaternary:#F5F0E8;        /* Beige para elementos */
+    
+    /* 2. Colores secundarios y de acento */
+    --terracota-suave:#D8A47F;      /* Terracota suave */
+    --arena:#DDB892;                /* Arena */
+    --marron-claro:#A47149;         /* Marrón claro */
+    --verde-oliva:#C5BDAF;          /* Verde oliva claro (detalles naturales) */
+    
+    /* 3. Colores para textos */
+    --text-primary:#333333;         /* Gris oscuro neutro, buena legibilidad */
+    --text-secondary:#666666;       /* Gris medio */
+    --text-on-color:#FFFFFF;        /* Texto sobre fondos de color */
+    --text-on-color-alt:#FFF8F0;    /* Texto sobre fondos de color (crema) */
+    
+    /* 4. Colores para botones y CTA */
+    --btn-primary-bg:#A47149;       /* Fondo botón principal */
+    --btn-primary-text:#FFFFFF;     /* Texto botón principal */
+    --btn-secondary-bg:#D8A47F;     /* Fondo botón secundario */
+    --btn-secondary-text:#333333;   /* Texto botón secundario */
+    
+    /* Gradientes principales */
+    --main-gradient:linear-gradient(135deg,#D8A47F 0%,#DDB892 50%,#A47149 100%);
+    --accent-gradient:linear-gradient(135deg,#A47149 0%,#D8A47F 50%,#DDB892 100%);
+    
+    /* Sombras suaves para separación */
+    --shadow-soft:rgba(51,51,51,0.1);
+    --shadow-medium:rgba(51,51,51,0.15);
+    --shadow-strong:rgba(51,51,51,0.2);
+}
+
+html.dark-mode{
+    /* 1. Colores base (fondos principales) - CMYK compatible */
+    --bg-primary:#1C1B1A;           /* Gris carbón cálido (CMYK: 0,0,0,90) */
+    --bg-secondary:#2A2A28;         /* Gris pizarra oscuro (CMYK: 0,0,0,80) */
+    --bg-tertiary:#3A3A37;          /* Gris medio cálido (CMYK: 0,0,0,75) */
+    --bg-quaternary:#4E433F;        /* Marrón oscuro suave (CMYK: 20,40,50,60) */
+    
+    /* 2. Colores secundarios y de acento - CMYK */
+    --terracota-suave:#A97155;      /* Terracota profunda (modo oscuro) */
+    --arena:#DDB892;                /* Arena cálida */
+    --marron-claro:#C28860;         /* Ocre quemado (modo oscuro) */
+    --verde-oliva:#C5BDAF;          /* Verde oliva mantenido */
+    
+    /* 3. Colores de acento cálidos adicionales */
+    --terracota-profunda:#A97155;   /* Terracota profunda (CMYK: 20,60,70,20) */
+    --ocre-quemado:#C28860;         /* Ocre quemado (CMYK: 15,50,70,10) */
+    --arena-calida:#DDB892;         /* Arena cálida (CMYK: 10,35,50,0) */
+    
+    /* 4. Colores de texto - Máximo contraste */
+    --text-primary:#EAE6E1;         /* Texto principal (CMYK: 0,0,0,5) */
+    --text-secondary:#B8B5B0;       /* Texto secundario (CMYK: 0,0,0,30) */
+    --text-on-color:#FFFFFF;        /* Texto sobre fondos de acento */
+    --text-on-color-alt:#EAE6E1;    /* Texto sobre fondos de acento (alt) */
+    
+    /* 5. Botones y CTA - CMYK optimizado */
+    --btn-primary-bg:#A97155;       /* Fondo botón primario (CMYK: 20,60,70,20) */
+    --btn-primary-text:#FFFFFF;     /* Texto botón primario */
+    --btn-secondary-bg:#3A3A37;     /* Fondo botón secundario (CMYK: 0,0,0,75) */
+    --btn-secondary-text:#EAE6E1;   /* Texto botón secundario */
+    
+    /* Gradientes cálidos para modo oscuro */
+    --main-gradient:linear-gradient(135deg,#A97155 0%,#C28860 50%,#DDB892 100%);
+    --accent-gradient:linear-gradient(135deg,#4E433F 0%,#A97155 50%,#C28860 100%);
+    
+    /* Sombras sutiles para modo oscuro */
+    --shadow-soft:rgba(0,0,0,0.3);
+    --shadow-medium:rgba(0,0,0,0.4);
+    --shadow-strong:rgba(0,0,0,0.5);
+}
+
+/* Typography crítica */
+body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    line-height:1.6;
+    color:var(--text-primary);
+    background:var(--bg-primary);
+}
+
+h1{font-size:2.5rem;font-weight:700;line-height:1.2}
+h2{font-size:2rem;font-weight:600}
+h3{font-size:1.5rem;font-weight:600}
+
+/* Layout crítico */
+.container{max-width:1200px;margin:0 auto;padding:0 1rem}
+
+/* Navbar crítico - Layout fijo */
+.navbar{
+    background:var(--bg-primary);
+    position:sticky;
+    top:0;
+    z-index:1000;
+    border-bottom:1px solid rgba(0,0,0,0.1);
+    padding:2rem 0;
+}
+
+.nav-container{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    max-width:1200px;
+    margin:0 auto;
+    padding:0 1rem;
+    position:relative;
+}
+
+.search-container{
+    flex:0 0 auto;
+    margin-right:auto;
+}
+
+.nav-logo{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%, -50%);
+    z-index:10;
+}
+
+.nav-logo a{
+    display:block;
+    text-decoration:none;
+}
+
+.nav-logo img{
+    height:240px;
+    width:auto;
+    transition:opacity 0.3s ease;
+}
+
+/* Mostrar logo claro por defecto */
+.logo-light{
+    display:block;
+}
+
+.logo-dark{
+    display:none;
+}
+
+/* En modo oscuro, mostrar logo oscuro */
+html.dark-mode .logo-light{
+    display:none;
+}
+
+html.dark-mode .logo-dark{
+    display:block;
+}
+
+.nav-menu{
+    display:flex;
+    align-items:center;
+    gap:0.3rem;
+    margin-left:auto;
+}
+
+/* Estilos básicos de botones nav */
+.nav-btn{
+    background:none;
+    border:none;
+    color:var(--text-primary);
+    font-size:1.1rem;
+    cursor:pointer;
+    padding:0.5rem;
+    border-radius:50%;
+    transition:transform 0.2s ease;
+}
+
+.nav-btn:hover{transform:rotate(15deg) scale(1.1)}
+
+/* Trust bar MODO CLARO - E-commerce profesional */
+.trust-bar-top{
+    background:var(--main-gradient);
+    padding:0.8rem 0;
+    border-bottom:1px solid var(--arena);
+    box-shadow:inset 0 1px 2px rgba(255,255,255,0.3),var(--shadow-soft);
+    position:relative;
+    overflow:hidden;
+}
+
+/* Overlay modo claro - Sutil y elegante */
+.trust-bar-top::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;bottom:0;
+    background:linear-gradient(135deg,rgba(255,255,255,0.2) 0%,rgba(255,248,240,0.1) 50%,transparent 100%);
+    pointer-events:none;
+}
+
+/* Trust bar MODO OSCURO - CMYK compatible */
+html.dark-mode .trust-bar-top{
+    background:var(--main-gradient);
+    border-bottom:1px solid var(--terracota-profunda);
+    box-shadow:var(--shadow-soft),inset 0 1px 2px rgba(169,113,85,0.1);
+    /* Coherencia cromática con impresión CMYK */
+}
+
+html.dark-mode .trust-bar-top::before{
+    background:linear-gradient(135deg,rgba(169,113,85,0.1) 0%,rgba(194,136,96,0.08) 50%,rgba(221,184,146,0.05) 100%);
+    opacity:0.8;
+    /* Overlay cálido consistente */
+}
+
+.trust-container{max-width:1200px;margin:0 auto;padding:0 1rem}
+
+.trust-items{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:2rem;
+    flex-wrap:wrap;
+}
+
+/* Trust items MODO CLARO - E-commerce profesional */
+.trust-item{
+    display:flex;
+    align-items:center;
+    gap:0.5rem;
+    font-weight:600;
+    font-size:0.9rem;
+    color:var(--text-on-color);
+    position:relative;
+    z-index:1;
+    text-shadow:1px 1px 2px rgba(0,0,0,0.2);
+    transition:all 0.3s ease;
+}
+
+.trust-item:hover{
+    transform:translateY(-1px);
+    color:var(--text-on-color);
+}
+
+.trust-item i{
+    color:var(--text-on-color);
+    font-size:1.2rem;
+    text-shadow:1px 1px 2px rgba(0,0,0,0.2);
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+    transition:all 0.3s ease;
+}
+
+.trust-item:hover i{
+    color:var(--text-on-color-alt);
+    transform:scale(1.05);
+}
+
+/* Trust items MODO OSCURO - CMYK profesional */
+html.dark-mode .trust-item{
+    color:var(--text-primary);
+    text-shadow:none;
+    font-weight:500;
+}
+
+html.dark-mode .trust-item:hover{
+    color:var(--arena-calida);
+    transform:translateY(-1px);
+    transition:all 0.2s ease;
+}
+
+html.dark-mode .trust-item i{
+    color:var(--arena-calida);
+    text-shadow:none;
+    filter:none;
+    transition:color 0.3s ease;
+}
+
+html.dark-mode .trust-item:hover i{
+    color:var(--ocre-quemado);
+    transform:scale(1.05);
+}
+
+/* Hero section MODO CLARO - E-commerce profesional */
+.hero-section-optimized{
+    background:linear-gradient(135deg,rgba(250,249,246,0.9) 0%,rgba(245,240,232,0.85) 50%,rgba(255,248,240,0.8) 100%),url('../images/Fractal Background Light 2.png');
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+    padding:4rem 0;
+    min-height:70vh;
+    display:flex;
+    align-items:center;
+    position:relative;
+    box-shadow:inset 0 2px 4px rgba(255,255,255,0.4);
+}
+
+/* Hero section MODO OSCURO - CMYK compatible */
+html.dark-mode .hero-section-optimized{
+    background:linear-gradient(135deg,rgba(28,27,26,0.95) 0%,rgba(42,42,40,0.9) 50%,rgba(58,58,55,0.85) 100%),url('../images/Fractal Background Dark 1.png');
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+    border-bottom:1px solid var(--terracota-profunda);
+    box-shadow:var(--shadow-medium),inset 0 1px 2px rgba(169,113,85,0.1);
+}
+
+/* Overlay MODO CLARO - E-commerce sutil */
+.hero-section-optimized::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;bottom:0;
+    background:radial-gradient(circle at 30% 20%, rgba(216,164,127,0.1) 0%, rgba(221,184,146,0.08) 40%, transparent 70%);
+    z-index:1;
+    /* Sin animaciones para mantener profesionalismo */
+}
+
+/* Overlay MODO OSCURO - CMYK profesional */
+html.dark-mode .hero-section-optimized::before{
+    background:radial-gradient(circle at 30% 20%, rgba(169,113,85,0.08) 0%, transparent 50%),
+               radial-gradient(circle at 70% 80%, rgba(194,136,96,0.06) 0%, transparent 40%);
+    opacity:0.9;
+    /* Overlay cálido consistente con CMYK */
+}
+
+.hero-container{
+    position:relative;
+    z-index:2;
+    max-width:1200px;
+    margin:0 auto;
+    padding:0 1rem;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:4rem;
+    align-items:center;
+}
+
+.hero-content-main{animation:slideInLeft 0.8s ease-out}
+
+/* Hero headline MODO CLARO - E-commerce profesional */
+.hero-headline{
+    font-size:3rem;
+    font-weight:700;
+    line-height:1.2;
+    margin-bottom:1.5rem;
+    color:var(--text-primary);
+    background:var(--main-gradient);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    filter:drop-shadow(1px 1px 3px var(--shadow-soft));
+    /* Sin animaciones para mantener profesionalismo */
+}
+
+/* Hero headline MODO OSCURO - CMYK profesional */
+html.dark-mode .hero-headline{
+    background:var(--main-gradient);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    filter:drop-shadow(1px 1px 3px rgba(0,0,0,0.4));
+    /* Consistente con paleta CMYK */
+}
+
+/* Hero subline MODO CLARO - E-commerce profesional */
+.hero-subline{
+    font-size:1.2rem;
+    color:var(--text-primary);
+    margin-bottom:2rem;
+    max-width:90%;
+    line-height:1.6;
+    font-weight:500;
+    /* Legibilidad óptima sin efectos distractores */
+}
+
+/* Hero subline MODO OSCURO - CMYK profesional */
+html.dark-mode .hero-subline{
+    color:var(--text-secondary);
+    /* Contraste óptimo para modo oscuro */
+}
+
+.hero-cta-group{
+    display:flex;
+    gap:1rem;
+    margin-bottom:2rem;
+    flex-wrap:wrap;
+}
+
+/* CTA Primary MODO CLARO - E-commerce profesional */
+.cta-primary{
+    background:var(--btn-primary-bg);
+    color:var(--btn-primary-text);
+    padding:1rem 2rem;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    transition:all 0.3s ease;
+    border:none;
+    cursor:pointer;
+    box-shadow:var(--shadow-medium);
+    /* Diseño limpio sin efectos distractores */
+}
+
+.cta-primary:hover{
+    background:var(--terracota-suave);
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-strong);
+}
+
+/* CTA Primary MODO OSCURO - CMYK profesional */
+html.dark-mode .cta-primary{
+    background:var(--btn-primary-bg);
+    color:var(--btn-primary-text);
+    box-shadow:var(--shadow-medium);
+    /* Consistente con guía CMYK */
+}
+
+html.dark-mode .cta-primary:hover{
+    background:var(--ocre-quemado);
+    box-shadow:var(--shadow-strong);
+    transform:translateY(-2px);
+}
+
+/* CTA Secondary MODO CLARO - E-commerce profesional */
+.cta-secondary{
+    background:transparent;
+    color:var(--btn-secondary-text);
+    padding:1rem 2rem;
+    border:2px solid var(--btn-secondary-bg);
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    transition:all 0.3s ease;
+    box-shadow:var(--shadow-soft);
+}
+
+.cta-secondary:hover{
+    background:var(--btn-secondary-bg);
+    color:var(--btn-secondary-text);
+    border-color:var(--marron-claro);
+    box-shadow:var(--shadow-medium);
+    transform:translateY(-2px);
+}
+
+/* CTA Secondary MODO OSCURO - CMYK profesional */
+html.dark-mode .cta-secondary{
+    background:var(--btn-secondary-bg);
+    color:var(--btn-secondary-text);
+    border:2px solid var(--terracota-profunda);
+    box-shadow:var(--shadow-soft);
+}
+
+html.dark-mode .cta-secondary:hover{
+    background:var(--terracota-profunda);
+    color:var(--text-on-color);
+    border-color:var(--ocre-quemado);
+    box-shadow:var(--shadow-medium);
+}
+
+/* Hero features DÍA SOLEADO */
+.hero-features{
+    display:flex;
+    gap:1.5rem;
+    flex-wrap:wrap;
+}
+
+/* Feature items MODO CLARO - E-commerce profesional */
+.feature-item{
+    display:flex;
+    align-items:center;
+    gap:0.5rem;
+    font-size:0.95rem;
+    color:var(--text-primary);
+    font-weight:500;
+    transition:all 0.3s ease;
+    padding:0.5rem 1rem;
+    background:rgba(245,240,232,0.8);
+    border-radius:16px;
+    box-shadow:var(--shadow-soft);
+    border:1px solid var(--arena);
+}
+
+.feature-item:hover{
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-medium);
+    background:var(--bg-tertiary);
+    border-color:var(--terracota-suave);
+}
+
+.feature-item i{
+    color:var(--marron-claro);
+    font-size:1.2rem;
+    transition:all 0.3s ease;
+}
+
+.feature-item:hover i{
+    color:var(--terracota-suave);
+    transform:scale(1.1);
+}
+
+/* Feature items MODO OSCURO - CMYK profesional */
+html.dark-mode .feature-item{
+    color:var(--text-secondary);
+    background:var(--bg-tertiary);
+    border:1px solid var(--terracota-profunda);
+    box-shadow:var(--shadow-soft);
+}
+
+html.dark-mode .feature-item:hover{
+    background:var(--bg-quaternary);
+    border-color:var(--ocre-quemado);
+    box-shadow:var(--shadow-medium);
+    color:var(--text-primary);
+}
+
+html.dark-mode .feature-item i{
+    color:var(--terracota-profunda);
+    transition:all 0.3s ease;
+}
+
+html.dark-mode .feature-item:hover i{
+    color:var(--arena-calida);
+    transform:scale(1.1);
+}
+
+/* Hero visual */
+.hero-visual{
+    position:relative;
+    animation:slideInRight 0.8s ease-out;
+}
+
+.hero-product-image{
+    width:100%;
+    height:auto;
+    border-radius:12px;
+    transition:transform 0.3s ease;
+}
+
+.hero-product-image:hover{transform:scale(1.02)}
+
+/* Floating badge MODO CLARO - E-commerce profesional */
+.floating-badge{
+    position:absolute;
+    top:1rem;right:1rem;
+    background:var(--main-gradient);
+    color:var(--text-on-color);
+    padding:0.5rem 1rem;
+    border-radius:20px;
+    font-weight:600;
+    font-size:0.9rem;
+    display:flex;
+    align-items:center;
+    gap:0.3rem;
+    box-shadow:var(--shadow-medium);
+    border:1px solid var(--terracota-suave);
+    /* Mantiene animación sutil para badges promocionales */
+    animation:badgeFloat 3s ease-in-out infinite;
+}
+
+@keyframes badgeFloat{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-3px)}
+}
+
+/* Floating badge MODO OSCURO - CMYK profesional */
+html.dark-mode .floating-badge{
+    background:var(--main-gradient);
+    color:var(--text-on-color);
+    box-shadow:var(--shadow-medium);
+    border:1px solid var(--terracota-profunda);
+    /* Consistente con paleta CMYK */
+    animation:badgeFloat 3s ease-in-out infinite;
+}
+
+/* Animaciones críticas */
+@keyframes slideInLeft{
+    from{opacity:0;transform:translateX(-50px)}
+    to{opacity:1;transform:translateX(0)}
+}
+
+@keyframes slideInRight{
+    from{opacity:0;transform:translateX(50px)}
+    to{opacity:1;transform:translateX(0)}
+}
+
+/* Responsive crítico */
+@media (max-width:768px){
+    .trust-items{gap:1rem;justify-content:space-around}
+    .trust-item{font-size:0.8rem}
+    .hero-container{grid-template-columns:1fr;gap:2rem;text-align:center}
+    .hero-headline{font-size:2.2rem}
+    .hero-subline{font-size:1rem;max-width:100%}
+    .hero-cta-group{flex-direction:column;align-items:center}
+    .cta-primary,.cta-secondary{width:100%;max-width:300px;justify-content:center}
+    .hero-features{justify-content:center}
+    .nav-logo img{height:200px}
+    .navbar{padding:1.5rem 0}
+}
+
+@media (max-width:480px){
+    .nav-logo img{height:160px}
+    .navbar{padding:1.2rem 0}
+}
+
+/* Cart badge crítico */
+.cart-container{position:relative}
+.cart-badge{
+    position:absolute!important;
+    top:-10px!important;
+    right:-10px!important;
+    background:#dc3545!important;
+    color:white!important;
+    border-radius:50%!important;
+    min-width:20px!important;
+    height:20px!important;
+    font-size:0.7rem!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-weight:bold!important;
+    z-index:9999!important;
+    border:2px solid var(--bg-primary)!important;
+    line-height:1!important;
+    text-align:center!important;
+}
+
+/* Loading states críticos */
+.loading{opacity:0.7;transition:opacity 0.3s ease}
+.loaded{opacity:1}
+
+/* FOUC prevention */
+.no-js .hero-content-main,.no-js .hero-visual{animation:none}
+
+/* Dark mode toggle crítico - Reglas ya implementadas arriba */
+
+/* Performance hints */
+img{content-visibility:auto;contain-intrinsic-size:300px 200px}
+.hero-product-image{content-visibility:auto;contain-intrinsic-size:500px 400px}

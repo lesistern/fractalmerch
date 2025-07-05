@@ -50,7 +50,8 @@ class OAuthManager {
     }
     
     public function generateAuthUrl($provider) {
-        $config = $this->getOAuthConfig($provider);
+        // Usar configuración del archivo oauth.php en lugar de la base de datos
+        $config = getOAuthConfig($provider);
         if (!$config || !isset($this->providers[$provider])) {
             throw new Exception("Proveedor OAuth no configurado: $provider");
         }
@@ -94,7 +95,7 @@ class OAuthManager {
             throw new Exception("Proveedor OAuth inconsistente");
         }
         
-        $config = $this->getOAuthConfig($provider);
+        $config = getOAuthConfig($provider);
         if (!$config) {
             throw new Exception("Configuración OAuth no encontrada");
         }

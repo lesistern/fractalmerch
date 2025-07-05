@@ -1,466 +1,462 @@
 <?php
-require_once '../includes/functions.php';
-require_once '../config/database.php';
-
-if (!is_logged_in() || !is_admin()) {
-    flash_message('error', 'No tienes permisos para acceder al panel de administración');
-    redirect('../index.php');
-}
-
-$page_title = '📢 Marketing - Panel Admin';
-include 'admin-dashboard-header.php';
+$pageTitle = '📢 Marketing';
+include 'admin-master-header.php';
 ?>
 
-<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
+<div class="page-header">
+    <div class="page-title">
+        <h1><i class="fas fa-bullhorn"></i> Marketing</h1>
+        <p class="page-subtitle">Centro integral de marketing y promociones</p>
+    </div>
+    <div class="page-actions">
+        <button class="btn btn-primary" onclick="createCampaign()">
+            <i class="fas fa-plus"></i>
+            Nueva Campaña
+        </button>
+    </div>
+</div>
 
-<div class="modern-admin-container">
-    <?php include 'includes/admin-sidebar.php'; ?>
-
-    <div class="modern-admin-main">
-        <div class="tiendanube-header">
-            <div class="header-left">
-                <h1><i class="fas fa-bullhorn"></i> Marketing</h1>
-                <p class="header-subtitle">Centro integral de marketing y promociones</p>
+<!-- Estadísticas de Marketing -->
+<div class="content-card">
+    <div class="card-header">
+        <h3><i class="fas fa-chart-bar"></i> Resumen de Marketing</h3>
+    </div>
+    <div class="card-body">
+        <div class="marketing-stats-grid">
+            <div class="marketing-stat-card primary">
+                <div class="stat-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>8.5K</h3>
+                    <p>Emails enviados</p>
+                    <span class="stat-change positive">+12%</span>
+                </div>
             </div>
-            <div class="header-right">
-                <button class="tn-btn tn-btn-primary" onclick="createCampaign()">
-                    <i class="fas fa-plus"></i>
-                    Nueva Campaña
-                </button>
+            <div class="marketing-stat-card success">
+                <div class="stat-icon">
+                    <i class="fas fa-mouse-pointer"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>23.5%</h3>
+                    <p>Tasa de apertura</p>
+                    <span class="stat-change positive">+5.2%</span>
+                </div>
+            </div>
+            <div class="marketing-stat-card warning">
+                <div class="stat-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>4.8%</h3>
+                    <p>Conversión</p>
+                    <span class="stat-change positive">+1.3%</span>
+                </div>
+            </div>
+            <div class="marketing-stat-card info">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>$45.2K</h3>
+                    <p>ROI Marketing</p>
+                    <span class="stat-change positive">+8.7%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Herramientas de Marketing Principal -->
+<div class="content-card">
+    <div class="card-header">
+        <h3><i class="fas fa-tools"></i> Herramientas de Marketing</h3>
+    </div>
+    <div class="card-body">
+        
+        <!-- Cupones y Promociones -->
+        <div class="marketing-category">
+            <h3><i class="fas fa-tags"></i> Cupones y Promociones</h3>
+            <div class="marketing-tools-grid">
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-percentage"></i>
+                        <h4>Cupones de Descuento</h4>
+                    </div>
+                    <p>Crea cupones con descuentos porcentuales o fijos</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat"><strong>3</strong> activos</span>
+                        <span class="tool-stat"><strong>234</strong> usos</span>
+                    </div>
+                    <button class="tool-btn primary" onclick="manageCoupons()">Gestionar Cupones</button>
+                </div>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-gift"></i>
+                        <h4>Lleva X, Paga Y</h4>
+                    </div>
+                    <p>Promociones de cantidad: Lleva 2, paga 1</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat"><strong>1</strong> activa</span>
+                        <span class="tool-stat"><strong>89</strong> conversiones</span>
+                    </div>
+                    <button class="tool-btn primary" onclick="manageQuantityPromos()">Configurar</button>
+                </div>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-credit-card"></i>
+                        <h4>Gift Cards</h4>
+                    </div>
+                    <p>Vende tarjetas de regalo para tu tienda</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat"><strong>$2.5K</strong> vendidas</span>
+                        <span class="tool-stat"><strong>45</strong> activas</span>
+                    </div>
+                    <button class="tool-btn primary" onclick="manageGiftCards()">Ver Gift Cards</button>
+                </div>
             </div>
         </div>
 
-        <!-- Estadísticas de Marketing -->
-        <section class="marketing-stats-section">
-            <h2><i class="fas fa-chart-bar"></i> Resumen de Marketing</h2>
-            <div class="marketing-stats-grid">
-                <div class="marketing-stat-card primary">
-                    <div class="stat-icon">
-                        <i class="fas fa-envelope"></i>
+        <!-- Email Marketing -->
+        <div class="marketing-category">
+            <h3><i class="fas fa-envelope-open"></i> Email Marketing</h3>
+            <div class="marketing-tools-grid">
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fab fa-mailchimp"></i>
+                        <h4>Mailchimp Integration</h4>
                     </div>
-                    <div class="stat-content">
-                        <h3>8.5K</h3>
-                        <p>Emails enviados</p>
-                        <span class="stat-change positive">+12%</span>
+                    <p>Conecta tu tienda con Mailchimp para campañas avanzadas</p>
+                    <div class="tool-status connected">
+                        <i class="fas fa-check-circle"></i> Conectado
                     </div>
+                    <button class="tool-btn secondary" onclick="configMailchimp()">Configurar</button>
                 </div>
-                <div class="marketing-stat-card success">
-                    <div class="stat-icon">
-                        <i class="fas fa-mouse-pointer"></i>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-rocket"></i>
+                        <h4>Marketing Nube</h4>
                     </div>
-                    <div class="stat-content">
-                        <h3>23.5%</h3>
-                        <p>Tasa de apertura</p>
-                        <span class="stat-change positive">+5.2%</span>
+                    <p>Herramienta nativa de marketing y automatización</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat"><strong>5</strong> automatizaciones</span>
+                        <span class="tool-stat"><strong>1.2K</strong> contactos</span>
                     </div>
+                    <button class="tool-btn primary" onclick="openMarketingNube()">Abrir Marketing Nube</button>
                 </div>
-                <div class="marketing-stat-card warning">
-                    <div class="stat-icon">
-                        <i class="fas fa-shopping-cart"></i>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-users"></i>
+                        <h4>Listas de Contactos</h4>
                     </div>
-                    <div class="stat-content">
-                        <h3>4.8%</h3>
-                        <p>Conversión</p>
-                        <span class="stat-change positive">+1.3%</span>
+                    <p>Gestiona y segmenta tu base de clientes</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat"><strong>1,234</strong> contactos</span>
+                        <span class="tool-stat"><strong>8</strong> listas</span>
                     </div>
-                </div>
-                <div class="marketing-stat-card info">
-                    <div class="stat-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3>$45.2K</h3>
-                        <p>ROI Marketing</p>
-                        <span class="stat-change positive">+8.7%</span>
-                    </div>
+                    <button class="tool-btn primary" onclick="manageContacts()">Gestionar Listas</button>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- Herramientas de Marketing Principal -->
-        <section class="marketing-tools-section">
-            <h2><i class="fas fa-tools"></i> Herramientas de Marketing</h2>
-            
-            <!-- Cupones y Promociones -->
-            <div class="marketing-category">
-                <h3><i class="fas fa-tags"></i> Cupones y Promociones</h3>
-                <div class="marketing-tools-grid">
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-percentage"></i>
-                            <h4>Cupones de Descuento</h4>
-                        </div>
-                        <p>Crea cupones con descuentos porcentuales o fijos</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat"><strong>3</strong> activos</span>
-                            <span class="tool-stat"><strong>234</strong> usos</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="manageCoupons()">Gestionar Cupones</button>
+        <!-- Redes Sociales -->
+        <div class="marketing-category">
+            <h3><i class="fas fa-share-alt"></i> Redes Sociales</h3>
+            <div class="marketing-tools-grid">
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fab fa-facebook"></i>
+                        <h4>Facebook Business</h4>
                     </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-gift"></i>
-                            <h4>Lleva X, Paga Y</h4>
-                        </div>
-                        <p>Promociones de cantidad: Lleva 2, paga 1</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat"><strong>1</strong> activa</span>
-                            <span class="tool-stat"><strong>89</strong> conversiones</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="manageQuantityPromos()">Configurar</button>
+                    <p>Conecta tu tienda con Facebook e Instagram</p>
+                    <div class="tool-status connected">
+                        <i class="fas fa-check-circle"></i> Conectado
                     </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-credit-card"></i>
-                            <h4>Gift Cards</h4>
-                        </div>
-                        <p>Vende tarjetas de regalo para tu tienda</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat"><strong>$2.5K</strong> vendidas</span>
-                            <span class="tool-stat"><strong>45</strong> activas</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="manageGiftCards()">Ver Gift Cards</button>
+                    <button class="tool-btn secondary" onclick="manageFacebook()">Gestionar</button>
+                </div>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fab fa-instagram"></i>
+                        <h4>Instagram Shopping</h4>
                     </div>
+                    <p>Vende directamente desde Instagram</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat"><strong>156</strong> productos</span>
+                        <span class="tool-stat"><strong>2.3K</strong> seguidores</span>
+                    </div>
+                    <button class="tool-btn primary" onclick="manageInstagram()">Configurar</button>
+                </div>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fab fa-pinterest"></i>
+                        <h4>Pinterest</h4>
+                    </div>
+                    <p>Añade iconos de Pinterest a tu tienda</p>
+                    <div class="tool-status disconnected">
+                        <i class="fas fa-times-circle"></i> Desconectado
+                    </div>
+                    <button class="tool-btn primary" onclick="connectPinterest()">Conectar</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Email Marketing -->
-            <div class="marketing-category">
-                <h3><i class="fas fa-envelope-open"></i> Email Marketing</h3>
-                <div class="marketing-tools-grid">
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fab fa-mailchimp"></i>
-                            <h4>Mailchimp Integration</h4>
-                        </div>
-                        <p>Conecta tu tienda con Mailchimp para campañas avanzadas</p>
-                        <div class="tool-status connected">
-                            <i class="fas fa-check-circle"></i> Conectado
-                        </div>
-                        <button class="tool-btn secondary" onclick="configMailchimp()">Configurar</button>
+        <!-- Google Ads y Shopping -->
+        <div class="marketing-category">
+            <h3><i class="fab fa-google"></i> Google Marketing</h3>
+            <div class="marketing-tools-grid">
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fab fa-google"></i>
+                        <h4>Google Shopping</h4>
                     </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-rocket"></i>
-                            <h4>Marketing Nube</h4>
-                        </div>
-                        <p>Herramienta nativa de marketing y automatización</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat"><strong>5</strong> automatizaciones</span>
-                            <span class="tool-stat"><strong>1.2K</strong> contactos</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="openMarketingNube()">Abrir Marketing Nube</button>
+                    <p>Sincroniza tu catálogo con Google Shopping</p>
+                    <div class="tool-status connected">
+                        <i class="fas fa-check-circle"></i> Sincronizado
                     </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-users"></i>
-                            <h4>Listas de Contactos</h4>
-                        </div>
-                        <p>Gestiona y segmenta tu base de clientes</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat"><strong>1,234</strong> contactos</span>
-                            <span class="tool-stat"><strong>8</strong> listas</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="manageContacts()">Gestionar Listas</button>
+                    <button class="tool-btn secondary" onclick="manageGoogleShopping()">Ver Catálogo</button>
+                </div>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-bullseye"></i>
+                        <h4>Google Ads</h4>
                     </div>
+                    <p>Crea y monitorea campañas de Google Ads</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat"><strong>2</strong> campañas</span>
+                        <span class="tool-stat"><strong>$234</strong> invertidos</span>
+                    </div>
+                    <button class="tool-btn primary" onclick="manageGoogleAds()">Gestionar Campañas</button>
+                </div>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-chart-line"></i>
+                        <h4>Google Analytics</h4>
+                    </div>
+                    <p>Análisis avanzado de tráfico y conversiones</p>
+                    <div class="tool-status connected">
+                        <i class="fas fa-check-circle"></i> Conectado
+                    </div>
+                    <button class="tool-btn secondary" onclick="openAnalytics()">Ver Reportes</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Redes Sociales -->
-            <div class="marketing-category">
-                <h3><i class="fas fa-share-alt"></i> Redes Sociales</h3>
-                <div class="marketing-tools-grid">
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fab fa-facebook"></i>
-                            <h4>Facebook Business</h4>
-                        </div>
-                        <p>Conecta tu tienda con Facebook e Instagram</p>
-                        <div class="tool-status connected">
-                            <i class="fas fa-check-circle"></i> Conectado
-                        </div>
-                        <button class="tool-btn secondary" onclick="manageFacebook()">Gestionar</button>
+        <!-- Facebook Ads -->
+        <div class="marketing-category">
+            <h3><i class="fab fa-facebook-square"></i> Facebook Ads</h3>
+            <div class="marketing-tools-grid">
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-crosshairs"></i>
+                        <h4>Facebook Pixel</h4>
                     </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fab fa-instagram"></i>
-                            <h4>Instagram Shopping</h4>
-                        </div>
-                        <p>Vende directamente desde Instagram</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat"><strong>156</strong> productos</span>
-                            <span class="tool-stat"><strong>2.3K</strong> seguidores</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="manageInstagram()">Configurar</button>
+                    <p>Trackea conversiones y optimiza anuncios</p>
+                    <div class="tool-status connected">
+                        <i class="fas fa-check-circle"></i> Instalado
                     </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fab fa-pinterest"></i>
-                            <h4>Pinterest</h4>
-                        </div>
-                        <p>Añade iconos de Pinterest a tu tienda</p>
-                        <div class="tool-status disconnected">
-                            <i class="fas fa-times-circle"></i> Desconectado
-                        </div>
-                        <button class="tool-btn primary" onclick="connectPinterest()">Conectar</button>
+                    <button class="tool-btn secondary" onclick="manageFacebookPixel()">Configurar</button>
+                </div>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-ad"></i>
+                        <h4>Campañas Facebook</h4>
                     </div>
+                    <p>Administra tus campañas de Facebook Ads</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat"><strong>3</strong> campañas</span>
+                        <span class="tool-stat"><strong>4.2%</strong> CTR</span>
+                    </div>
+                    <button class="tool-btn primary" onclick="manageFacebookAds()">Ver Campañas</button>
+                </div>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-users-cog"></i>
+                        <h4>Audiencias Custom</h4>
+                    </div>
+                    <p>Crea audiencias personalizadas para tus anuncios</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat"><strong>5</strong> audiencias</span>
+                        <span class="tool-stat"><strong>12K</strong> usuarios</span>
+                    </div>
+                    <button class="tool-btn primary" onclick="manageAudiences()">Gestionar</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Google Ads y Shopping -->
-            <div class="marketing-category">
-                <h3><i class="fab fa-google"></i> Google Marketing</h3>
-                <div class="marketing-tools-grid">
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fab fa-google"></i>
-                            <h4>Google Shopping</h4>
-                        </div>
-                        <p>Sincroniza tu catálogo con Google Shopping</p>
-                        <div class="tool-status connected">
-                            <i class="fas fa-check-circle"></i> Sincronizado
-                        </div>
-                        <button class="tool-btn secondary" onclick="manageGoogleShopping()">Ver Catálogo</button>
+        <!-- Fechas Especiales -->
+        <div class="marketing-category">
+            <h3><i class="fas fa-calendar-star"></i> Fechas Especiales</h3>
+            <div class="marketing-tools-grid">
+                <div class="marketing-tool-card special">
+                    <div class="tool-header">
+                        <i class="fas fa-fire"></i>
+                        <h4>Hot Sale 2025</h4>
                     </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-bullseye"></i>
-                            <h4>Google Ads</h4>
-                        </div>
-                        <p>Crea y monitorea campañas de Google Ads</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat"><strong>2</strong> campañas</span>
-                            <span class="tool-stat"><strong>$234</strong> invertidos</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="manageGoogleAds()">Gestionar Campañas</button>
+                    <p>Prepara tu tienda para el Hot Sale</p>
+                    <div class="countdown-timer">
+                        <span id="hotsale-countdown">45 días restantes</span>
                     </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-chart-line"></i>
-                            <h4>Google Analytics</h4>
-                        </div>
-                        <p>Análisis avanzado de tráfico y conversiones</p>
-                        <div class="tool-status connected">
-                            <i class="fas fa-check-circle"></i> Conectado
-                        </div>
-                        <button class="tool-btn secondary" onclick="openAnalytics()">Ver Reportes</button>
+                    <button class="tool-btn primary" onclick="prepareHotSale()">Preparar Hot Sale</button>
+                </div>
+                
+                <div class="marketing-tool-card special">
+                    <div class="tool-header">
+                        <i class="fas fa-laptop"></i>
+                        <h4>Cyber Monday</h4>
                     </div>
+                    <p>Estrategias para Cyber Monday</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat">Próximo: <strong>Nov 2025</strong></span>
+                    </div>
+                    <button class="tool-btn secondary" onclick="prepareCyberMonday()">Planificar</button>
+                </div>
+                
+                <div class="marketing-tool-card special">
+                    <div class="tool-header">
+                        <i class="fas fa-heart"></i>
+                        <h4>San Valentín</h4>
+                    </div>
+                    <p>Promociones especiales para San Valentín</p>
+                    <div class="tool-stats">
+                        <span class="tool-stat">Próximo: <strong>Feb 2026</strong></span>
+                    </div>
+                    <button class="tool-btn secondary" onclick="prepareValentines()">Configurar</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Facebook Ads -->
-            <div class="marketing-category">
-                <h3><i class="fab fa-facebook-square"></i> Facebook Ads</h3>
-                <div class="marketing-tools-grid">
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-crosshairs"></i>
-                            <h4>Facebook Pixel</h4>
-                        </div>
-                        <p>Trackea conversiones y optimiza anuncios</p>
-                        <div class="tool-status connected">
-                            <i class="fas fa-check-circle"></i> Instalado
-                        </div>
-                        <button class="tool-btn secondary" onclick="manageFacebookPixel()">Configurar</button>
+        <!-- Aplicaciones de Marketing -->
+        <div class="marketing-category">
+            <h3><i class="fas fa-puzzle-piece"></i> Apps de Marketing</h3>
+            <div class="marketing-tools-grid">
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-envelope-square"></i>
+                        <h4>Doppler</h4>
                     </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-ad"></i>
-                            <h4>Campañas Facebook</h4>
-                        </div>
-                        <p>Administra tus campañas de Facebook Ads</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat"><strong>3</strong> campañas</span>
-                            <span class="tool-stat"><strong>4.2%</strong> CTR</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="manageFacebookAds()">Ver Campañas</button>
+                    <p>Email marketing y automatización avanzada</p>
+                    <div class="app-rating">
+                        <span class="stars">★★★★★</span>
+                        <span class="rating-text">4.8 (234)</span>
                     </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-users-cog"></i>
-                            <h4>Audiencias Custom</h4>
-                        </div>
-                        <p>Crea audiencias personalizadas para tus anuncios</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat"><strong>5</strong> audiencias</span>
-                            <span class="tool-stat"><strong>12K</strong> usuarios</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="manageAudiences()">Gestionar</button>
+                    <button class="tool-btn primary" onclick="installDoppler()">Instalar</button>
+                </div>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-bell"></i>
+                        <h4>TitanPush</h4>
                     </div>
+                    <p>Notificaciones push y promociones</p>
+                    <div class="tool-status connected">
+                        <i class="fas fa-check-circle"></i> Instalado
+                    </div>
+                    <button class="tool-btn secondary" onclick="manageTitanPush()">Configurar</button>
+                </div>
+                
+                <div class="marketing-tool-card">
+                    <div class="tool-header">
+                        <i class="fas fa-lightbulb"></i>
+                        <h4>SmartHint</h4>
+                    </div>
+                    <p>Inteligencia artificial para recomendaciones</p>
+                    <div class="app-rating">
+                        <span class="stars">★★★★☆</span>
+                        <span class="rating-text">4.5 (156)</span>
+                    </div>
+                    <button class="tool-btn primary" onclick="installSmartHint()">Instalar</button>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
 
-            <!-- Fechas Especiales -->
-            <div class="marketing-category">
-                <h3><i class="fas fa-calendar-star"></i> Fechas Especiales</h3>
-                <div class="marketing-tools-grid">
-                    <div class="marketing-tool-card special">
-                        <div class="tool-header">
-                            <i class="fas fa-fire"></i>
-                            <h4>Hot Sale 2025</h4>
-                        </div>
-                        <p>Prepara tu tienda para el Hot Sale</p>
-                        <div class="countdown-timer">
-                            <span id="hotsale-countdown">45 días restantes</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="prepareHotSale()">Preparar Hot Sale</button>
-                    </div>
-                    
-                    <div class="marketing-tool-card special">
-                        <div class="tool-header">
-                            <i class="fas fa-laptop"></i>
-                            <h4>Cyber Monday</h4>
-                        </div>
-                        <p>Estrategias para Cyber Monday</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat">Próximo: <strong>Nov 2025</strong></span>
-                        </div>
-                        <button class="tool-btn secondary" onclick="prepareCyberMonday()">Planificar</button>
-                    </div>
-                    
-                    <div class="marketing-tool-card special">
-                        <div class="tool-header">
-                            <i class="fas fa-heart"></i>
-                            <h4>San Valentín</h4>
-                        </div>
-                        <p>Promociones especiales para San Valentín</p>
-                        <div class="tool-stats">
-                            <span class="tool-stat">Próximo: <strong>Feb 2026</strong></span>
-                        </div>
-                        <button class="tool-btn secondary" onclick="prepareValentines()">Configurar</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Aplicaciones de Marketing -->
-            <div class="marketing-category">
-                <h3><i class="fas fa-puzzle-piece"></i> Apps de Marketing</h3>
-                <div class="marketing-tools-grid">
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-envelope-square"></i>
-                            <h4>Doppler</h4>
-                        </div>
-                        <p>Email marketing y automatización avanzada</p>
-                        <div class="app-rating">
-                            <span class="stars">★★★★★</span>
-                            <span class="rating-text">4.8 (234)</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="installDoppler()">Instalar</button>
-                    </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-bell"></i>
-                            <h4>TitanPush</h4>
-                        </div>
-                        <p>Notificaciones push y promociones</p>
-                        <div class="tool-status connected">
-                            <i class="fas fa-check-circle"></i> Instalado
-                        </div>
-                        <button class="tool-btn secondary" onclick="manageTitanPush()">Configurar</button>
-                    </div>
-                    
-                    <div class="marketing-tool-card">
-                        <div class="tool-header">
-                            <i class="fas fa-lightbulb"></i>
-                            <h4>SmartHint</h4>
-                        </div>
-                        <p>Inteligencia artificial para recomendaciones</p>
-                        <div class="app-rating">
-                            <span class="stars">★★★★☆</span>
-                            <span class="rating-text">4.5 (156)</span>
-                        </div>
-                        <button class="tool-btn primary" onclick="installSmartHint()">Instalar</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Campañas Recientes -->
-        <section class="recent-campaigns-section">
-            <h2><i class="fas fa-history"></i> Campañas Recientes</h2>
-            <div class="campaigns-table-container">
-                <table class="campaigns-table">
-                    <thead>
-                        <tr>
-                            <th>Campaña</th>
-                            <th>Tipo</th>
-                            <th>Estado</th>
-                            <th>Alcance</th>
-                            <th>Conversión</th>
-                            <th>ROI</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="campaign-info">
-                                    <strong>Descuento Verano 2025</strong>
-                                    <span class="campaign-date">Iniciada el 15 Jun</span>
-                                </div>
-                            </td>
-                            <td><span class="campaign-type email">Email</span></td>
-                            <td><span class="campaign-status active">Activa</span></td>
-                            <td>2,345</td>
-                            <td>6.8%</td>
-                            <td class="positive">+245%</td>
-                            <td>
-                                <button class="action-btn edit" onclick="editCampaign(1)"><i class="fas fa-edit"></i></button>
-                                <button class="action-btn pause" onclick="pauseCampaign(1)"><i class="fas fa-pause"></i></button>
-                                <button class="action-btn stats" onclick="viewStats(1)"><i class="fas fa-chart-bar"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="campaign-info">
-                                    <strong>Retargeting Facebook</strong>
-                                    <span class="campaign-date">Iniciada el 10 Jun</span>
-                                </div>
-                            </td>
-                            <td><span class="campaign-type social">Social</span></td>
-                            <td><span class="campaign-status active">Activa</span></td>
-                            <td>8,921</td>
-                            <td>3.2%</td>
-                            <td class="positive">+156%</td>
-                            <td>
-                                <button class="action-btn edit" onclick="editCampaign(2)"><i class="fas fa-edit"></i></button>
-                                <button class="action-btn pause" onclick="pauseCampaign(2)"><i class="fas fa-pause"></i></button>
-                                <button class="action-btn stats" onclick="viewStats(2)"><i class="fas fa-chart-bar"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="campaign-info">
-                                    <strong>Google Shopping Boost</strong>
-                                    <span class="campaign-date">Finalizada el 5 Jun</span>
-                                </div>
-                            </td>
-                            <td><span class="campaign-type ads">Google Ads</span></td>
-                            <td><span class="campaign-status completed">Finalizada</span></td>
-                            <td>12,567</td>
-                            <td>4.5%</td>
-                            <td class="positive">+312%</td>
-                            <td>
-                                <button class="action-btn duplicate" onclick="duplicateCampaign(3)"><i class="fas fa-copy"></i></button>
-                                <button class="action-btn stats" onclick="viewStats(3)"><i class="fas fa-chart-bar"></i></button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+<!-- Campañas Recientes -->
+<div class="content-card">
+    <div class="card-header">
+        <h3><i class="fas fa-history"></i> Campañas Recientes</h3>
+    </div>
+    <div class="card-body">
+        <div class="campaigns-table-container">
+            <table class="campaigns-table">
+                <thead>
+                    <tr>
+                        <th>Campaña</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Alcance</th>
+                        <th>Conversión</th>
+                        <th>ROI</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="campaign-info">
+                                <strong>Descuento Verano 2025</strong>
+                                <span class="campaign-date">Iniciada el 15 Jun</span>
+                            </div>
+                        </td>
+                        <td><span class="campaign-type email">Email</span></td>
+                        <td><span class="campaign-status active">Activa</span></td>
+                        <td>2,345</td>
+                        <td>6.8%</td>
+                        <td class="positive">+245%</td>
+                        <td>
+                            <button class="action-btn edit" onclick="editCampaign(1)"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn pause" onclick="pauseCampaign(1)"><i class="fas fa-pause"></i></button>
+                            <button class="action-btn stats" onclick="viewStats(1)"><i class="fas fa-chart-bar"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="campaign-info">
+                                <strong>Retargeting Facebook</strong>
+                                <span class="campaign-date">Iniciada el 10 Jun</span>
+                            </div>
+                        </td>
+                        <td><span class="campaign-type social">Social</span></td>
+                        <td><span class="campaign-status active">Activa</span></td>
+                        <td>8,921</td>
+                        <td>3.2%</td>
+                        <td class="positive">+156%</td>
+                        <td>
+                            <button class="action-btn edit" onclick="editCampaign(2)"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn pause" onclick="pauseCampaign(2)"><i class="fas fa-pause"></i></button>
+                            <button class="action-btn stats" onclick="viewStats(2)"><i class="fas fa-chart-bar"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="campaign-info">
+                                <strong>Google Shopping Boost</strong>
+                                <span class="campaign-date">Finalizada el 5 Jun</span>
+                            </div>
+                        </td>
+                        <td><span class="campaign-type ads">Google Ads</span></td>
+                        <td><span class="campaign-status completed">Finalizada</span></td>
+                        <td>12,567</td>
+                        <td>4.5%</td>
+                        <td class="positive">+312%</td>
+                        <td>
+                            <button class="action-btn duplicate" onclick="duplicateCampaign(3)"><i class="fas fa-copy"></i></button>
+                            <button class="action-btn stats" onclick="viewStats(3)"><i class="fas fa-chart-bar"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -605,19 +601,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
 /* Estilos para la página de Marketing */
-.marketing-stats-section {
-    margin-bottom: 2rem;
-}
-
-.marketing-stats-section h2 {
-    margin-bottom: 1.5rem;
-    color: #333;
-    font-size: 1.4rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
 .marketing-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -634,6 +617,7 @@ document.addEventListener('DOMContentLoaded', function() {
     align-items: center;
     gap: 1rem;
     border-left: 4px solid #007bff;
+    border: 1px solid #e9ecef;
 }
 
 .marketing-stat-card.primary { border-left-color: #007bff; }
@@ -676,19 +660,6 @@ document.addEventListener('DOMContentLoaded', function() {
 .stat-change.positive {
     background: #d4edda;
     color: #155724;
-}
-
-.marketing-tools-section {
-    margin-bottom: 2rem;
-}
-
-.marketing-tools-section h2 {
-    margin-bottom: 2rem;
-    color: #333;
-    font-size: 1.4rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
 }
 
 .marketing-category {
@@ -850,24 +821,12 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 /* Tabla de Campañas */
-.recent-campaigns-section {
-    margin-top: 3rem;
-}
-
-.recent-campaigns-section h2 {
-    margin-bottom: 1.5rem;
-    color: #333;
-    font-size: 1.4rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
 .campaigns-table-container {
     background: white;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
 }
 
 .campaigns-table {
@@ -968,45 +927,6 @@ document.addEventListener('DOMContentLoaded', function() {
 .action-btn.pause:hover { color: #ffc107; }
 .action-btn.stats:hover { color: #28a745; }
 .action-btn.duplicate:hover { color: #6c757d; }
-
-/* Optimización compacta para marketing.php */
-.modern-admin-main { padding: 1.5rem !important; }
-.tiendanube-header { padding: 1rem 1.5rem !important; }
-.header-subtitle { font-size: 0.85rem !important; }
-.marketing-stats-section { margin-bottom: 1.5rem !important; }
-.marketing-stats-section h2 { margin-bottom: 1rem !important; font-size: 1.2rem !important; }
-.marketing-stats-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important; gap: 1rem !important; margin-bottom: 1.5rem !important; }
-.marketing-stat-card { padding: 1rem !important; gap: 0.75rem !important; }
-.marketing-stat-card .stat-icon { padding: 0.75rem !important; font-size: 1.2rem !important; }
-.marketing-stat-card .stat-content h3 { font-size: 1.5rem !important; }
-.marketing-stat-card .stat-content p { font-size: 0.8rem !important; }
-.marketing-tools-section { margin-bottom: 1.5rem !important; }
-.marketing-tools-section h2 { margin-bottom: 1.5rem !important; font-size: 1.2rem !important; }
-.marketing-category { margin-bottom: 2rem !important; }
-.marketing-category h3 { margin-bottom: 1rem !important; font-size: 1.1rem !important; }
-.marketing-tools-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important; gap: 1rem !important; }
-.marketing-tool-card { padding: 1rem !important; }
-.tool-header { margin-bottom: 0.75rem !important; gap: 0.5rem !important; }
-.tool-header i { font-size: 1.2rem !important; }
-.tool-header h4 { font-size: 1rem !important; }
-.marketing-tool-card p { margin-bottom: 0.75rem !important; font-size: 0.8rem !important; }
-.tool-stats { gap: 0.75rem !important; margin-bottom: 0.75rem !important; }
-.tool-stat { font-size: 0.75rem !important; padding: 0.2rem 0.5rem !important; }
-.tool-status { margin-bottom: 0.75rem !important; font-size: 0.8rem !important; }
-.app-rating { margin-bottom: 0.75rem !important; }
-.stars { font-size: 0.8rem !important; }
-.rating-text { font-size: 0.75rem !important; }
-.tool-btn { padding: 0.5rem 1rem !important; font-size: 0.8rem !important; }
-.countdown-timer { padding: 0.4rem 0.8rem !important; font-size: 0.8rem !important; margin-bottom: 0.75rem !important; }
-.recent-campaigns-section { margin-top: 2rem !important; }
-.recent-campaigns-section h2 { margin-bottom: 1rem !important; font-size: 1.2rem !important; }
-.campaigns-table th, .campaigns-table td { padding: 0.75rem !important; font-size: 0.8rem !important; }
-.campaign-info strong { font-size: 0.85rem !important; }
-.campaign-date { font-size: 0.75rem !important; }
-.campaign-type, .campaign-status { padding: 0.2rem 0.5rem !important; font-size: 0.75rem !important; }
-.action-btn { padding: 0.3rem !important; margin-right: 0.2rem !important; }
-.tn-btn { padding: 0.5rem 1rem !important; font-size: 0.85rem !important; }
 </style>
 
-</body>
-</html>
+<?php include 'admin-master-footer.php'; ?>

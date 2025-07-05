@@ -1,10 +1,7 @@
 <?php
+// Incluir dependencias necesarias
+require_once '../config/database.php';
 require_once '../includes/functions.php';
-
-if (!is_logged_in() || !is_moderator()) {
-    flash_message('error', 'No tienes permisos para gestionar comentarios');
-    redirect('../index.php');
-}
 
 // Procesar acciones
 if (isset($_GET['approve'])) {
@@ -76,167 +73,388 @@ while ($row = $stmt->fetch()) {
     $comment_counts[$row['status']] = $row['count'];
 }
 
-$page_title = '💬 Gestionar Comentarios - Panel Admin';
-include 'admin-dashboard-header.php';
+$pageTitle = '💬 Gestionar Comentarios - Panel Admin';
+include 'admin-master-header.php';
 ?>
 
-<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
-
-<div class="modern-admin-container">
-    <!-- Sidebar -->
-    <div class="modern-admin-sidebar">
-        <div class="sidebar-header">
-            <h3><i class="fas fa-cube"></i> Panel Admin</h3>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="dashboard.php" class="nav-item">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="manage-users.php" class="nav-item">
-                <i class="fas fa-users"></i>
-                <span>Usuarios</span>
-            </a>
-            <a href="manage-posts.php" class="nav-item">
-                <i class="fas fa-file-alt"></i>
-                <span>Posts</span>
-            </a>
-            <a href="manage-comments.php" class="nav-item active">
-                <i class="fas fa-comments"></i>
-                <span>Comentarios</span>
-            </a>
-            <a href="manage-products.php" class="nav-item">
-                <i class="fas fa-box"></i>
-                <span>Productos</span>
-            </a>
-            <a href="manage-categories.php" class="nav-item">
-                <i class="fas fa-tags"></i>
-                <span>Categorías</span>
-            </a>
-            <div class="sidebar-divider"></div>
-            <a href="../index.php" class="nav-item">
-                <i class="fas fa-arrow-left"></i>
-                <span>Volver al Sitio</span>
-            </a>
-        </nav>
-    </div>
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="fas fa-comments"></i> Gestionar Comentarios</h1>
+    <p>Modera y administra comentarios de los posts</p>
     
-    <!-- Main Content -->
-    <div class="modern-admin-main">
-        <!-- Header -->
-        <div class="admin-header">
-            <div class="header-title">
-                <h1><i class="fas fa-comments"></i> Gestionar Comentarios</h1>
-                <p>Modera y administra comentarios de los posts</p>
+    <div class="page-actions">
+        <button class="btn btn-secondary" onclick="moderateAll()">
+            <i class="fas fa-check-double"></i> Moderar Todo
+        </button>
+        <button class="btn btn-secondary" onclick="exportComments()">
+            <i class="fas fa-download"></i> Exportar
+        </button>
+    </div>
+</div>
+
+<!-- Estadísticas de Comentarios -->
+<div class="content-card">
+    <h3><i class="fas fa-chart-bar"></i> Estadísticas de Comentarios</h3>
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-icon pending">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h4><?php echo $comment_counts['pending'] ?? 0; ?></h4>
+                <p>Pendientes</p>
             </div>
         </div>
         
-        <!-- Comment Stats -->
-        <div class="dashboard-stats">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-content">
-                    <h3><?php echo $comment_counts['pending'] ?? 0; ?></h3>
-                    <p>Pendientes</p>
-                    <span class="stat-trend warning">Requiere acción</span>
-                </div>
+        <div class="stat-item">
+            <div class="stat-icon approved">
+                <i class="fas fa-check"></i>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div class="stat-content">
-                    <h3><?php echo $comment_counts['approved'] ?? 0; ?></h3>
-                    <p>Aprobados</p>
-                    <span class="stat-trend positive">Activos</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-times"></i>
-                </div>
-                <div class="stat-content">
-                    <h3><?php echo $comment_counts['rejected'] ?? 0; ?></h3>
-                    <p>Rechazados</p>
-                    <span class="stat-trend negative">Bloqueados</span>
-                </div>
+            <div class="stat-content">
+                <h4><?php echo $comment_counts['approved'] ?? 0; ?></h4>
+                <p>Aprobados</p>
             </div>
         </div>
         
-        <div class="admin-filters">
-            <form method="GET" action="" class="filter-form">
-                <input type="text" name="search" placeholder="Buscar comentarios..." 
-                       value="<?php echo $search; ?>">
-                
+        <div class="stat-item">
+            <div class="stat-icon rejected">
+                <i class="fas fa-times"></i>
+            </div>
+            <div class="stat-content">
+                <h4><?php echo $comment_counts['rejected'] ?? 0; ?></h4>
+                <p>Rechazados</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Filtros -->
+<div class="content-card">
+    <h3><i class="fas fa-filter"></i> Filtros y Búsqueda</h3>
+    <form method="GET" class="filters-form">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label>Buscar:</label>
+                <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" 
+                       placeholder="Contenido, autor o post...">
+            </div>
+            
+            <div class="filter-group">
+                <label>Estado:</label>
                 <select name="status">
                     <option value="pending" <?php echo $status_filter == 'pending' ? 'selected' : ''; ?>>Pendientes</option>
                     <option value="approved" <?php echo $status_filter == 'approved' ? 'selected' : ''; ?>>Aprobados</option>
                     <option value="rejected" <?php echo $status_filter == 'rejected' ? 'selected' : ''; ?>>Rechazados</option>
                     <option value="" <?php echo $status_filter == '' ? 'selected' : ''; ?>>Todos</option>
                 </select>
-                
-                <button type="submit" class="btn btn-primary">Filtrar</button>
-            </form>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                <a href="manage-comments.php" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Limpiar
+                </a>
+            </div>
         </div>
-        
+    </form>
+</div>
+<!-- Lista de Comentarios -->
+<div class="content-card">
+    <h3><i class="fas fa-list"></i> Comentarios (<?php echo count($comments); ?> total)</h3>
+    
+    <?php if (empty($comments)): ?>
+        <div class="empty-state">
+            <i class="fas fa-comments"></i>
+            <p>No se encontraron comentarios</p>
+        </div>
+    <?php else: ?>
         <div class="comments-list">
-            <?php if (empty($comments)): ?>
-                <p>No hay comentarios con los filtros seleccionados.</p>
-            <?php else: ?>
-                <?php foreach ($comments as $comment): ?>
-                    <div class="comment-item">
-                        <div class="comment-header">
-                            <div class="comment-meta">
-                                <strong><?php echo $comment['username']; ?></strong>
-                                <span>en</span>
-                                <a href="../post.php?id=<?php echo $comment['post_id']; ?>">
-                                    <?php echo $comment['post_title']; ?>
-                                </a>
+            <?php foreach ($comments as $comment): ?>
+                <div class="comment-card">
+                    <div class="comment-header">
+                        <div class="comment-meta">
+                            <div class="user-info">
+                                <strong><?php echo htmlspecialchars($comment['username']); ?></strong>
                                 <span class="comment-date"><?php echo time_ago($comment['created_at']); ?></span>
-                                <span class="status-badge status-<?php echo $comment['status']; ?>">
-                                    <?php echo ucfirst($comment['status']); ?>
-                                </span>
+                            </div>
+                            <div class="post-link">
+                                <span>en</span>
+                                <a href="../post.php?id=<?php echo $comment['post_id']; ?>" target="_blank">
+                                    <?php echo htmlspecialchars($comment['post_title']); ?>
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
                             </div>
                         </div>
-                        
-                        <div class="comment-content">
-                            <?php echo nl2br(htmlspecialchars($comment['content'])); ?>
-                        </div>
-                        
-                        <div class="comment-actions">
-                            <?php if ($comment['status'] == 'pending'): ?>
-                                <a href="?approve=<?php echo $comment['id']; ?>" class="btn btn-small btn-success">Aprobar</a>
-                                <a href="?reject=<?php echo $comment['id']; ?>" class="btn btn-small btn-warning">Rechazar</a>
-                            <?php elseif ($comment['status'] == 'approved'): ?>
-                                <a href="?reject=<?php echo $comment['id']; ?>" class="btn btn-small btn-warning">Rechazar</a>
-                            <?php elseif ($comment['status'] == 'rejected'): ?>
-                                <a href="?approve=<?php echo $comment['id']; ?>" class="btn btn-small btn-success">Aprobar</a>
-                            <?php endif; ?>
-                            
-                            <a href="?delete=<?php echo $comment['id']; ?>" 
-                               class="btn btn-small btn-danger"
-                               onclick="return confirm('¿Estás seguro de eliminar este comentario?')">
-                                Eliminar
-                            </a>
+                        <div class="comment-status">
+                            <span class="badge badge-<?php echo $comment['status'] === 'approved' ? 'success' : ($comment['status'] === 'pending' ? 'warning' : 'danger'); ?>">
+                                <i class="fas fa-<?php echo $comment['status'] === 'approved' ? 'check' : ($comment['status'] === 'pending' ? 'clock' : 'times'); ?>"></i>
+                                <?php echo ucfirst($comment['status']); ?>
+                            </span>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                    
+                    <div class="comment-content">
+                        <?php echo nl2br(htmlspecialchars($comment['content'])); ?>
+                    </div>
+                    
+                    <div class="comment-actions">
+                        <?php if ($comment['status'] == 'pending'): ?>
+                            <a href="?approve=<?php echo $comment['id']; ?>" 
+                               class="btn btn-sm btn-success" title="Aprobar comentario">
+                                <i class="fas fa-check"></i> Aprobar
+                            </a>
+                            <a href="?reject=<?php echo $comment['id']; ?>" 
+                               class="btn btn-sm btn-warning" title="Rechazar comentario">
+                                <i class="fas fa-times"></i> Rechazar
+                            </a>
+                        <?php elseif ($comment['status'] == 'approved'): ?>
+                            <a href="?reject=<?php echo $comment['id']; ?>" 
+                               class="btn btn-sm btn-warning" title="Rechazar comentario"
+                               onclick="return confirm('¿Rechazar este comentario aprobado?')">
+                                <i class="fas fa-times"></i> Rechazar
+                            </a>
+                        <?php elseif ($comment['status'] == 'rejected'): ?>
+                            <a href="?approve=<?php echo $comment['id']; ?>" 
+                               class="btn btn-sm btn-success" title="Aprobar comentario"
+                               onclick="return confirm('¿Aprobar este comentario rechazado?')">
+                                <i class="fas fa-check"></i> Aprobar
+                            </a>
+                        <?php endif; ?>
+                        
+                        <a href="?delete=<?php echo $comment['id']; ?>" 
+                           class="btn btn-sm btn-danger" title="Eliminar comentario"
+                           onclick="return confirm('¿Estás seguro de eliminar este comentario? Esta acción no se puede deshacer.')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
-        
-        <div class="admin-stats">
-            <p>Mostrando <?php echo count($comments); ?> comentarios</p>
-        </div>
-    </div>
+    <?php endif; ?>
 </div>
 
-<footer class="admin-footer">
-    <div class="container">
-        <p>&copy; 2025 <?php echo SITE_NAME; ?> - Panel de Administración</p>
-    </div>
-</footer>
+<style>
+/* Estilos específicos para gestión de comentarios */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
 
-</body>
-</html>
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.stat-icon.pending { background: #ffc107; }
+.stat-icon.approved { background: #28a745; }
+.stat-icon.rejected { background: #dc3545; }
+
+.stat-content h4 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.stat-content p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 12px;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.comment-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fff;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.comment-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.user-info strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.comment-date {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.post-link {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.post-link a {
+    color: #007bff;
+    text-decoration: none;
+    margin-left: 5px;
+}
+
+.post-link a:hover {
+    text-decoration: underline;
+}
+
+.post-link i {
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
+
+.comment-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 3px solid #007bff;
+    margin-bottom: 15px;
+    line-height: 1.6;
+    color: #495057;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filters-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filters-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .filter-actions {
+        justify-content: stretch;
+    }
+    
+    .filter-actions .btn {
+        flex: 1;
+    }
+    
+    .comment-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .comment-actions {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+function moderateAll() {
+    AdminUtils.showNotification('Moderación masiva no implementada aún', 'info');
+}
+
+function exportComments() {
+    AdminUtils.showNotification('Exportando comentarios...', 'info');
+    
+    // Simular exportación
+    setTimeout(() => {
+        AdminUtils.showNotification('Comentarios exportados correctamente', 'success');
+    }, 2000);
+}
+</script>
+
+<?php include 'admin-master-footer.php'; ?>

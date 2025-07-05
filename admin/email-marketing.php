@@ -1,14 +1,6 @@
 <?php
-require_once '../includes/functions.php';
-require_once '../config/database.php';
-
-if (!is_logged_in() || !is_admin()) {
-    flash_message('error', 'No tienes permisos para acceder al panel de administración');
-    redirect('../index.php');
-}
-
-$page_title = '📧 Email Marketing - Panel Admin';
-include 'admin-dashboard-header.php';
+$pageTitle = '📧 Email Marketing';
+include 'admin-master-header.php';
 
 // Simulación de datos de email marketing
 $emailStats = [
@@ -33,212 +25,225 @@ $templates = [
 ];
 ?>
 
-<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
+<div class="page-header">
+    <div class="page-title">
+        <h1><i class="fas fa-envelope"></i> Email Marketing</h1>
+        <p class="page-subtitle">Gestiona tus campañas de email marketing</p>
+    </div>
+    <div class="page-actions">
+        <button class="btn btn-outline-primary" onclick="configureMailchimp()">
+            <i class="fab fa-mailchimp"></i>
+            Configurar Mailchimp
+        </button>
+        <button class="btn btn-primary" onclick="createCampaign()">
+            <i class="fas fa-plus"></i>
+            Nueva Campaña
+        </button>
+    </div>
+</div>
 
-<div class="modern-admin-container">
-    <?php include 'includes/admin-sidebar.php'; ?>
-
-    <div class="modern-admin-main">
-        <div class="tiendanube-header">
-            <div class="header-left">
-                <h1><i class="fas fa-envelope"></i> Email Marketing</h1>
-                <p class="header-subtitle">Gestiona tus campañas de email marketing</p>
+<!-- Email Stats -->
+<div class="content-card">
+    <div class="card-header">
+        <h3><i class="fas fa-chart-bar"></i> Estadísticas de Email</h3>
+    </div>
+    <div class="card-body">
+        <div class="email-stats-grid">
+            <div class="email-stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3><?php echo number_format($emailStats['total_subscribers']); ?></h3>
+                    <p>Suscriptores</p>
+                </div>
             </div>
-            <div class="header-right">
-                <button class="tn-btn tn-btn-secondary" onclick="configureMailchimp()">
-                    <i class="fab fa-mailchimp"></i>
-                    Configurar Mailchimp
-                </button>
-                <button class="tn-btn tn-btn-primary" onclick="createCampaign()">
-                    <i class="fas fa-plus"></i>
-                    Nueva Campaña
-                </button>
+            <div class="email-stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <div class="stat-content">
+                    <h3><?php echo $emailStats['active_campaigns']; ?></h3>
+                    <p>Campañas Activas</p>
+                </div>
+            </div>
+            <div class="email-stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-envelope-open"></i>
+                </div>
+                <div class="stat-content">
+                    <h3><?php echo $emailStats['open_rate']; ?>%</h3>
+                    <p>Tasa de Apertura</p>
+                </div>
+            </div>
+            <div class="email-stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-mouse-pointer"></i>
+                </div>
+                <div class="stat-content">
+                    <h3><?php echo $emailStats['click_rate']; ?>%</h3>
+                    <p>Tasa de Clics</p>
+                </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Email Stats -->
-        <section class="email-stats-section">
-            <div class="email-stats-grid">
-                <div class="email-stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3><?php echo number_format($emailStats['total_subscribers']); ?></h3>
-                        <p>Suscriptores</p>
-                    </div>
+<!-- Integration Status -->
+<div class="content-card">
+    <div class="card-header">
+        <h3><i class="fas fa-plug"></i> Integraciones</h3>
+    </div>
+    <div class="card-body">
+        <div class="integration-grid">
+            <div class="integration-card connected">
+                <div class="integration-header">
+                    <i class="fab fa-mailchimp"></i>
+                    <h3>Mailchimp</h3>
+                    <span class="status-badge connected">Conectado</span>
                 </div>
-                <div class="email-stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-paper-plane"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3><?php echo $emailStats['active_campaigns']; ?></h3>
-                        <p>Campañas Activas</p>
-                    </div>
+                <p>Integración activa con Mailchimp para campañas avanzadas</p>
+                <div class="integration-stats">
+                    <span>API Key: ****-us1</span>
+                    <span>Última sincronización: Hace 2 horas</span>
                 </div>
-                <div class="email-stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-envelope-open"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3><?php echo $emailStats['open_rate']; ?>%</h3>
-                        <p>Tasa de Apertura</p>
-                    </div>
+                <button class="integration-btn" onclick="configureMailchimp()">Configurar</button>
+            </div>
+
+            <div class="integration-card">
+                <div class="integration-header">
+                    <i class="fas fa-rocket"></i>
+                    <h3>Marketing Nube</h3>
+                    <span class="status-badge active">Activo</span>
                 </div>
-                <div class="email-stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-mouse-pointer"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3><?php echo $emailStats['click_rate']; ?>%</h3>
-                        <p>Tasa de Clics</p>
-                    </div>
+                <p>Herramienta nativa de marketing y automatización</p>
+                <div class="integration-stats">
+                    <span>5 automatizaciones activas</span>
+                    <span>1,234 contactos sincronizados</span>
+                </div>
+                <button class="integration-btn" onclick="openMarketingNube()">Abrir Marketing Nube</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Campaign Management -->
+<div class="content-card">
+    <div class="card-header">
+        <h3><i class="fas fa-bullhorn"></i> Gestión de Campañas</h3>
+    </div>
+    <div class="card-body">
+        <div class="campaigns-table-container">
+            <table class="campaigns-table">
+                <thead>
+                    <tr>
+                        <th>Campaña</th>
+                        <th>Estado</th>
+                        <th>Enviados</th>
+                        <th>Aperturas</th>
+                        <th>Clics</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($campaigns as $campaign): ?>
+                    <tr>
+                        <td><strong><?php echo $campaign['name']; ?></strong></td>
+                        <td>
+                            <span class="campaign-status <?php echo strtolower($campaign['status']); ?>">
+                                <?php echo $campaign['status']; ?>
+                            </span>
+                        </td>
+                        <td><?php echo number_format($campaign['sent']); ?></td>
+                        <td>
+                            <?php if ($campaign['sent'] > 0): ?>
+                                <?php echo number_format($campaign['opens']); ?> (<?php echo round(($campaign['opens']/$campaign['sent'])*100, 1); ?>%)
+                            <?php else: ?>-<?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if ($campaign['sent'] > 0): ?>
+                                <?php echo number_format($campaign['clicks']); ?> (<?php echo round(($campaign['clicks']/$campaign['sent'])*100, 1); ?>%)
+                            <?php else: ?>-<?php endif; ?>
+                        </td>
+                        <td><?php echo date('d/m/Y', strtotime($campaign['date'])); ?></td>
+                        <td>
+                            <button class="action-btn edit" onclick="editCampaign(<?php echo $campaign['id']; ?>)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn duplicate" onclick="duplicateCampaign(<?php echo $campaign['id']; ?>)">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="action-btn stats" onclick="viewCampaignStats(<?php echo $campaign['id']; ?>)">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Email Templates -->
+<div class="content-card">
+    <div class="card-header">
+        <h3><i class="fas fa-file-alt"></i> Plantillas de Email</h3>
+    </div>
+    <div class="card-body">
+        <div class="templates-grid">
+            <?php foreach ($templates as $template): ?>
+            <div class="template-card">
+                <div class="template-preview">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="template-info">
+                    <h4><?php echo $template['name']; ?></h4>
+                    <p>Tipo: <?php echo $template['type']; ?></p>
+                    <span class="usage-count">Usado <?php echo $template['usage']; ?> veces</span>
+                </div>
+                <div class="template-actions">
+                    <button class="template-btn use" onclick="useTemplate(<?php echo $template['id']; ?>)">Usar</button>
+                    <button class="template-btn edit" onclick="editTemplate(<?php echo $template['id']; ?>)">Editar</button>
                 </div>
             </div>
-        </section>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
 
-        <!-- Integration Status -->
-        <section class="integration-section">
-            <h2><i class="fas fa-plug"></i> Integraciones</h2>
-            <div class="integration-grid">
-                <div class="integration-card connected">
-                    <div class="integration-header">
-                        <i class="fab fa-mailchimp"></i>
-                        <h3>Mailchimp</h3>
-                        <span class="status-badge connected">Conectado</span>
-                    </div>
-                    <p>Integración activa con Mailchimp para campañas avanzadas</p>
-                    <div class="integration-stats">
-                        <span>API Key: ****-us1</span>
-                        <span>Última sincronización: Hace 2 horas</span>
-                    </div>
-                    <button class="integration-btn" onclick="configureMailchimp()">Configurar</button>
-                </div>
-
-                <div class="integration-card">
-                    <div class="integration-header">
-                        <i class="fas fa-rocket"></i>
-                        <h3>Marketing Nube</h3>
-                        <span class="status-badge active">Activo</span>
-                    </div>
-                    <p>Herramienta nativa de marketing y automatización</p>
-                    <div class="integration-stats">
-                        <span>5 automatizaciones activas</span>
-                        <span>1,234 contactos sincronizados</span>
-                    </div>
-                    <button class="integration-btn" onclick="openMarketingNube()">Abrir Marketing Nube</button>
-                </div>
+<!-- Contact Lists -->
+<div class="content-card">
+    <div class="card-header">
+        <h3><i class="fas fa-list"></i> Listas de Contactos</h3>
+    </div>
+    <div class="card-body">
+        <div class="lists-grid">
+            <div class="list-card">
+                <h4>Lista Principal</h4>
+                <p>1,234 contactos</p>
+                <span class="list-type">Principal</span>
+                <button class="list-btn" onclick="manageList(1)">Gestionar</button>
             </div>
-        </section>
-
-        <!-- Campaign Management -->
-        <section class="campaigns-section">
-            <h2><i class="fas fa-bullhorn"></i> Campañas</h2>
-            <div class="campaigns-table-container">
-                <table class="campaigns-table">
-                    <thead>
-                        <tr>
-                            <th>Campaña</th>
-                            <th>Estado</th>
-                            <th>Enviados</th>
-                            <th>Aperturas</th>
-                            <th>Clics</th>
-                            <th>Fecha</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($campaigns as $campaign): ?>
-                        <tr>
-                            <td><strong><?php echo $campaign['name']; ?></strong></td>
-                            <td>
-                                <span class="campaign-status <?php echo strtolower($campaign['status']); ?>">
-                                    <?php echo $campaign['status']; ?>
-                                </span>
-                            </td>
-                            <td><?php echo number_format($campaign['sent']); ?></td>
-                            <td>
-                                <?php if ($campaign['sent'] > 0): ?>
-                                    <?php echo number_format($campaign['opens']); ?> (<?php echo round(($campaign['opens']/$campaign['sent'])*100, 1); ?>%)
-                                <?php else: ?>-<?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($campaign['sent'] > 0): ?>
-                                    <?php echo number_format($campaign['clicks']); ?> (<?php echo round(($campaign['clicks']/$campaign['sent'])*100, 1); ?>%)
-                                <?php else: ?>-<?php endif; ?>
-                            </td>
-                            <td><?php echo date('d/m/Y', strtotime($campaign['date'])); ?></td>
-                            <td>
-                                <button class="action-btn edit" onclick="editCampaign(<?php echo $campaign['id']; ?>)">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn duplicate" onclick="duplicateCampaign(<?php echo $campaign['id']; ?>)">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                                <button class="action-btn stats" onclick="viewCampaignStats(<?php echo $campaign['id']; ?>)">
-                                    <i class="fas fa-chart-bar"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+            <div class="list-card">
+                <h4>Clientes VIP</h4>
+                <p>89 contactos</p>
+                <span class="list-type">Segmentada</span>
+                <button class="list-btn" onclick="manageList(2)">Gestionar</button>
             </div>
-        </section>
-
-        <!-- Email Templates -->
-        <section class="templates-section">
-            <h2><i class="fas fa-file-alt"></i> Plantillas de Email</h2>
-            <div class="templates-grid">
-                <?php foreach ($templates as $template): ?>
-                <div class="template-card">
-                    <div class="template-preview">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="template-info">
-                        <h4><?php echo $template['name']; ?></h4>
-                        <p>Tipo: <?php echo $template['type']; ?></p>
-                        <span class="usage-count">Usado <?php echo $template['usage']; ?> veces</span>
-                    </div>
-                    <div class="template-actions">
-                        <button class="template-btn use" onclick="useTemplate(<?php echo $template['id']; ?>)">Usar</button>
-                        <button class="template-btn edit" onclick="editTemplate(<?php echo $template['id']; ?>)">Editar</button>
-                    </div>
-                </div>
-                <?php endforeach; ?>
+            <div class="list-card">
+                <h4>Carritos Abandonados</h4>
+                <p>156 contactos</p>
+                <span class="list-type">Automática</span>
+                <button class="list-btn" onclick="manageList(3)">Gestionar</button>
             </div>
-        </section>
-
-        <!-- Contact Lists -->
-        <section class="lists-section">
-            <h2><i class="fas fa-list"></i> Listas de Contactos</h2>
-            <div class="lists-grid">
-                <div class="list-card">
-                    <h4>Lista Principal</h4>
-                    <p>1,234 contactos</p>
-                    <span class="list-type">Principal</span>
-                    <button class="list-btn" onclick="manageList(1)">Gestionar</button>
-                </div>
-                <div class="list-card">
-                    <h4>Clientes VIP</h4>
-                    <p>89 contactos</p>
-                    <span class="list-type">Segmentada</span>
-                    <button class="list-btn" onclick="manageList(2)">Gestionar</button>
-                </div>
-                <div class="list-card">
-                    <h4>Carritos Abandonados</h4>
-                    <p>156 contactos</p>
-                    <span class="list-type">Automática</span>
-                    <button class="list-btn" onclick="manageList(3)">Gestionar</button>
-                </div>
-                <div class="list-card create-new">
-                    <i class="fas fa-plus"></i>
-                    <h4>Crear Nueva Lista</h4>
-                    <button class="list-btn primary" onclick="createList()">Crear</button>
-                </div>
+            <div class="list-card create-new">
+                <i class="fas fa-plus"></i>
+                <h4>Crear Nueva Lista</h4>
+                <button class="list-btn primary" onclick="createList()">Crear</button>
             </div>
-        </section>
+        </div>
     </div>
 </div>
 
@@ -292,15 +297,11 @@ function createList() {
 
 <style>
 /* Email Marketing Styles */
-.email-stats-section {
-    margin-bottom: 2rem;
-}
-
 .email-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .email-stat-card {
@@ -311,6 +312,7 @@ function createList() {
     display: flex;
     align-items: center;
     gap: 1rem;
+    border: 1px solid #e9ecef;
 }
 
 .stat-icon {
@@ -333,18 +335,6 @@ function createList() {
     font-size: 0.9rem;
 }
 
-.integration-section, .campaigns-section, .templates-section, .lists-section {
-    margin-bottom: 3rem;
-}
-
-.integration-section h2, .campaigns-section h2, .templates-section h2, .lists-section h2 {
-    margin-bottom: 1.5rem;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
 .integration-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -357,6 +347,7 @@ function createList() {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     border-left: 4px solid #ddd;
+    border: 1px solid #e9ecef;
 }
 
 .integration-card.connected {
@@ -422,6 +413,7 @@ function createList() {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
 }
 
 .campaigns-table {
@@ -476,6 +468,7 @@ function createList() {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     text-align: center;
+    border: 1px solid #e9ecef;
 }
 
 .template-preview {
@@ -539,6 +532,7 @@ function createList() {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     text-align: center;
+    border: 1px solid #e9ecef;
 }
 
 .list-card.create-new {
@@ -602,25 +596,6 @@ function createList() {
 .action-btn:hover {
     background: #f8f9fa;
 }
-
-/* Optimización compacta */
-.modern-admin-main { padding: 1.5rem !important; }
-.tiendanube-header { padding: 1rem 1.5rem !important; }
-.header-subtitle { font-size: 0.85rem !important; }
-.email-stats-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important; gap: 0.75rem !important; }
-.email-stat-card { padding: 1rem !important; gap: 0.75rem !important; }
-.stat-icon { padding: 0.75rem !important; font-size: 1.2rem !important; }
-.stat-content h3 { font-size: 1.5rem !important; }
-.integration-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important; gap: 1rem !important; }
-.integration-card { padding: 1rem !important; }
-.campaigns-table th, .campaigns-table td { padding: 0.75rem !important; font-size: 0.85rem !important; }
-.templates-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important; gap: 0.75rem !important; }
-.template-card { padding: 0.75rem !important; }
-.template-preview { padding: 1.5rem !important; }
-.lists-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important; gap: 0.75rem !important; }
-.list-card { padding: 1rem !important; }
-.tn-btn { padding: 0.5rem 1rem !important; font-size: 0.85rem !important; }
 </style>
 
-</body>
-</html>
+<?php include 'admin-master-footer.php'; ?>

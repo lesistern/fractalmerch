@@ -6,16 +6,39 @@
 }
 
 :root {
-    /* Colores modo claro - Tonos cálidos */
-    --bg-primary: #fbeed8;
-    --bg-secondary: #fef7e8;
-    --bg-tertiary: #f7f1e1;
-    --bg-quaternary: #f2e8d0;
-    --text-primary: #333333;
-    --text-secondary: #5d5447;
-    --border-color: #e8d5b7;
-    --border-light: #f0e5d2;
-    --shadow: rgba(0,0,0,0.1);
+    /* ===== MODO CLARO E-COMMERCE PROFESIONAL ===== */
+    /* 1. Colores principales de fondo y superficies */
+    --bg-primary: #FAF9F6;           /* Blanco cálido */
+    --bg-secondary: #F5F0E8;         /* Beige muy claro */
+    --bg-tertiary: #FFF8F0;          /* Crema */
+    --bg-quaternary: #F5F0E8;        /* Beige para elementos */
+    --border-color: #e8d5b7;         /* Bordes dorados mantenidos */
+    --border-light: #f0e5d2;         /* Bordes suaves mantenidos */
+    --shadow: rgba(51, 51, 51, 0.1); /* Sombras suaves para separación */
+    
+    /* 3. Colores para textos */
+    --text-primary: #333333;         /* Gris oscuro neutro, buena legibilidad */
+    --text-secondary: #666666;       /* Gris medio */
+    --text-tertiary: #a67c52;        /* Mantenido para compatibilidad */
+    
+    /* 2. Colores secundarios y de acento */
+    --fractal-orange: #D8A47F;       /* Terracota suave */
+    --fractal-teal: #DDB892;         /* Arena */
+    --fractal-brown: #A47149;        /* Marrón claro */
+    --fractal-gradient-light: linear-gradient(135deg, #D8A47F 0%, #DDB892 50%, #A47149 100%);
+    
+    /* Variables adicionales de la guía */
+    --terracota-suave: #D8A47F;      /* Terracota suave */
+    --arena: #DDB892;                /* Arena */
+    --marron-claro: #A47149;         /* Marrón claro */
+    --verde-oliva: #C5BDAF;          /* Verde oliva claro (detalles naturales) */
+    --btn-primary-bg: #A47149;       /* Fondo botón principal */
+    --btn-primary-text: #FFFFFF;     /* Texto botón principal */
+    --btn-secondary-bg: #D8A47F;     /* Fondo botón secundario */
+    --btn-secondary-text: #333333;   /* Texto botón secundario */
+    --shadow-soft: rgba(93, 58, 26, 0.15);
+    --shadow-medium: rgba(93, 58, 26, 0.25);
+    --shadow-strong: rgba(93, 58, 26, 0.35);
     
     /* Admin Panel Variables - Light Mode */
     --admin-bg-primary: #fbeed8;
@@ -53,13 +76,50 @@
 }
 
 html.dark-mode {
-    /* Colores modo oscuro */
-    --bg-primary: #1a1a1a;
-    --bg-secondary: #2d2d2d;
-    --text-primary: #ffffff;
-    --text-secondary: #cccccc;
-    --border-color: #444444;
-    --shadow: rgba(255,255,255,0.1);
+    /* ===== MODO OSCURO E-COMMERCE PROFESIONAL - CMYK COMPATIBLE ===== */
+    /* 1. Colores base (fondos principales) - CMYK compatible */
+    --bg-primary: #1C1B1A;           /* Gris carbón cálido (CMYK: 0,0,0,90) */
+    --bg-secondary: #2A2A28;         /* Gris pizarra oscuro (CMYK: 0,0,0,80) */
+    --bg-tertiary: #3A3A37;          /* Gris medio cálido (CMYK: 0,0,0,75) */
+    --bg-quaternary: #4E433F;        /* Marrón oscuro suave (CMYK: 20,40,50,60) */
+    --border-color: #475569;         /* Gris azulado mantenido */
+    --border-light: #64748b;         /* Gris más claro mantenido */
+    --shadow: rgba(0, 0, 0, 0.4);    /* Sombras pronunciadas mantenidas */
+    
+    /* 4. Colores de texto - Máximo contraste */
+    --text-primary: #EAE6E1;         /* Texto principal (CMYK: 0,0,0,5) */
+    --text-secondary: #B8B5B0;       /* Texto secundario (CMYK: 0,0,0,30) */
+    --text-tertiary: #c7d2fe;        /* Mantenido para compatibilidad */
+    --text-on-color: #FFFFFF;        /* Texto sobre fondos de acento */
+    --text-on-color-alt: #EAE6E1;    /* Texto sobre fondos de acento (alt) */
+    
+    /* 2. Colores secundarios y de acento - Equivalencias */
+    --terracota-suave: #A97155;      /* Terracota profunda (modo oscuro) */
+    --arena: #DDB892;                /* Arena cálida */
+    --marron-claro: #C28860;         /* Ocre quemado (modo oscuro) */
+    --verde-oliva: #C5BDAF;          /* Verde oliva mantenido */
+    
+    /* 3. Colores de acento cálidos */
+    --fractal-orange: #A97155;       /* Terracota profunda (actualizado) */
+    --fractal-teal: #DDB892;         /* Arena cálida (actualizado) */
+    --fractal-brown: #C28860;        /* Ocre quemado (actualizado) */
+    --fractal-gradient: linear-gradient(135deg, #A97155 0%, #C28860 50%, #DDB892 100%);
+    
+    /* Variables adicionales de la guía CMYK */
+    --terracota-profunda: #A97155;   /* Terracota profunda (CMYK: 20,60,70,20) */
+    --ocre-quemado: #C28860;         /* Ocre quemado (CMYK: 15,50,70,10) */
+    --arena-calida: #DDB892;         /* Arena cálida (CMYK: 10,35,50,0) */
+    --btn-primary-bg: #A97155;       /* Fondo botón primario (CMYK: 20,60,70,20) */
+    --btn-primary-text: #FFFFFF;     /* Texto botón primario */
+    --btn-secondary-bg: #3A3A37;     /* Fondo botón secundario (CMYK: 0,0,0,75) */
+    --btn-secondary-text: #EAE6E1;   /* Texto botón secundario */
+    
+    /* Gradientes modo oscuro */
+    --main-gradient: linear-gradient(135deg, #A97155 0%, #C28860 50%, #DDB892 100%);
+    --accent-gradient: linear-gradient(135deg, #4E433F 0%, #A97155 50%, #C28860 100%);
+    --shadow-soft: rgba(0, 0, 0, 0.3);
+    --shadow-medium: rgba(0, 0, 0, 0.4);
+    --shadow-strong: rgba(0, 0, 0, 0.5);
     
     /* Admin Panel Variables - Dark Mode */
     --admin-bg-primary: #0d1117;
@@ -149,77 +209,55 @@ body.admin-page {
 }
 
 .nav-logo {
-    justify-self: center;
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
-    z-index: 5;
-    overflow: hidden;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
 }
 
 .nav-logo a {
-    display: inline-block;
-    width: 1125px;
-    height: 300px;
-    background-image: url('../images/Fractal Header Light.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    text-indent: -9999px;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    position: relative;
-    -webkit-mask-image: url('../images/Fractal Header Light.png');
-    -webkit-mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-image: url('../images/Fractal Header Light.png');
-    mask-size: contain;
-    mask-repeat: no-repeat;
-    mask-position: center;
+    display: block;
+    text-decoration: none;
+    transition: all 0.3s ease;
 }
 
-/* Máscara para modo oscuro */
-/* Imagen y máscara para modo oscuro */
-html.dark-mode .nav-logo a {
-    background-image: url('../images/Fractal Header Dark.png');
-    -webkit-mask-image: url('../images/Fractal Header Dark.png');
-    mask-image: url('../images/Fractal Header Dark.png');
+.nav-logo img {
+    height: 240px;
+    width: auto;
+    transition: all 0.3s ease;
 }
 
-.nav-logo a::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
-    transition: left 1s ease;
-    z-index: 2;
-    pointer-events: none;
-    mix-blend-mode: screen;
-}
-
-.nav-logo a:hover::before {
-    left: 100%;
-}
-
-/* Brillo gris oscuro para modo oscuro */
-html.dark-mode .nav-logo a::before {
-    background: linear-gradient(90deg, transparent, rgba(8,8,8,0.95), transparent);
-    mix-blend-mode: darken;
-}
-
-.nav-logo a:hover {
+.nav-logo a:hover img {
     transform: scale(1.05);
     filter: brightness(1.1) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
 }
 
-
-html.dark-mode .nav-logo a:hover {
+html.dark-mode .nav-logo a:hover img {
     filter: brightness(1.1) drop-shadow(0 2px 8px rgba(255, 255, 255, 0.3));
 }
+
+/* Mostrar logo claro por defecto */
+.logo-light {
+    display: block;
+}
+
+.logo-dark {
+    display: none;
+}
+
+/* En modo oscuro, mostrar logo oscuro */
+html.dark-mode .logo-light {
+    display: none;
+}
+
+html.dark-mode .logo-dark {
+    display: block;
+}
+
+/* Efectos de hover removidos - ahora manejados por img */
+
+/* Estilos de hover ahora aplicados a las imágenes arriba */
 
 /* Botón hamburguesa para móvil */
 .mobile-menu-toggle {
@@ -842,9 +880,8 @@ html.dark-mode .nav-logo a:hover {
         flex: 1;
     }
     
-    .nav-logo a {
-        width: 900px;
-        height: 240px;
+    .nav-logo img {
+        height: 200px;
     }
     
     /* Búsqueda en el centro */
@@ -2801,6 +2838,609 @@ html.dark-mode .nav-logo a:hover {
     opacity: 0.7;
 }
 
+/* === NUEVO HERO SECTION OPTIMIZADO === */
+
+/* Trust Bar Superior */
+.trust-bar-top {
+    background: var(--ecommerce-secondary);
+    color: white;
+    padding: 0.75rem 0;
+    font-size: 0.9rem;
+}
+
+.trust-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.trust-items {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.trust-item i {
+    color: var(--fractal-teal);
+    font-size: 1.1rem;
+}
+
+/* Trust bar en modo oscuro */
+html.dark-mode .trust-bar-top {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    border-bottom: 1px solid var(--border-color);
+}
+
+html.dark-mode .trust-item i {
+    color: var(--fractal-cyan);
+}
+
+/* Hero Section Optimizado */
+.hero-section-optimized {
+    background: 
+        linear-gradient(135deg, rgba(251, 238, 216, 0.95) 0%, rgba(254, 247, 232, 0.95) 100%),
+        url('../images/Fractal Background Light 2.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    padding: 4rem 0;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+/* Efecto overlay para mejor legibilidad en modo claro */
+.hero-section-optimized::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(251, 238, 216, 0.2);
+    z-index: 1;
+}
+
+.hero-container {
+    position: relative;
+    z-index: 2;
+}
+
+/* Modo oscuro con fondo fractal sutil */
+html.dark-mode .hero-section-optimized {
+    background: 
+        linear-gradient(135deg, rgba(26, 29, 58, 0.95) 0%, rgba(35, 40, 72, 0.95) 100%),
+        url('../images/Fractal Background Dark 1.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* Efecto overlay para mejor legibilidad en modo oscuro */
+html.dark-mode .hero-section-optimized::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(26, 29, 58, 0.3);
+    z-index: 1;
+}
+
+
+.hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.hero-content-main {
+    animation: slideInLeft 0.8s ease-out;
+}
+
+.hero-headline {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    background: linear-gradient(45deg, var(--ecommerce-primary), var(--ecommerce-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Headline con gradiente fractal en modo oscuro */
+html.dark-mode .hero-headline {
+    background: var(--fractal-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(233, 30, 99, 0.3);
+}
+
+.hero-subline {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    color: var(--text-secondary);
+    max-width: 90%;
+}
+
+.hero-cta-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.cta-primary {
+    background: var(--ecommerce-primary);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: var(--ecommerce-shadow);
+}
+
+.cta-primary:hover {
+    background: #e68400;
+    transform: translateY(-2px);
+    box-shadow: var(--ecommerce-shadow-hover);
+}
+
+/* CTA primary con efectos fractal en modo oscuro */
+html.dark-mode .cta-primary {
+    background: var(--fractal-magenta);
+    box-shadow: 0 4px 20px rgba(233, 30, 99, 0.3);
+}
+
+html.dark-mode .cta-primary:hover {
+    background: linear-gradient(135deg, var(--fractal-magenta) 0%, var(--fractal-cyan) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.5);
+}
+
+.cta-secondary {
+    background: transparent;
+    color: var(--ecommerce-accent);
+    padding: 1rem 2rem;
+    border: 2px solid var(--ecommerce-accent);
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.cta-secondary:hover {
+    background: var(--ecommerce-accent);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* CTA secondary en modo oscuro */
+html.dark-mode .cta-secondary {
+    color: var(--fractal-cyan);
+    border-color: var(--fractal-cyan);
+}
+
+html.dark-mode .cta-secondary:hover {
+    background: var(--fractal-cyan);
+    color: var(--bg-primary);
+    border-color: var(--fractal-cyan);
+    box-shadow: 0 4px 20px rgba(0, 188, 212, 0.3);
+}
+
+/* CTA Fractal Theme - Modo Claro */
+.cta-primary {
+    background: var(--fractal-orange);
+    border-color: var(--fractal-orange);
+    box-shadow: 0 4px 20px rgba(210, 105, 30, 0.3);
+}
+
+.cta-primary:hover {
+    background: var(--fractal-gradient-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(210, 105, 30, 0.5);
+}
+
+.cta-secondary {
+    color: var(--fractal-teal);
+    border-color: var(--fractal-teal);
+}
+
+.cta-secondary:hover {
+    background: var(--fractal-teal);
+    color: white;
+    border-color: var(--fractal-teal);
+    box-shadow: 0 4px 20px rgba(0, 139, 139, 0.4);
+}
+
+.hero-features {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.feature-item i {
+    color: var(--fractal-orange);
+    font-size: 1.2rem;
+}
+
+/* Feature items en modo oscuro */
+html.dark-mode .feature-item i {
+    color: var(--fractal-yellow);
+}
+
+/* Hero Visual */
+.hero-visual {
+    position: relative;
+    animation: slideInRight 0.8s ease-out;
+}
+
+.product-showcase {
+    position: relative;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.hero-product-image {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: var(--ecommerce-shadow-hover);
+    transition: transform 0.3s ease;
+}
+
+.hero-product-image:hover {
+    transform: scale(1.02);
+}
+
+.floating-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--fractal-gradient-light);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    box-shadow: 0 4px 20px rgba(210, 105, 30, 0.3);
+}
+
+/* Floating badge en modo oscuro */
+html.dark-mode .floating-badge {
+    background: var(--fractal-gradient);
+    color: var(--bg-primary);
+    box-shadow: 0 4px 20px rgba(233, 30, 99, 0.4);
+}
+
+/* Sección de Proceso */
+.process-section {
+    padding: 4rem 0;
+    background: var(--bg-secondary);
+}
+
+/* Sección proceso en modo oscuro */
+html.dark-mode .process-section {
+    background: var(--bg-tertiary);
+}
+
+.process-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.step {
+    text-align: center;
+    padding: 2rem 1rem;
+    position: relative;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.step.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.step-number {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--fractal-gradient-light);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* Step number en modo oscuro */
+html.dark-mode .step-number {
+    background: var(--fractal-gradient);
+    color: var(--bg-primary);
+}
+
+.step-icon {
+    background: var(--bg-primary);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1rem auto 1.5rem;
+    border: 3px solid var(--fractal-orange);
+}
+
+.step-icon i {
+    font-size: 2rem;
+    color: var(--fractal-orange);
+}
+
+/* Step icon en modo oscuro */
+html.dark-mode .step-icon {
+    background: var(--bg-secondary);
+    border-color: var(--fractal-magenta);
+}
+
+html.dark-mode .step-icon i {
+    color: var(--fractal-magenta);
+}
+
+.step h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.step p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Productos Destacados */
+.featured-products {
+    padding: 4rem 0;
+    background: var(--bg-primary);
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin: 3rem 0;
+}
+
+.product-card-mini {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--ecommerce-shadow);
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.product-card-mini.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.product-card-mini:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--ecommerce-shadow-hover);
+}
+
+/* Product card mini en modo oscuro */
+html.dark-mode .product-card-mini {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+html.dark-mode .product-card-mini:hover {
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.2);
+    border-color: var(--fractal-magenta);
+}
+
+.product-image {
+    margin-bottom: 1rem;
+}
+
+.product-image img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.product-card-mini h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.price {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--fractal-brown);
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+/* Price en modo oscuro */
+html.dark-mode .price {
+    color: var(--fractal-yellow);
+    text-shadow: 0 1px 3px rgba(255, 235, 59, 0.3);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--ecommerce-accent);
+    padding: 0.7rem 1.5rem;
+    border: 2px solid var(--ecommerce-accent);
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-outline:hover {
+    background: var(--ecommerce-accent);
+    color: white;
+}
+
+.btn-outline {
+    color: var(--fractal-teal);
+    border-color: var(--fractal-teal);
+}
+
+.btn-outline:hover {
+    background: var(--fractal-teal);
+    color: white;
+    box-shadow: 0 4px 20px rgba(0, 139, 139, 0.3);
+}
+
+/* Btn outline en modo oscuro */
+html.dark-mode .btn-outline {
+    color: var(--fractal-cyan);
+    border-color: var(--fractal-cyan);
+}
+
+html.dark-mode .btn-outline:hover {
+    background: var(--fractal-cyan);
+    color: var(--bg-primary);
+    box-shadow: 0 4px 20px rgba(0, 188, 212, 0.3);
+}
+
+.cta-center {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* Animaciones */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .trust-items {
+        gap: 1rem;
+        justify-content: space-around;
+    }
+    
+    .trust-item {
+        font-size: 0.8rem;
+    }
+    
+    .hero-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        text-align: center;
+    }
+    
+    .hero-headline {
+        font-size: 2.2rem;
+    }
+    
+    .hero-subline {
+        font-size: 1rem;
+        max-width: 100%;
+    }
+    
+    .hero-cta-group {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .cta-primary, .cta-secondary {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+    
+    .hero-features {
+        justify-content: center;
+    }
+    
+    .process-steps {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+    
+    .products-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
 /* Features Section - Estilo E-commerce Profesional */
 .features-section {
     padding: 4rem 0;
@@ -2968,6 +3608,385 @@ html.dark-mode .nav-logo a:hover {
     color: var(--text-secondary);
 }
 
+/* === TRUST SIGNALS Y SOCIAL PROOF === */
+.trust-signals-section {
+    padding: 4rem 0;
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    position: relative;
+}
+
+html.dark-mode .trust-signals-section {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+}
+
+/* Trust Indicators Grid */
+.trust-indicators {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.trust-metric {
+    background: var(--bg-primary);
+    padding: 2rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    box-shadow: 0 4px 20px var(--shadow);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+html.dark-mode .trust-metric {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+.trust-metric:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px var(--shadow);
+    border-color: var(--fractal-orange);
+}
+
+html.dark-mode .trust-metric:hover {
+    border-color: var(--fractal-magenta);
+    box-shadow: 0 8px 30px rgba(233, 30, 99, 0.2);
+}
+
+.trust-icon {
+    background: var(--fractal-gradient-light);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+html.dark-mode .trust-icon {
+    background: var(--fractal-gradient);
+}
+
+.trust-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.trust-content h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.trust-content p {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+    margin: 4rem 0;
+    text-align: center;
+}
+
+.testimonials-container {
+    margin-top: 3rem;
+}
+
+.testimonial-placeholder {
+    background: var(--bg-primary);
+    padding: 3rem 2rem;
+    border-radius: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 4px 20px var(--shadow);
+    border: 2px dashed var(--border-color);
+    position: relative;
+}
+
+html.dark-mode .testimonial-placeholder {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+.testimonial-icon {
+    background: var(--fractal-gradient-light);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+html.dark-mode .testimonial-icon {
+    background: var(--fractal-gradient);
+}
+
+.testimonial-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.testimonial-placeholder h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.testimonial-placeholder p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.early-adopter-badge {
+    background: var(--fractal-gradient-light);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+html.dark-mode .early-adopter-badge {
+    background: var(--fractal-gradient);
+}
+
+/* Guarantees Section */
+.guarantees-section {
+    margin-top: 4rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--border-light);
+}
+
+html.dark-mode .guarantees-section {
+    border-top-color: var(--border-color);
+}
+
+.guarantees-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.guarantee-card {
+    background: var(--bg-primary);
+    padding: 2.5rem 2rem;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 4px 20px var(--shadow);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+html.dark-mode .guarantee-card {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+.guarantee-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--fractal-gradient-light);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+html.dark-mode .guarantee-card::before {
+    background: var(--fractal-gradient);
+}
+
+.guarantee-card:hover::before {
+    transform: scaleX(1);
+}
+
+.guarantee-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px var(--shadow);
+    border-color: var(--fractal-orange);
+}
+
+html.dark-mode .guarantee-card:hover {
+    border-color: var(--fractal-magenta);
+    box-shadow: 0 12px 40px rgba(233, 30, 99, 0.2);
+}
+
+.guarantee-icon {
+    background: var(--fractal-gradient-light);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+html.dark-mode .guarantee-icon {
+    background: var(--fractal-gradient);
+}
+
+.guarantee-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.guarantee-card:hover .guarantee-icon::before {
+    transform: translateX(100%);
+}
+
+.guarantee-icon i {
+    font-size: 2rem;
+    color: white;
+    z-index: 1;
+    position: relative;
+}
+
+.guarantee-card h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.guarantee-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+/* Security Badges */
+.security-badges {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-top: 3rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+}
+
+html.dark-mode .security-badges {
+    background: rgba(26, 29, 58, 0.5);
+}
+
+.badge-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    min-width: 120px;
+}
+
+.badge-item i {
+    font-size: 2rem;
+    color: var(--fractal-teal);
+    margin-bottom: 0.5rem;
+}
+
+html.dark-mode .badge-item i {
+    color: var(--fractal-cyan);
+}
+
+.badge-item span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+/* Animaciones Trust Signals */
+@keyframes trustFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.trust-metric,
+.testimonial-placeholder,
+.badge-item {
+    animation: trustFadeIn 0.6s ease-out forwards;
+}
+
+.trust-metric:nth-child(1) { animation-delay: 0.1s; }
+.trust-metric:nth-child(2) { animation-delay: 0.2s; }
+.trust-metric:nth-child(3) { animation-delay: 0.3s; }
+.trust-metric:nth-child(4) { animation-delay: 0.4s; }
+
+/* Responsive Trust Signals */
+@media (max-width: 768px) {
+    .trust-indicators {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .trust-metric {
+        padding: 1.5rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .security-badges {
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .badge-item {
+        min-width: 100px;
+        padding: 0.5rem;
+    }
+    
+    .testimonial-placeholder {
+        padding: 2rem 1.5rem;
+        margin: 0 1rem;
+    }
+    
+    .guarantees-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .guarantee-card {
+        padding: 2rem 1.5rem;
+    }
+}
+
 /* === RESPONSIVE HERO INTERACTIVO === */
 @media (max-width: 768px) {
     .hero-section {
@@ -3104,9 +4123,8 @@ html.dark-mode .nav-logo a:hover {
         padding: 0 0.5rem;
     }
     
-    .nav-logo a {
-        width: 750px;
-        height: 210px;
+    .nav-logo img {
+        height: 160px;
     }
     
     .nav-menu {
@@ -3447,6 +4465,506 @@ html.dark-mode .nav-logo a:hover {
     outline: none;
     border-color: var(--ecommerce-primary);
     box-shadow: 0 0 0 2px rgba(255, 149, 0, 0.2);
+}
+
+/* ===============================
+   PWA & PUSH NOTIFICATIONS STYLES
+   =============================== */
+
+/* PWA Install Prompt */
+.pwa-install-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.pwa-install-content {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 420px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transform: scale(0.9);
+    animation: scaleIn 0.3s ease-out forwards;
+}
+
+.pwa-install-header {
+    margin-bottom: 1.5rem;
+}
+
+.pwa-install-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pwa-install-content h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.pwa-install-body p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.pwa-benefits {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    text-align: left;
+}
+
+.pwa-benefits li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.pwa-benefits li:before {
+    content: attr(data-icon);
+    margin-right: 0.75rem;
+    font-size: 1.1em;
+}
+
+.pwa-install-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.pwa-install-actions .btn-primary,
+.pwa-install-actions .btn-secondary {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.pwa-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.pwa-close-btn:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* PWA Update Notification */
+.pwa-update-notification {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    transform: translateY(100px);
+    animation: slideUp 0.3s ease-out forwards;
+}
+
+.pwa-update-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pwa-update-icon {
+    background: var(--fractal-gradient-light);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pwa-update-text {
+    flex: 1;
+}
+
+.pwa-update-text h4 {
+    margin: 0 0 0.25rem 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.pwa-update-text p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.pwa-update-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+}
+
+/* PWA Offline Indicator */
+.pwa-offline-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(90deg, #ff6b6b, #ff8e53);
+    color: white;
+    padding: 0.75rem;
+    text-align: center;
+    z-index: 9998;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+}
+
+.pwa-offline-indicator:not(.hidden) {
+    transform: translateY(0);
+}
+
+.pwa-offline-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* PWA Success Notification */
+.pwa-success-notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    transform: translateX(400px);
+    animation: slideInRight 0.3s ease-out forwards;
+    border-left: 4px solid #10b981;
+}
+
+.pwa-success-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pwa-success-icon {
+    color: #10b981;
+    font-size: 1.5rem;
+}
+
+.pwa-success-text h4 {
+    margin: 0 0 0.25rem 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.pwa-success-text p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* Push Notification Prompt */
+.push-prompt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.push-prompt-content {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    transform: scale(0.9);
+    animation: scaleIn 0.3s ease-out forwards;
+}
+
+.push-prompt-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.push-prompt-content h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.push-prompt-content p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.push-prompt-benefits {
+    text-align: left;
+    margin: 1.5rem 0;
+}
+
+.push-prompt-benefits .benefit {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.push-prompt-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Email Marketing Components */
+.email-template-preview {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border: 1px solid var(--border-light);
+}
+
+.email-header {
+    text-align: center;
+    padding: 1rem;
+    background: var(--fractal-gradient-light);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    margin: -1.5rem -1.5rem 1rem -1.5rem;
+}
+
+.email-content {
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.email-cta {
+    display: inline-block;
+    background: var(--fractal-orange);
+    color: white;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    margin: 1rem 0;
+}
+
+/* Personalization Badges */
+.personalized-badge {
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+    background: var(--fractal-gradient-light) !important;
+    color: white !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-size: 0.7rem !important;
+    font-weight: bold !important;
+    z-index: 10 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.personalized-message {
+    position: fixed !important;
+    top: 80px !important;
+    right: 20px !important;
+    background: var(--fractal-gradient-light) !important;
+    color: white !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    z-index: 1000 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+    animation: slideInRight 0.5s ease-out !important;
+    max-width: 300px !important;
+}
+
+.savings-indicator {
+    color: var(--fractal-teal) !important;
+    font-size: 0.9rem !important;
+    font-weight: bold !important;
+    margin-left: 8px !important;
+}
+
+/* A/B Testing Indicators (for debugging) */
+.ab-test-indicator {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    z-index: 9999;
+    display: none; /* Hidden by default, show only in debug mode */
+}
+
+/* Responsive Design for PWA Components */
+@media (max-width: 480px) {
+    .pwa-install-content {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .pwa-install-actions {
+        flex-direction: column;
+    }
+    
+    .pwa-update-notification {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+    }
+    
+    .pwa-update-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .pwa-update-actions {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .push-prompt-content {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .push-prompt-actions {
+        flex-direction: column;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Dark Mode Support for PWA Components */
+.dark-mode .pwa-install-content,
+.dark-mode .pwa-update-notification,
+.dark-mode .pwa-success-notification,
+.dark-mode .push-prompt-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+}
+
+.dark-mode .pwa-install-content h3,
+.dark-mode .pwa-update-text h4,
+.dark-mode .pwa-success-text h4,
+.dark-mode .push-prompt-content h3 {
+    color: var(--text-primary);
+}
+
+.dark-mode .pwa-install-body p,
+.dark-mode .pwa-update-text p,
+.dark-mode .pwa-success-text p,
+.dark-mode .push-prompt-content p {
+    color: var(--text-secondary);
+}
+
+.dark-mode .pwa-benefits li,
+.dark-mode .push-prompt-benefits .benefit {
+    color: var(--text-secondary);
+}
 }
 
 /* Acciones del Producto */
@@ -13750,5 +15268,77 @@ html.dark-mode .tn-btn-action {
     
     .tn-form-actions {
         flex-direction: column;
+    }
+}
+
+/* ========== NOTIFICATION SYSTEM ========== */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    max-width: 400px;
+    min-width: 300px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    animation: slideInRight 0.3s ease-out;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.notification.success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%);
+    color: white;
+}
+
+.notification.error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%);
+    color: white;
+}
+
+.notification.warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.95) 100%);
+    color: white;
+}
+
+.notification.info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%);
+    color: white;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.notification-content i {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive notifications */
+@media (max-width: 768px) {
+    .notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        min-width: auto;
     }
 }

@@ -7,32 +7,25 @@ if (!is_logged_in() || !is_admin()) {
     redirect('../index.php');
 }
 
-$page_title = '🌐 Estadísticas de Tráfico - Panel Admin';
-include 'admin-dashboard-header.php';
+$pageTitle = '🌐 Estadísticas de Tráfico - Panel Admin';
+include 'admin-master-header.php';
 ?>
 
-<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="fas fa-chart-line"></i> Estadísticas de Tráfico</h1>
+    <p>Análisis de fuentes de tráfico y comportamiento de usuarios</p>
+    
+    <div class="page-actions">
+        <button class="btn btn-secondary" onclick="exportTrafficStats()">
+            <i class="fas fa-download"></i> Exportar
+        </button>
+    </div>
+</div>
 
-<div class="modern-admin-container">
-    <?php include 'includes/admin-sidebar.php'; ?>
-
-    <!-- Main Content -->
-    <div class="modern-admin-main">
-        <!-- Header -->
-        <div class="tiendanube-header">
-            <div class="header-left">
-                <h1><i class="fas fa-chart-line"></i> Estadísticas de Tráfico</h1>
-                <p class="header-subtitle">Análisis de fuentes de tráfico y comportamiento de usuarios</p>
-            </div>
-            <div class="header-right">
-                <button class="tn-btn tn-btn-secondary" onclick="exportTrafficStats()">
-                    <i class="fas fa-download"></i>
-                    Exportar
-                </button>
-            </div>
-        </div>
-
-        <!-- Filtros de Tiempo -->
+<!-- Filtros de Tiempo -->
+<div class="content-card">
+    <h3><i class="fas fa-calendar"></i> Filtros de Tiempo</h3>
         <div class="time-filters">
             <div class="filter-group">
                 <label>Período:</label>
@@ -52,8 +45,9 @@ include 'admin-dashboard-header.php';
                 <span>Comparar períodos</span>
             </div>
         </div>
+</div>
 
-        <!-- Stats Content -->
+<!-- Stats Content -->
         <div class="stats-dashboard">
             <!-- Métricas Principales -->
             <section class="metrics-section">
@@ -699,5 +693,4 @@ function exportTrafficStats() {
 .traffic-time-section .metric-card { padding: 0.5rem !important; }
 </style>
 
-</body>
-</html>
+<?php include 'admin-master-footer.php'; ?>

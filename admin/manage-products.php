@@ -146,38 +146,28 @@ if (isset($_GET['edit'])) {
 $products = get_products();
 $categories = get_categories();
 
-$page_title = '📦 Gestionar Productos - Panel Admin';
-include 'admin-dashboard-header.php';
+$pageTitle = '📦 Gestionar Productos - Panel Admin';
+include 'admin-master-header.php';
 
 ?>
 
-<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
-
-<div class="modern-admin-container">
-    <?php include 'includes/admin-sidebar.php'; ?>
-
-    <!-- Main Content -->
-    <div class="modern-admin-main">
-        <!-- Header Tiendanube Style -->
-        <div class="tiendanube-header">
-            <div class="header-left">
-                <h1>Productos</h1>
-            </div>
-            <div class="header-right">
-                <button class="tn-btn tn-btn-secondary" onclick="organizeProducts()">
-                    <i class="fas fa-sort"></i>
-                    Organizar
-                </button>
-                <button class="tn-btn tn-btn-secondary" onclick="exportProducts()">
-                    <i class="fas fa-download"></i>
-                    Exportar e importar
-                </button>
-                <button id="toggleProductForm" class="tn-btn tn-btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Agregar producto
-                </button>
-            </div>
-        </div>
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="fas fa-box"></i> Gestionar Productos</h1>
+    <p>Sistema avanzado de gestión de productos e inventario</p>
+    
+    <div class="page-actions">
+        <button class="btn btn-secondary" onclick="organizeProducts()">
+            <i class="fas fa-sort"></i> Organizar
+        </button>
+        <button class="btn btn-secondary" onclick="exportProducts()">
+            <i class="fas fa-download"></i> Exportar
+        </button>
+        <button id="toggleProductForm" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Agregar Producto
+        </button>
+    </div>
+</div>
 
         <!-- Product Form Modal/Panel -->
         <div id="productFormOverlay" class="product-form-overlay"></div>
@@ -522,7 +512,9 @@ include 'admin-dashboard-header.php';
             </form>
         </div>
 
-        <!-- Products Grid -->
+<!-- Products Grid -->
+<div class="content-card">
+    <h3><i class="fas fa-box"></i> Lista de Productos</h3>
         <div class="products-section">
             <div class="tiendanube-search-bar">
                 <div class="tn-search-container">
@@ -643,7 +635,6 @@ include 'admin-dashboard-header.php';
                 </div>
             <?php endif; ?>
         </div>
-    </div>
 </div>
 
 <!-- Toast Notifications Container -->
@@ -970,5 +961,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-</body>
-</html>
+<?php include 'admin-master-footer.php'; ?>

@@ -33,9 +33,24 @@
     <link rel="icon" type="image/png" href="assets/images/icon.png">
     <link rel="apple-touch-icon" href="assets/images/icon.png">
     
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Critical CSS inline para FCP optimizado -->
+    <style><?php 
+        // Forzar recarga del critical.css para debugging
+        $criticalCss = file_get_contents(__DIR__ . '/../assets/css/critical.css');
+        echo $criticalCss;
+    ?></style>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="assets/css/style.css?v=<?php echo time(); ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="assets/images/centro1.png" as="image">
+    <link rel="preload" href="assets/images/Fractal Background Light 2.png" as="image">
+    
+    <!-- Fallback para CSS no crítico -->
+    <noscript>
+        <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </noscript>
     <script>
         // Aplica el tema inmediatamente para evitar el parpadeo (FOUC)
         (function() {
@@ -46,6 +61,34 @@
         })();
     </script>
     <script src="assets/js/main.js?v=<?php echo time(); ?>"></script>
+    
+    <!-- Performance Optimizer -->
+    <script src="assets/js/performance-optimizer.js?v=<?php echo time(); ?>"></script>
+    
+    <!-- Heatmap Analytics -->
+    <script src="assets/js/heatmap-analytics.js?v=<?php echo time(); ?>"></script>
+    
+    <!-- Fase 4: Advanced Features -->
+    <script src="assets/js/advanced-personalization.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/ab-testing.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/email-marketing.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/push-notifications.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/pwa-manager.js?v=<?php echo time(); ?>"></script>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="FractalMerch">
+    
+    <!-- PWA Icons -->
+    <link rel="apple-touch-icon" href="assets/images/icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/icon-180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/icon-16.png">
 </head>
 <body class="">
     <nav class="navbar">
@@ -71,7 +114,10 @@
             
             <!-- Logo Centrado -->
             <div class="nav-logo">
-                <a href="index.php">Sublime</a>
+                <a href="index.php">
+                    <img src="assets/images/Fractal Header Light.png" alt="FractalMerch" class="logo-light">
+                    <img src="assets/images/Fractal Header Dark.png" alt="FractalMerch" class="logo-dark">
+                </a>
             </div>
             
             <!-- Botón hamburguesa para móvil -->
@@ -263,6 +309,11 @@ function toggleTheme() {
     const isDarkMode = html.classList.contains('dark-mode');
     localStorage.setItem('darkMode', isDarkMode);
     updateThemeIcon(isDarkMode);
+    
+    // Debug: verificar que el modo oscuro se aplique
+    console.log('Modo oscuro:', isDarkMode);
+    console.log('Clases en html:', html.className);
+    console.log('Color de fondo actual:', getComputedStyle(document.body).backgroundColor);
 }
 
 function updateThemeIcon(isDarkMode) {

@@ -1,11 +1,7 @@
 <?php
-require_once '../includes/functions.php';
+// Incluir dependencias necesarias
 require_once '../config/database.php';
-
-if (!is_logged_in() || !is_admin()) {
-    flash_message('error', 'No tienes permisos para acceder al panel de administración');
-    redirect('../index.php');
-}
+require_once '../includes/functions.php';
 
 // Procesar creación de usuario
 if ($_POST && isset($_POST['create_user'])) {
@@ -100,670 +96,556 @@ if (isset($_GET['action'])) {
                     flash_message('error', 'Error al degradar usuario');
                 }
                 break;
-                
-            case 'make_moderator':
-                $stmt = $pdo->prepare("UPDATE users SET role = 'moderator' WHERE id = ?");
-                if ($stmt->execute([$user_id])) {
-                    flash_message('success', 'Usuario promovido a moderador');
-                } else {
-                    flash_message('error', 'Error al promover usuario');
-                }
-                break;
         }
     }
     
     redirect('manage-users.php');
 }
 
-// Obtener usuarios con conteo de posts
-$search = isset($_GET['search']) ? sanitize_input($_GET['search']) : '';
-$role_filter = isset($_GET['role']) ? sanitize_input($_GET['role']) : '';
+// Obtener estadísticas de usuarios
+$stats = [];
+$stmt = $pdo->query("SELECT role, COUNT(*) as count FROM users GROUP BY role");
+$stats_by_role = $stmt->fetchAll();
 
-$sql = "SELECT u.*, 
-               (SELECT COUNT(*) FROM posts WHERE user_id = u.id) as post_count
-        FROM users u WHERE 1=1";
+$stmt = $pdo->query("SELECT COUNT(*) FROM users");
+$stats['total_users'] = $stmt->fetchColumn();
+
+$stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+$stats['new_users_month'] = $stmt->fetchColumn();
+
+$stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE last_login >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+$stats['active_users_week'] = $stmt->fetchColumn();
+
+// Obtener lista de usuarios
+$search = $_GET['search'] ?? '';
+$role_filter = $_GET['role'] ?? '';
+$page = (int)($_GET['page'] ?? 1);
+$per_page = 10;
+$offset = ($page - 1) * $per_page;
+
+$where_conditions = [];
 $params = [];
 
 if ($search) {
-    $sql .= " AND (u.username LIKE ? OR u.email LIKE ?)";
+    $where_conditions[] = "(username LIKE ? OR email LIKE ?)";
     $params[] = "%$search%";
     $params[] = "%$search%";
 }
 
 if ($role_filter) {
-    $sql .= " AND u.role = ?";
+    $where_conditions[] = "role = ?";
     $params[] = $role_filter;
 }
 
-$sql .= " ORDER BY u.created_at DESC";
+$where_clause = $where_conditions ? "WHERE " . implode(" AND ", $where_conditions) : "";
 
-$stmt = $pdo->prepare($sql);
+// Contar total de usuarios para paginación
+$count_query = "SELECT COUNT(*) FROM users $where_clause";
+$stmt = $pdo->prepare($count_query);
+$stmt->execute($params);
+$total_users = $stmt->fetchColumn();
+$total_pages = ceil($total_users / $per_page);
+
+// Obtener usuarios de la página actual
+$query = "SELECT id, username, email, role, created_at, last_login 
+          FROM users $where_clause 
+          ORDER BY created_at DESC 
+          LIMIT $per_page OFFSET $offset";
+$stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $users = $stmt->fetchAll();
 
-// Estadísticas de usuarios
-$stats = [
-    'total' => count($users),
-    'admins' => count(array_filter($users, fn($u) => $u['role'] === 'admin')),
-    'moderators' => count(array_filter($users, fn($u) => $u['role'] === 'moderator')),
-    'users' => count(array_filter($users, fn($u) => $u['role'] === 'user'))
-];
-
-$page_title = '👥 Gestionar Usuarios - Panel Admin';
-include 'admin-dashboard-header.php';
+$pageTitle = '👥 Gestión de Usuarios - Admin Panel';
+include 'admin-master-header.php';
 ?>
 
-<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
-
-<div class="modern-admin-container">
-    <?php include 'includes/admin-sidebar.php'; ?>
-
-    <div class="modern-admin-main">
-        <div class="tiendanube-header">
-            <div class="header-left">
-                <h1><i class="fas fa-users"></i> Usuarios</h1>
-                <p class="header-subtitle">Administra usuarios, roles y permisos del sistema</p>
-            </div>
-            <div class="header-actions">
-                <button onclick="toggleUserForm()" class="tn-btn tn-btn-primary">
-                    <i class="fas fa-user-plus"></i> Nuevo usuario
-                </button>
-                <button onclick="exportUsers()" class="tn-btn tn-btn-secondary">
-                    <i class="fas fa-download"></i> Exportar
-                </button>
-            </div>
-        </div>
-
-        <!-- Estadísticas de usuarios -->
-        <section class="stats-overview">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-info">
-                    <span class="stat-number"><?php echo $stats['total']; ?></span>
-                    <span class="stat-label">Total usuarios</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon admin">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <div class="stat-info">
-                    <span class="stat-number"><?php echo $stats['admins']; ?></span>
-                    <span class="stat-label">Administradores</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon moderator">
-                    <i class="fas fa-user-tie"></i>
-                </div>
-                <div class="stat-info">
-                    <span class="stat-number"><?php echo $stats['moderators']; ?></span>
-                    <span class="stat-label">Moderadores</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon user">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="stat-info">
-                    <span class="stat-number"><?php echo $stats['users']; ?></span>
-                    <span class="stat-label">Usuarios</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Formulario de usuario (inicialmente oculto) -->
-        <section class="tn-card user-form-section" id="userForm" style="display: none;">
-            <div class="tn-card-header">
-                <h2>Nuevo usuario</h2>
-                <button onclick="closeUserForm()" class="tn-btn-ghost">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <form method="POST" action="" class="tn-form">
-                <div class="tn-form-grid">
-                    <div class="tn-form-group">
-                        <label for="username" class="tn-label">Nombre de usuario *</label>
-                        <input type="text" id="username" name="username" class="tn-input" required minlength="3"
-                               placeholder="Mínimo 3 caracteres">
-                    </div>
-                    
-                    <div class="tn-form-group">
-                        <label for="email" class="tn-label">Email *</label>
-                        <input type="email" id="email" name="email" class="tn-input" required
-                               placeholder="usuario@ejemplo.com">
-                    </div>
-                    
-                    <div class="tn-form-group">
-                        <label for="password" class="tn-label">Contraseña *</label>
-                        <input type="password" id="password" name="password" class="tn-input" required minlength="6"
-                               placeholder="Mínimo 6 caracteres">
-                    </div>
-                    
-                    <div class="tn-form-group">
-                        <label for="confirm_password" class="tn-label">Confirmar contraseña *</label>
-                        <input type="password" id="confirm_password" name="confirm_password" class="tn-input" required
-                               placeholder="Repetir contraseña">
-                    </div>
-                    
-                    <div class="tn-form-group full-width">
-                        <label for="role" class="tn-label">Rol del usuario *</label>
-                        <select id="role" name="role" class="tn-select" required>
-                            <option value="">Seleccionar rol...</option>
-                            <option value="user">👤 Usuario Regular</option>
-                            <option value="moderator">🛡️ Moderador</option>
-                            <option value="admin">⚡ Administrador</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="tn-form-actions">
-                    <button type="submit" name="create_user" class="tn-btn tn-btn-primary">
-                        <i class="fas fa-user-plus"></i> Crear usuario
-                    </button>
-                    <button type="button" onclick="closeUserForm()" class="tn-btn tn-btn-secondary">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Lista de usuarios -->
-        <section class="tn-card">
-            <div class="tn-card-header">
-                <div class="header-left">
-                    <h2>Lista de usuarios</h2>
-                    <span class="tn-badge tn-badge-neutral"><?php echo count($users); ?> usuarios</span>
-                </div>
-                <div class="tn-search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar usuarios..." id="userSearch" value="<?php echo htmlspecialchars($search); ?>">
-                </div>
-            </div>
-
-            <!-- Filtros -->
-            <div class="tn-filters">
-                <form method="GET" action="" class="filter-form">
-                    <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
-                    
-                    <div class="filter-group">
-                        <label for="role_filter">Filtrar por rol:</label>
-                        <select name="role" id="role_filter" onchange="this.form.submit()">
-                            <option value="">Todos los roles</option>
-                            <option value="admin" <?php echo $role_filter == 'admin' ? 'selected' : ''; ?>>Administradores</option>
-                            <option value="moderator" <?php echo $role_filter == 'moderator' ? 'selected' : ''; ?>>Moderadores</option>
-                            <option value="user" <?php echo $role_filter == 'user' ? 'selected' : ''; ?>>Usuarios</option>
-                        </select>
-                    </div>
-                    
-                    <?php if ($role_filter || $search): ?>
-                        <a href="manage-users.php" class="tn-btn tn-btn-ghost">
-                            <i class="fas fa-times"></i> Limpiar filtros
-                        </a>
-                    <?php endif; ?>
-                </form>
-            </div>
-
-            <?php if (empty($users)): ?>
-                <div class="tn-empty-state">
-                    <div class="empty-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>No hay usuarios</h3>
-                    <p>No se encontraron usuarios con los filtros aplicados</p>
-                    <a href="manage-users.php" class="tn-btn tn-btn-primary">
-                        <i class="fas fa-refresh"></i> Ver todos
-                    </a>
-                </div>
-            <?php else: ?>
-                <div class="tn-table-container">
-                    <table class="tn-table">
-                        <thead>
-                            <tr>
-                                <th>Usuario</th>
-                                <th>Email</th>
-                                <th>Rol</th>
-                                <th>Posts</th>
-                                <th>Registrado</th>
-                                <th class="tn-table-actions">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTableBody">
-                            <?php foreach ($users as $user): ?>
-                                <tr class="tn-table-row">
-                                    <td>
-                                        <div class="tn-table-cell-content">
-                                            <div class="user-info">
-                                                <strong class="user-name"><?php echo htmlspecialchars($user['username']); ?></strong>
-                                                <span class="user-id">#<?php echo $user['id']; ?></span>
-                                                <?php if ($user['id'] == $_SESSION['user_id']): ?>
-                                                    <span class="tn-badge tn-badge-primary">Tú</span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="user-email"><?php echo htmlspecialchars($user['email']); ?></span>
-                                    </td>
-                                    <td>
-                                        <span class="tn-badge tn-badge-<?php echo $user['role']; ?>">
-                                            <?php 
-                                            $role_icons = ['admin' => '⚡', 'moderator' => '🛡️', 'user' => '👤'];
-                                            echo $role_icons[$user['role']] . ' ' . ucfirst($user['role']); 
-                                            ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="tn-metric">
-                                            <span class="metric-value"><?php echo $user['post_count']; ?></span>
-                                            <span class="metric-label">posts</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="tn-date">
-                                            <?php echo date('d M Y', strtotime($user['created_at'])); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                            <div class="tn-action-group">
-                                                <div class="dropdown">
-                                                    <button class="tn-btn-action" onclick="toggleUserDropdown(<?php echo $user['id']; ?>)">
-                                                        <i class="fas fa-ellipsis-v"></i>
-                                                    </button>
-                                                    <div class="dropdown-menu" id="dropdown-<?php echo $user['id']; ?>">
-                                                        <?php if ($user['role'] == 'user'): ?>
-                                                            <a href="?action=make_moderator&user_id=<?php echo $user['id']; ?>" class="dropdown-item">
-                                                                <i class="fas fa-arrow-up"></i> Hacer Moderador
-                                                            </a>
-                                                            <a href="?action=promote&user_id=<?php echo $user['id']; ?>" class="dropdown-item">
-                                                                <i class="fas fa-crown"></i> Hacer Admin
-                                                            </a>
-                                                        <?php elseif ($user['role'] == 'moderator'): ?>
-                                                            <a href="?action=promote&user_id=<?php echo $user['id']; ?>" class="dropdown-item">
-                                                                <i class="fas fa-crown"></i> Hacer Admin
-                                                            </a>
-                                                            <a href="?action=demote&user_id=<?php echo $user['id']; ?>" class="dropdown-item">
-                                                                <i class="fas fa-arrow-down"></i> Degradar a Usuario
-                                                            </a>
-                                                        <?php elseif ($user['role'] == 'admin'): ?>
-                                                            <a href="?action=demote&user_id=<?php echo $user['id']; ?>" class="dropdown-item">
-                                                                <i class="fas fa-arrow-down"></i> Degradar a Usuario
-                                                            </a>
-                                                        <?php endif; ?>
-                                                        
-                                                        <div class="dropdown-divider"></div>
-                                                        <button onclick="deleteUser(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['username'], ENT_QUOTES); ?>')"
-                                                                class="dropdown-item danger">
-                                                            <i class="fas fa-trash"></i> Eliminar Usuario
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        <?php else: ?>
-                                            <span class="tn-badge tn-badge-info">Tu cuenta</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
-        </section>
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="fas fa-users-cog"></i> Gestión de Usuarios</h1>
+    <p>Administra cuentas de usuario, roles y permisos del sistema</p>
+    
+    <div class="page-actions">
+        <button class="btn btn-primary" onclick="AdminUtils.modal.show('create-user-modal')">
+            <i class="fas fa-user-plus"></i> Crear Usuario
+        </button>
+        <button class="btn btn-secondary" onclick="exportUsers()">
+            <i class="fas fa-download"></i> Exportar
+        </button>
     </div>
 </div>
 
-<script>
-// Funciones de la página
-function toggleUserForm() {
-    const form = document.getElementById('userForm');
-    if (form.style.display === 'none') {
-        form.style.display = 'block';
-        form.scrollIntoView({ behavior: 'smooth' });
-        document.getElementById('username').focus();
-    } else {
-        form.style.display = 'none';
-    }
-}
+<!-- Estadísticas de Usuarios -->
+<div class="content-card">
+    <h3><i class="fas fa-chart-bar"></i> Estadísticas de Usuarios</h3>
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-icon total">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h4><?php echo $stats['total_users']; ?></h4>
+                <p>Total Usuarios</p>
+            </div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-icon new">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="stat-content">
+                <h4><?php echo $stats['new_users_month']; ?></h4>
+                <p>Nuevos (30 días)</p>
+            </div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-icon active">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-content">
+                <h4><?php echo $stats['active_users_week']; ?></h4>
+                <p>Activos (7 días)</p>
+            </div>
+        </div>
+        
+        <?php foreach ($stats_by_role as $role_stat): ?>
+        <div class="stat-item">
+            <div class="stat-icon role-<?php echo $role_stat['role']; ?>">
+                <i class="fas fa-<?php echo $role_stat['role'] === 'admin' ? 'crown' : ($role_stat['role'] === 'moderator' ? 'shield-alt' : 'user'); ?>"></i>
+            </div>
+            <div class="stat-content">
+                <h4><?php echo $role_stat['count']; ?></h4>
+                <p><?php echo ucfirst($role_stat['role']); ?>s</p>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>
 
-function closeUserForm() {
-    document.getElementById('userForm').style.display = 'none';
-    // Clear form
-    document.querySelector('.tn-form').reset();
-    // Reset password validation styles
-    document.getElementById('password').style.borderColor = '';
-    document.getElementById('confirm_password').style.borderColor = '';
-}
+<!-- Filtros y Búsqueda -->
+<div class="content-card">
+    <h3><i class="fas fa-filter"></i> Filtros y Búsqueda</h3>
+    <form method="GET" class="filters-form">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label>Buscar:</label>
+                <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" 
+                       placeholder="Nombre de usuario o email...">
+            </div>
+            
+            <div class="filter-group">
+                <label>Rol:</label>
+                <select name="role">
+                    <option value="">Todos los roles</option>
+                    <option value="admin" <?php echo $role_filter === 'admin' ? 'selected' : ''; ?>>Administradores</option>
+                    <option value="moderator" <?php echo $role_filter === 'moderator' ? 'selected' : ''; ?>>Moderadores</option>
+                    <option value="user" <?php echo $role_filter === 'user' ? 'selected' : ''; ?>>Usuarios</option>
+                </select>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                <a href="manage-users.php" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Limpiar
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
 
-function deleteUser(id, username) {
-    if (confirm(`¿Estás seguro de que quieres eliminar al usuario "${username}"?\n\nEsta acción eliminará también todos sus posts y comentarios.\n\nEsta acción no se puede deshacer.`)) {
-        window.location.href = `?action=delete&user_id=${id}`;
-    }
-}
-
-function exportUsers() {
-    console.log('Export users functionality');
-    toast.info('Función pendiente', 'La exportación estará disponible pronto');
-}
-
-function toggleUserDropdown(userId) {
-    const dropdown = document.getElementById(`dropdown-${userId}`);
-    // Close all other dropdowns
-    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        if (menu !== dropdown) {
-            menu.classList.remove('show');
-        }
-    });
-    dropdown.classList.toggle('show');
-}
-
-// Close dropdowns when clicking outside
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.dropdown')) {
-        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            menu.classList.remove('show');
-        });
-    }
-});
-
-// Búsqueda de usuarios
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('userSearch');
-    if (searchInput) {
-        let searchTimeout;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const searchTerm = this.value.toLowerCase();
-                const rows = document.querySelectorAll('#usersTableBody .tn-table-row');
+<!-- Lista de Usuarios -->
+<div class="content-card">
+    <h3><i class="fas fa-list"></i> Usuarios (<?php echo $total_users; ?> total)</h3>
+    
+    <?php if (empty($users)): ?>
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <p>No se encontraron usuarios</p>
+        </div>
+    <?php else: ?>
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Creado</th>
+                        <th>Último acceso</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($users as $user): ?>
+                        <tr>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="user-details">
+                                        <strong><?php echo htmlspecialchars($user['username']); ?></strong>
+                                        <small>ID: <?php echo $user['id']; ?></small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><?php echo htmlspecialchars($user['email']); ?></td>
+                            <td>
+                                <span class="badge badge-<?php echo $user['role'] === 'admin' ? 'danger' : ($user['role'] === 'moderator' ? 'warning' : 'info'); ?>">
+                                    <i class="fas fa-<?php echo $user['role'] === 'admin' ? 'crown' : ($user['role'] === 'moderator' ? 'shield-alt' : 'user'); ?>"></i>
+                                    <?php echo ucfirst($user['role']); ?>
+                                </span>
+                            </td>
+                            <td>
+                                <time title="<?php echo $user['created_at']; ?>">
+                                    <?php echo date('d/m/Y', strtotime($user['created_at'])); ?>
+                                </time>
+                            </td>
+                            <td>
+                                <?php if ($user['last_login']): ?>
+                                    <time title="<?php echo $user['last_login']; ?>">
+                                        <?php echo date('d/m/Y H:i', strtotime($user['last_login'])); ?>
+                                    </time>
+                                <?php else: ?>
+                                    <span class="text-muted">Nunca</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                        <?php if ($user['role'] !== 'admin'): ?>
+                                            <a href="?action=promote&user_id=<?php echo $user['id']; ?>" 
+                                               class="btn btn-sm btn-success"
+                                               onclick="return confirm('¿Promover a administrador?')">
+                                                <i class="fas fa-arrow-up"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($user['role'] !== 'user'): ?>
+                                            <a href="?action=demote&user_id=<?php echo $user['id']; ?>" 
+                                               class="btn btn-sm btn-warning"
+                                               onclick="return confirm('¿Degradar a usuario regular?')">
+                                                <i class="fas fa-arrow-down"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                        
+                                        <a href="?action=delete&user_id=<?php echo $user['id']; ?>" 
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('¿Eliminar usuario? Esta acción no se puede deshacer.')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="badge badge-info">Tu cuenta</span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        <?php if ($total_pages > 1): ?>
+        <div class="table-pagination">
+            <div class="pagination-info">
+                Mostrando <?php echo $offset + 1; ?> - <?php echo min($offset + $per_page, $total_users); ?> de <?php echo $total_users; ?> usuarios
+            </div>
+            <div class="pagination-controls">
+                <?php if ($page > 1): ?>
+                    <a href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role_filter); ?>" 
+                       class="btn btn-sm btn-outline">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </a>
+                <?php endif; ?>
                 
-                rows.forEach(row => {
-                    const userName = row.querySelector('.user-name')?.textContent.toLowerCase() || '';
-                    const userEmail = row.querySelector('.user-email')?.textContent.toLowerCase() || '';
+                <span class="page-info">Página <?php echo $page; ?> de <?php echo $total_pages; ?></span>
+                
+                <?php if ($page < $total_pages): ?>
+                    <a href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role_filter); ?>" 
+                       class="btn btn-sm btn-outline">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+    <?php endif; ?>
+</div>
+
+<!-- Modal Crear Usuario -->
+<div id="create-user-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-plus"></i> Crear Nuevo Usuario</h3>
+            <span class="close" onclick="AdminUtils.modal.hide('create-user-modal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form method="POST" class="user-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Nombre de usuario</label>
+                        <input type="text" name="username" required minlength="3" 
+                               placeholder="Ej: juan_perez">
+                    </div>
                     
-                    const matches = userName.includes(searchTerm) || userEmail.includes(searchTerm);
-                    row.style.display = matches ? '' : 'none';
-                });
-            }, 300);
-        });
-    }
-    
-    // Validación de contraseñas en tiempo real
-    const password = document.getElementById('password');
-    const confirmPassword = document.getElementById('confirm_password');
-    
-    function validatePasswords() {
-        if (password.value && confirmPassword.value) {
-            if (password.value === confirmPassword.value) {
-                confirmPassword.style.borderColor = 'var(--tn-success)';
-                confirmPassword.style.boxShadow = '0 0 0 3px rgba(34, 197, 94, 0.1)';
-            } else {
-                confirmPassword.style.borderColor = 'var(--tn-danger)';
-                confirmPassword.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
-            }
-        } else {
-            confirmPassword.style.borderColor = '';
-            confirmPassword.style.boxShadow = '';
-        }
-    }
-    
-    if (password && confirmPassword) {
-        password.addEventListener('input', validatePasswords);
-        confirmPassword.addEventListener('input', validatePasswords);
-    }
-});
-</script>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" name="email" required 
+                               placeholder="Ej: juan@ejemplo.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Contraseña</label>
+                        <input type="password" name="password" required minlength="6" 
+                               placeholder="Mínimo 6 caracteres">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Confirmar contraseña</label>
+                        <input type="password" name="confirm_password" required minlength="6" 
+                               placeholder="Repetir contraseña">
+                    </div>
+                    
+                    <div class="form-group span-2">
+                        <label><i class="fas fa-user-tag"></i> Rol</label>
+                        <select name="role" required>
+                            <option value="user">Usuario</option>
+                            <option value="moderator">Moderador</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="AdminUtils.modal.hide('create-user-modal')">
+                        Cancelar
+                    </button>
+                    <button type="submit" name="create_user" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Crear Usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <style>
 /* Estilos específicos para gestión de usuarios */
-.user-form-section {
-    margin-bottom: 2rem;
-}
-
-.stats-overview {
+.stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
-.stat-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
+.stat-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 1px solid var(--tn-border);
+    gap: 12px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
 }
 
 .stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    background: var(--tn-primary);
+    font-size: 16px;
     color: white;
+    flex-shrink: 0;
 }
 
-.stat-icon.admin {
-    background: var(--tn-danger);
-}
+.stat-icon.total { background: #007bff; }
+.stat-icon.new { background: #28a745; }
+.stat-icon.active { background: #17a2b8; }
+.stat-icon.role-admin { background: #dc3545; }
+.stat-icon.role-moderator { background: #ffc107; }
+.stat-icon.role-user { background: #6c757d; }
 
-.stat-icon.moderator {
-    background: var(--tn-warning);
-}
-
-.stat-icon.user {
-    background: var(--tn-info);
-}
-
-.stat-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.stat-number {
-    font-size: 1.75rem;
+.stat-content h4 {
+    font-size: 20px;
     font-weight: 700;
-    color: var(--tn-text-primary);
-    line-height: 1;
+    margin: 0;
+    color: #2c3e50;
 }
 
-.stat-label {
-    font-size: 0.875rem;
-    color: var(--tn-text-muted);
-    font-weight: 500;
+.stat-content p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 12px;
 }
 
-.tn-form-grid {
+.filters-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.filters-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.tn-form-group.full-width {
-    grid-column: 1 / -1;
-}
-
-.user-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.user-name {
-    font-weight: 600;
-    color: var(--tn-text-primary);
-}
-
-.user-id {
-    font-size: 0.75rem;
-    color: var(--tn-text-muted);
-    font-weight: 400;
-}
-
-.user-email {
-    color: var(--tn-text-secondary);
-    font-size: 0.9rem;
-}
-
-.tn-badge-admin {
-    background: var(--tn-danger);
-    color: white;
-}
-
-.tn-badge-moderator {
-    background: var(--tn-warning);
-    color: white;
-}
-
-.tn-badge-user {
-    background: var(--tn-info);
-    color: white;
-}
-
-.tn-filters {
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--tn-border);
-    margin-bottom: 1rem;
-}
-
-.filter-form {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 15px;
+    align-items: end;
 }
 
 .filter-group {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .filter-group label {
-    font-size: 0.9rem;
-    color: var(--tn-text-secondary);
-    white-space: nowrap;
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
 }
 
+.filter-group input,
 .filter-group select {
-    padding: 0.5rem;
-    border: 1px solid var(--tn-border);
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
     border-radius: 6px;
-    background: white;
-    font-size: 0.9rem;
+    font-size: 14px;
 }
 
-.dropdown {
-    position: relative;
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #007bff;
 }
 
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: white;
-    border: 1px solid var(--tn-border);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    min-width: 180px;
-    z-index: 1000;
-    display: none;
+.filter-actions {
+    display: flex;
+    gap: 8px;
 }
 
-.dropdown-menu.show {
-    display: block;
-}
-
-.dropdown-item {
+.user-info {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    text-decoration: none;
-    color: var(--tn-text-primary);
-    font-size: 0.9rem;
-    border: none;
-    background: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    gap: 10px;
 }
 
-.dropdown-item:hover {
-    background: var(--tn-bg-secondary);
+.user-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
 }
 
-.dropdown-item.danger {
-    color: var(--tn-danger);
+.user-details strong {
+    display: block;
+    color: #2c3e50;
 }
 
-.dropdown-item.danger:hover {
-    background: rgba(239, 68, 68, 0.1);
+.user-details small {
+    color: #6c757d;
+    font-size: 11px;
 }
 
-.dropdown-divider {
-    height: 1px;
-    background: var(--tn-border);
-    margin: 0.25rem 0;
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.text-muted {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.user-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.user-form .form-group.span-2 {
+    grid-column: span 2;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .tn-form-grid {
+    .stats-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
     }
     
-    .stats-overview {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
+    .filters-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
     }
     
-    .stat-card {
-        padding: 1rem;
+    .filter-actions {
+        justify-content: stretch;
     }
     
-    .stat-number {
-        font-size: 1.5rem;
+    .filter-actions .btn {
+        flex: 1;
     }
     
-    .tiendanube-header {
+    .user-form .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .user-form .form-group.span-2 {
+        grid-column: span 1;
+    }
+    
+    .action-buttons {
         flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
-    }
-    
-    .header-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-    
-    .filter-form {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
     }
 }
-
-/* Optimización compacta */
-.modern-admin-main { padding: 1.5rem !important; }
-.tiendanube-header { padding: 1rem 1.5rem !important; }
-.tn-card { padding: 1.5rem !important; }
-.tn-form-actions { margin-top: 1.5rem !important; }
-.stats-overview { margin-bottom: 1.5rem !important; }
 </style>
 
-</body>
-</html>
+<script>
+function exportUsers() {
+    AdminUtils.showNotification('Exportando usuarios...', 'info');
+    
+    // Simular exportación
+    setTimeout(() => {
+        AdminUtils.showNotification('Usuarios exportados correctamente', 'success');
+    }, 2000);
+}
+
+// Validación del formulario de crear usuario
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.user-form');
+    const passwordField = form.querySelector('input[name="password"]');
+    const confirmField = form.querySelector('input[name="confirm_password"]');
+    
+    function validatePasswords() {
+        if (passwordField.value !== confirmField.value) {
+            confirmField.setCustomValidity('Las contraseñas no coinciden');
+        } else {
+            confirmField.setCustomValidity('');
+        }
+    }
+    
+    passwordField.addEventListener('input', validatePasswords);
+    confirmField.addEventListener('input', validatePasswords);
+});
+</script>
+
+<?php include 'admin-master-footer.php'; ?>

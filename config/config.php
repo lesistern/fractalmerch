@@ -1,5 +1,8 @@
 <?php
-session_start();
+// Iniciar sesión solo si no está activa
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 define('SITE_NAME', 'FractalMerch');
 
@@ -23,6 +26,14 @@ define('COMMENTS_PER_PAGE', 20);
 
 define('UPLOAD_DIR', 'assets/images/uploads/');
 define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024); // 5MB
+
+// Configuración de email - Zoho Mail
+define('SMTP_HOST', 'smtp.zoho.com');
+define('SMTP_PORT', 587);
+define('SMTP_USERNAME', 'admin@fractalmerch.com.ar'); // Tu cuenta principal
+define('SMTP_PASSWORD', 'TU_PASSWORD_ZOHO');
+define('FROM_EMAIL', 'noreply@fractalmerch.com.ar');
+define('FROM_NAME', 'FractalMerch');
 
 function sanitize_input($data) {
     return htmlspecialchars(strip_tags(trim($data)));

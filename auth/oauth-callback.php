@@ -1,8 +1,10 @@
 <?php
-require_once '../config/database.php';
-require_once '../config/config.php';
-require_once '../includes/functions.php';
-require_once '../includes/oauth/OAuthManager.php';
+// Usar rutas absolutas basadas en __DIR__
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/oauth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/oauth/OAuthManager.php';
 
 $provider = $_GET['provider'] ?? '';
 $code = $_GET['code'] ?? '';
@@ -23,12 +25,12 @@ if ($error) {
     
     $message = $errorMessages[$error] ?? 'Error desconocido en la autenticación';
     flash_message('error', $message);
-    redirect('login.php');
+    redirect('../login.php');
 }
 
 if (!$provider || !$code) {
     flash_message('error', 'Parámetros OAuth incompletos');
-    redirect('login.php');
+    redirect('../login.php');
 }
 
 try {
@@ -80,11 +82,11 @@ try {
     flash_message('success', $welcomeMessage);
     
     // Redirección según el rol
-    $redirectUrl = 'index.php';
+    $redirectUrl = '../index.php';
     if ($user['role'] === 'admin') {
-        $redirectUrl = 'admin/dashboard.php';
+        $redirectUrl = '../admin/dashboard.php';
     } elseif (isset($_SESSION['redirect_after_login'])) {
-        $redirectUrl = $_SESSION['redirect_after_login'];
+        $redirectUrl = '../' . $_SESSION['redirect_after_login'];
         unset($_SESSION['redirect_after_login']);
     }
     
@@ -93,13 +95,8 @@ try {
 } catch (Exception $e) {
     error_log("OAuth Callback Error ({$provider}): " . $e->getMessage());
     
-    // Log del intento fallido
-    if (isset($userInfo['email'])) {
-        $oauth->logLoginAttempt($userInfo['email'], $provider, false, $e->getMessage());
-    }
-    
     $errorMessage = "Error en la autenticación con " . ucfirst($provider) . ": " . $e->getMessage();
     flash_message('error', $errorMessage);
-    redirect('login.php');
+    redirect('../login.php');
 }
 ?>

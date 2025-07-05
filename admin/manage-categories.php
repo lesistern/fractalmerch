@@ -85,39 +85,28 @@ if (isset($_GET['edit'])) {
     $edit_category = $stmt->fetch();
 }
 
-$page_title = '📂 Gestionar Categorías - Panel Admin';
-include 'admin-dashboard-header.php';
+$pageTitle = '📂 Gestionar Categorías - Panel Admin';
+include 'admin-master-header.php';
 ?>
 
-<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="fas fa-tags"></i> Gestionar Categorías</h1>
+    <p>Administra categorías de posts y organiza el contenido</p>
+    
+    <div class="page-actions">
+        <button onclick="toggleCategoryForm()" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nueva Categoría
+        </button>
+        <button onclick="exportCategories()" class="btn btn-secondary">
+            <i class="fas fa-download"></i> Exportar
+        </button>
+    </div>
+</div>
 
-<div class="modern-admin-container">
-    <?php include 'includes/admin-sidebar.php'; ?>
-
-    <div class="modern-admin-main">
-        <div class="tiendanube-header">
-            <div class="header-left">
-                <h1><i class="fas fa-tags"></i> Categorías</h1>
-                <p class="header-subtitle">Organiza el contenido con categorías temáticas</p>
-            </div>
-            <div class="header-actions">
-                <button onclick="toggleCategoryForm()" class="tn-btn tn-btn-primary">
-                    <i class="fas fa-plus"></i> Nueva categoría
-                </button>
-                <button onclick="exportCategories()" class="tn-btn tn-btn-secondary">
-                    <i class="fas fa-download"></i> Exportar
-                </button>
-            </div>
-        </div>
-
-        <!-- Formulario de categoría (inicialmente oculto) -->
-        <section class="tn-card category-form-section" id="categoryForm" style="<?php echo $edit_category ? 'display: block;' : 'display: none;'; ?>">
-            <div class="tn-card-header">
-                <h2><?php echo $edit_category ? 'Editar categoría' : 'Nueva categoría'; ?></h2>
-                <button onclick="closeCategoryForm()" class="tn-btn-ghost">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
+<!-- Formulario de categoría -->
+<div class="content-card" id="categoryForm" style="<?php echo $edit_category ? 'display: block;' : 'display: none;'; ?>">
+    <h3><i class="fas fa-plus"></i> <?php echo $edit_category ? 'Editar categoría' : 'Nueva categoría'; ?></h3>
             
             <form method="POST" action="" class="tn-form">
                 <?php if ($edit_category): ?>
@@ -153,20 +142,19 @@ include 'admin-dashboard-header.php';
                     <?php endif; ?>
                 </div>
             </form>
-        </section>
+</div>
 
-        <!-- Lista de categorías -->
-        <section class="tn-card">
-            <div class="tn-card-header">
-                <div class="header-left">
-                    <h2>Categorías existentes</h2>
-                    <span class="tn-badge tn-badge-neutral"><?php echo count($categories); ?> categorías</span>
-                </div>
-                <div class="tn-search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar categorías..." id="categorySearch">
-                </div>
-            </div>
+<!-- Lista de categorías -->
+<div class="content-card">
+    <h3><i class="fas fa-list"></i> Categorías Existentes</h3>
+    
+    <div class="category-search" style="margin-bottom: 20px;">
+        <div style="position: relative; display: inline-block;">
+            <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6c757d;"></i>
+            <input type="text" placeholder="Buscar categorías..." id="categorySearch" style="padding: 8px 12px 8px 40px; border: 1px solid #ddd; border-radius: 4px; width: 200px;">
+        </div>
+        <span style="margin-left: 15px; color: #6c757d; font-size: 14px;"><?php echo count($categories); ?> categorías</span>
+    </div>
 
             <?php if (empty($categories)): ?>
                 <div class="tn-empty-state">
@@ -243,8 +231,6 @@ include 'admin-dashboard-header.php';
                     </table>
                 </div>
             <?php endif; ?>
-        </section>
-    </div>
 </div>
 
 <script>
@@ -404,5 +390,4 @@ document.addEventListener('DOMContentLoaded', function() {
 .tn-form-actions { margin-top: 1.5rem !important; }
 </style>
 
-</body>
-</html>
+<?php include 'admin-master-footer.php'; ?>

@@ -1,42 +1,26 @@
 <?php
-require_once '../includes/functions.php';
-require_once '../config/database.php';
-
-if (!is_logged_in() || !is_admin()) {
-    flash_message('error', 'No tienes permisos para acceder al panel de administración');
-    redirect('../index.php');
-}
-
-$page_title = '📋 Órdenes de Compra - Panel Admin';
-include 'admin-dashboard-header.php';
+$pageTitle = '📋 Órdenes de Compra - Admin Panel';
+include 'admin-master-header.php';
 ?>
 
-<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="fas fa-clipboard-list"></i> Órdenes de Compra</h1>
+    <p>Gestión completa de pedidos y órdenes de compra</p>
+    
+    <div class="page-actions">
+        <button class="btn btn-primary" onclick="createNewOrder()">
+            <i class="fas fa-plus"></i> Nueva Orden
+        </button>
+        <button class="btn btn-secondary" onclick="exportOrders()">
+            <i class="fas fa-download"></i> Exportar
+        </button>
+    </div>
+</div>
 
-<div class="modern-admin-container">
-    <?php include 'includes/admin-sidebar.php'; ?>
-
-    <!-- Main Content -->
-    <div class="modern-admin-main">
-        <!-- Header -->
-        <div class="tiendanube-header">
-            <div class="header-left">
-                <h1><i class="fas fa-clipboard-list"></i> Órdenes de Compra</h1>
-                <p class="header-subtitle">Gestión completa de pedidos y órdenes</p>
-            </div>
-            <div class="header-right">
-                <button class="tn-btn tn-btn-primary" onclick="createNewOrder()">
-                    <i class="fas fa-plus"></i>
-                    Nueva Orden
-                </button>
-                <button class="tn-btn tn-btn-secondary" onclick="exportOrders()">
-                    <i class="fas fa-download"></i>
-                    Exportar
-                </button>
-            </div>
-        </div>
-
-        <!-- Filtros -->
+<!-- Filtros -->
+<div class="content-card">
+    <h3><i class="fas fa-filter"></i> Filtros de Búsqueda</h3>
         <div class="orders-filters">
             <div class="filter-group">
                 <label>Estado:</label>
@@ -74,8 +58,12 @@ include 'admin-dashboard-header.php';
             </div>
         </div>
 
-        <!-- Resumen de Órdenes -->
-        <div class="orders-summary">
+</div>
+
+<!-- Resumen de Órdenes -->
+<div class="content-card">
+    <h3><i class="fas fa-chart-pie"></i> Resumen de Estados</h3>
+    <div class="orders-summary">
             <div class="summary-card">
                 <div class="summary-icon pending">
                     <i class="fas fa-clock"></i>
@@ -111,11 +99,13 @@ include 'admin-dashboard-header.php';
                     <h3>128</h3>
                     <p>Completadas</p>
                 </div>
-            </div>
         </div>
+</div>
 
-        <!-- Lista de Órdenes -->
-        <div class="orders-list">
+<!-- Lista de Órdenes -->
+<div class="content-card">
+    <h3><i class="fas fa-list-ul"></i> Lista de Órdenes</h3>
+    <div class="orders-list">
             <div class="orders-table-container">
                 <table class="orders-table">
                     <thead>
@@ -283,10 +273,10 @@ include 'admin-dashboard-header.php';
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        <!-- Paginación -->
-        <div class="pagination-container">
+    </div>
+    
+    <!-- Paginación -->
+    <div class="pagination-container">
             <div class="pagination-info">
                 Mostrando 1-3 de 152 órdenes
             </div>

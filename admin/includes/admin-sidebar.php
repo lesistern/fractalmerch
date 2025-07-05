@@ -68,7 +68,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </div>
         
         <!-- Productos -->
-        <div class="nav-item-expandable <?php echo (in_array($current_page, ['manage-products.php', 'inventory.php', 'manage-categories.php'])) ? 'active' : ''; ?>">
+        <div class="nav-item-expandable <?php echo (in_array($current_page, ['manage-products.php', 'inventory.php', 'inventory-management.php', 'manage-categories.php'])) ? 'active' : ''; ?>">
             <a href="#" class="nav-item nav-expandable">
                 <i class="fas fa-box"></i>
                 <span>Productos</span>
@@ -78,11 +78,74 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <a href="manage-products.php" class="nav-subitem <?php echo ($current_page == 'manage-products.php') ? 'active' : ''; ?>">
                     <span>Lista de productos</span>
                 </a>
+                <a href="inventory-management.php" class="nav-subitem <?php echo ($current_page == 'inventory-management.php') ? 'active' : ''; ?>">
+                    <span>Gestión de Inventario</span>
+                </a>
                 <a href="inventory.php" class="nav-subitem <?php echo ($current_page == 'inventory.php') ? 'active' : ''; ?>">
-                    <span>Inventario</span>
+                    <span>Inventario Básico</span>
                 </a>
                 <a href="manage-categories.php" class="nav-subitem <?php echo ($current_page == 'manage-categories.php') ? 'active' : ''; ?>">
                     <span>Categorías</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Pedidos -->
+        <div class="nav-item-expandable <?php echo (in_array($current_page, ['order-management.php', 'orders-list.php', 'order-tracking.php'])) ? 'active' : ''; ?>">
+            <a href="#" class="nav-item nav-expandable">
+                <i class="fas fa-shopping-bag"></i>
+                <span>Pedidos</span>
+                <i class="fas fa-chevron-down nav-arrow"></i>
+            </a>
+            <div class="nav-submenu">
+                <a href="order-management.php" class="nav-subitem <?php echo ($current_page == 'order-management.php') ? 'active' : ''; ?>">
+                    <span>Gestión de Pedidos</span>
+                </a>
+                <a href="orders-list.php" class="nav-subitem <?php echo ($current_page == 'orders-list.php') ? 'active' : ''; ?>">
+                    <span>Lista de Pedidos</span>
+                </a>
+                <a href="order-tracking.php" class="nav-subitem <?php echo ($current_page == 'order-tracking.php') ? 'active' : ''; ?>">
+                    <span>Seguimiento</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Producción -->
+        <div class="nav-item-expandable <?php echo (in_array($current_page, ['production-workflow.php', 'production-queue.php', 'quality-control.php'])) ? 'active' : ''; ?>">
+            <a href="#" class="nav-item nav-expandable">
+                <i class="fas fa-cogs"></i>
+                <span>Producción</span>
+                <i class="fas fa-chevron-down nav-arrow"></i>
+            </a>
+            <div class="nav-submenu">
+                <a href="production-workflow.php" class="nav-subitem <?php echo ($current_page == 'production-workflow.php') ? 'active' : ''; ?>">
+                    <span>Workflow de Producción</span>
+                </a>
+                <a href="production-queue.php" class="nav-subitem <?php echo ($current_page == 'production-queue.php') ? 'active' : ''; ?>">
+                    <span>Cola de Producción</span>
+                </a>
+                <a href="quality-control.php" class="nav-subitem <?php echo ($current_page == 'quality-control.php') ? 'active' : ''; ?>">
+                    <span>Control de Calidad</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Proveedores -->
+        <div class="nav-item-expandable <?php echo (in_array($current_page, ['supplier-management.php', 'supplier-orders.php', 'supplier-apis.php'])) ? 'active' : ''; ?>">
+            <a href="#" class="nav-item nav-expandable">
+                <i class="fas fa-truck"></i>
+                <span>Proveedores</span>
+                <i class="fas fa-chevron-down nav-arrow"></i>
+            </a>
+            <div class="nav-submenu">
+                <a href="supplier-management.php" class="nav-subitem <?php echo ($current_page == 'supplier-management.php') ? 'active' : ''; ?>">
+                    <span>Gestión de Proveedores</span>
+                </a>
+                <a href="supplier-orders.php" class="nav-subitem <?php echo ($current_page == 'supplier-orders.php') ? 'active' : ''; ?>">
+                    <span>Órdenes de Proveedores</span>
+                </a>
+                <a href="supplier-apis.php" class="nav-subitem <?php echo ($current_page == 'supplier-apis.php') ? 'active' : ''; ?>">
+                    <span>APIs & Integración</span>
                 </a>
             </div>
         </div>

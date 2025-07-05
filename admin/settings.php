@@ -1,38 +1,23 @@
 <?php
-require_once '../includes/functions.php';
+$pageTitle = '⚙️ Configuración - Admin Panel';
+include 'admin-master-header.php';
 
-if (!is_logged_in() || !is_admin()) {
-    flash_message('error', 'No tienes permisos para acceder al panel de administración');
-    redirect('../index.php');
-}
-
-$page_title = '⚙️ Configuración - Panel Admin';
-include 'admin-dashboard-header.php';
 ?>
 
-<link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
-
-<div class="modern-admin-container">
-    <?php include 'includes/admin-sidebar.php'; ?>
-
-    <!-- Main Content -->
-    <div class="modern-admin-main">
-        <!-- Header Tiendanube Style -->
-        <div class="tiendanube-header">
-            <div class="header-left">
-                <h1>Configuración</h1>
-            </div>
-            <div class="header-right">
-                <button class="tn-btn tn-btn-secondary" onclick="exportSettings()">
-                    <i class="fas fa-download"></i>
-                    Exportar
-                </button>
-                <button class="tn-btn tn-btn-primary" onclick="saveSettings()">
-                    <i class="fas fa-save"></i>
-                    Guardar cambios
-                </button>
-            </div>
-        </div>
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="fas fa-cog"></i> Configuración del Sistema</h1>
+    <p>Configura los parámetros principales del sistema</p>
+    
+    <div class="page-actions">
+        <button class="btn btn-secondary" onclick="exportSettings()">
+            <i class="fas fa-download"></i> Exportar
+        </button>
+        <button class="btn btn-primary" onclick="saveSettings()">
+            <i class="fas fa-save"></i> Guardar Cambios
+        </button>
+    </div>
+</div>
 
         <!-- Settings Content -->
         <div class="settings-dashboard">
@@ -271,5 +256,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-</body>
-</html>
+<?php include 'admin-master-footer.php'; ?>
