@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Demo - Testing ROI Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .demo-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .demo-title {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .demo-subtitle {
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .demo-section h3 {
+            color: #007bff;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .demo-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .demo-btn.success {
+            background: #28a745;
+        }
+        
+        .demo-btn.warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .demo-btn.danger {
+            background: #dc3545;
+        }
+        
+        .demo-product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+        }
+        
+        .demo-exit-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            z-index: 10000;
+            display: none;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .demo-popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: none;
+        }
+        
+        .demo-progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .demo-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .demo-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .demo-stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .demo-stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .demo-stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .demo-cart-value {
+            font-size: 1.5rem;
+            color: #28a745;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .demo-console {
+            background: #2d3748;
+            color: #68d391;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .mobile-detection {
+            text-align: center;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .bundle-kit {
+            border: 2px dashed #ffc107;
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .shipping-progress-container {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1 class="demo-title">🔥 Analytics Tracker Demo</h1>
+            <p class="demo-subtitle">Testing ROI de Optimizaciones E-commerce</p>
+        </div>
+
+        <!-- Mobile Detection -->
+        <div class="mobile-detection">
+            <h4>📱 Detección de Dispositivo</h4>
+            <p>Dispositivo actual: <span id="device-type">Detectando...</span></p>
+            <p>Navegador: <span id="browser-type">Detectando...</span></p>
+        </div>
+
+        <!-- Current Cart Value -->
+        <div class="demo-cart-value">
+            🛒 Valor del Carrito: $<span id="cart-value">0</span>
+        </div>
+
+        <div class="demo-grid">
+            <!-- Exit Intent Testing -->
+            <div class="demo-section">
+                <h3>🚪 Exit Intent Popup</h3>
+                <p>Simula diferentes escenarios de exit intent para medir conversiones.</p>
+                <button class="demo-btn" onclick="triggerExitIntent()">Trigger Exit Intent</button>
+                <button class="demo-btn success" onclick="simulateEmailCapture()">Simular Email Capture</button>
+                <button class="demo-btn warning" onclick="simulatePopupDismissal()">Simular Dismissal</button>
+                
+                <div style="margin-top: 15px; font-size: 0.9rem;">
+                    <strong>Métricas:</strong><br>
+                    Shows: <span id="exit-shows">0</span><br>
+                    Captures: <span id="exit-captures">0</span><br>
+                    Rate: <span id="exit-rate">0%</span>
+                </div>
+            </div>
+
+            <!-- Bundle Kit Testing -->
+            <div class="demo-section">
+                <h3>📦 Bundle Kit Home Office</h3>
+                <p>Prueba el tracking de bundle kits y attach rates.</p>
+                <button class="demo-btn" onclick="viewBundleKit()">Ver Bundle Kit</button>
+                <button class="demo-btn success" onclick="addBundleToCart()">Add Bundle al Carrito</button>
+                <button class="demo-btn warning" onclick="simulateOrderWithBundle()">Orden con Bundle</button>
+                <button class="demo-btn danger" onclick="simulateOrderWithoutBundle()">Orden sin Bundle</button>
+                
+                <div style="margin-top: 15px; font-size: 0.9rem;">
+                    <strong>Métricas:</strong><br>
+                    Bundle Views: <span id="bundle-views">0</span><br>
+                    Bundle Adds: <span id="bundle-adds">0</span><br>
+                    Attach Rate: <span id="bundle-attach-rate">0%</span>
+                </div>
+            </div>
+
+            <!-- Shipping Progress Testing -->
+            <div class="demo-section">
+                <h3>🚚 Shipping Progress Bar</h3>
+                <p>Simula cambios en el carrito para medir efectividad del progress bar.</p>
+                <button class="demo-btn" onclick="addProductToCart(5999)">+Remera ($5.999)</button>
+                <button class="demo-btn" onclick="addProductToCart(12999)">+Buzo ($12.999)</button>
+                <button class="demo-btn" onclick="addProductToCart(3499)">+Taza ($3.499)</button>
+                <button class="demo-btn danger" onclick="clearCart()">Clear Carrito</button>
+                
+                <div class="shipping-progress-container">
+                    <strong>Progreso Envío Gratis:</strong>
+                    <div class="demo-progress-bar">
+                        <div class="demo-progress-fill" id="shipping-progress"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <span id="shipping-text">$0 / $15.000 para envío gratis</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Conversion Testing -->
+            <div class="demo-section">
+                <h3>💻 Mobile vs Desktop</h3>
+                <p>Tracking de conversiones por dispositivo.</p>
+                <button class="demo-btn success" onclick="simulateConversion()">Simular Conversión</button>
+                <button class="demo-btn" onclick="simulatePageView()">Simular Page View</button>
+                
+                <div style="margin-top: 15px; font-size: 0.9rem;">
+                    <strong>Sesión Actual:</strong><br>
+                    Dispositivo: <span id="current-device">-</span><br>
+                    Conversiones: <span id="device-conversions">0</span><br>
+                    Rate: <span id="device-conversion-rate">0%</span>
+                </div>
+            </div>
+
+            <!-- Time to Free Shipping -->
+            <div class="demo-section">
+                <h3>⏱️ Time to Free Shipping</h3>
+                <p>Mide tiempo para alcanzar threshold de envío gratis.</p>
+                <button class="demo-btn" onclick="startFreeShippingAttempt()">Iniciar Intento</button>
+                <button class="demo-btn success" onclick="reachFreeShippingThreshold()">Alcanzar Threshold</button>
+                <button class="demo-btn danger" onclick="abandonFreeShippingAttempt()">Abandonar</button>
+                
+                <div style="margin-top: 15px; font-size: 0.9rem;">
+                    <strong>Métricas:</strong><br>
+                    Intentos: <span id="shipping-attempts">0</span><br>
+                    Exitosos: <span id="shipping-successful">0</span><br>
+                    Tiempo Promedio: <span id="shipping-avg-time">0s</span>
+                </div>
+            </div>
+
+            <!-- Analytics Controls -->
+            <div class="demo-section">
+                <h3>⚙️ Analytics Controls</h3>
+                <p>Controla el sistema de analytics.</p>
+                <button class="demo-btn" onclick="refreshMetrics()">Refresh Métricas</button>
+                <button class="demo-btn warning" onclick="exportAnalytics()">Export JSON</button>
+                <button class="demo-btn danger" onclick="clearAnalytics()">Clear Data</button>
+                <button class="demo-btn success" onclick="generateReport()">Generate Report</button>
+            </div>
+        </div>
+
+        <!-- Bundle Kit Demo -->
+        <div class="bundle-kit" data-bundle>
+            <h4>🏠 Bundle Kit Home Office</h4>
+            <p>¡Combo completo para trabajar desde casa!</p>
+            <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
+                <div class="demo-product-card">
+                    <strong>Remera WFH</strong><br>
+                    $5.999
+                </div>
+                <div class="demo-product-card">
+                    <strong>Taza Café</strong><br>
+                    $3.499
+                </div>
+                <div class="demo-product-card">
+                    <strong>Mouse Pad</strong><br>
+                    $2.999
+                </div>
+            </div>
+            <button class="demo-btn success" data-bundle-add onclick="addBundleToCart()">
+                Agregar Bundle Completo - $11.997
+            </button>
+        </div>
+
+        <!-- Analytics Dashboard Stats -->
+        <div class="demo-stats">
+            <div class="demo-stat-card">
+                <div class="demo-stat-value" id="total-events">0</div>
+                <div class="demo-stat-label">Total Events</div>
+            </div>
+            <div class="demo-stat-card">
+                <div class="demo-stat-value" id="session-duration">0s</div>
+                <div class="demo-stat-label">Session Duration</div>
+            </div>
+            <div class="demo-stat-card">
+                <div class="demo-stat-value" id="page-views">0</div>
+                <div class="demo-stat-label">Page Views</div>
+            </div>
+            <div class="demo-stat-card">
+                <div class="demo-stat-value" id="total-roi">0%</div>
+                <div class="demo-stat-label">Estimated ROI</div>
+            </div>
+        </div>
+
+        <!-- Console Output -->
+        <div class="demo-console" id="console-output">
+            🔥 Analytics Tracker Demo iniciado...<br>
+            Esperando eventos de tracking...<br>
+        </div>
+    </div>
+
+    <!-- Exit Intent Popup -->
+    <div class="demo-popup-backdrop" id="popup-backdrop"></div>
+    <div class="demo-exit-popup exit-intent-popup" id="exit-popup">
+        <h3>¡Espera! 🎁</h3>
+        <p>Recibe un 15% de descuento en tu primera compra</p>
+        <form class="exit-intent-form" onsubmit="return handleEmailSubmit(event)">
+            <input type="email" placeholder="Tu email" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px;">
+            <button type="submit" class="demo-btn success" style="width: 100%;">
+                Obtener Descuento
+            </button>
+        </form>
+        <button class="demo-btn exit-intent-close" onclick="dismissExitPopup()" style="margin-top: 10px;">
+            No gracias
+        </button>
+    </div>
+
+    <!-- Load Analytics Scripts -->
+    <script src="assets/js/analytics-tracker.js"></script>
+    <script src="assets/js/analytics-integration.js"></script>
+
+    <script>
+        // Demo Controller
+        class AnalyticsDemo {
+            constructor() {
+                this.demoCart = [];
+                this.freeShippingStartTime = null;
+                this.updateInterval = null;
+                this.init();
+            }
+
+            async init() {
+                // Wait for analytics tracker to be ready
+                await this.waitForAnalytics();
+                
+                // Start periodic updates
+                this.startPeriodicUpdates();
+                
+                // Update device info
+                this.updateDeviceInfo();
+                
+                // Set up exit intent simulation
+                this.setupExitIntentSimulation();
+                
+                this.log('Analytics Demo initialized successfully! 🚀');
+                this.log('Current Session ID: ' + window.analyticsTracker.sessionId);
+            }
+
+            async waitForAnalytics() {
+                return new Promise((resolve) => {
+                    const checkAnalytics = () => {
+                        if (window.analyticsTracker) {
+                            resolve();
+                        } else {
+                            setTimeout(checkAnalytics, 100);
+                        }
+                    };
+                    checkAnalytics();
+                });
+            }
+
+            startPeriodicUpdates() {
+                this.updateInterval = setInterval(() => {
+                    this.updateDashboard();
+                }, 2000);
+            }
+
+            updateDashboard() {
+                if (!window.analyticsTracker) return;
+
+                const metrics = window.analyticsTracker.getMetrics();
+                const events = window.analyticsTracker.getEvents(100);
+
+                // Update stats
+                document.getElementById('total-events').textContent = events.length;
+                document.getElementById('session-duration').textContent = 
+                    Math.round((Date.now() - window.analyticsTracker.startTime) / 1000) + 's';
+                document.getElementById('page-views').textContent = metrics.session.pageViews;
+
+                // Update exit intent metrics
+                document.getElementById('exit-shows').textContent = metrics.exitIntent.popupShows;
+                document.getElementById('exit-captures').textContent = metrics.exitIntent.emailCaptures;
+                document.getElementById('exit-rate').textContent = 
+                    metrics.exitIntent.conversionRate.toFixed(1) + '%';
+
+                // Update bundle metrics
+                document.getElementById('bundle-views').textContent = metrics.bundleKit.bundleViews;
+                document.getElementById('bundle-adds').textContent = metrics.bundleKit.bundleAdds;
+                document.getElementById('bundle-attach-rate').textContent = 
+                    metrics.bundleKit.attachRate.toFixed(1) + '%';
+
+                // Update device metrics
+                const currentDevice = metrics.session.device;
+                document.getElementById('current-device').textContent = currentDevice;
+                document.getElementById('device-conversions').textContent = 
+                    metrics.deviceConversion[currentDevice].conversions;
+                document.getElementById('device-conversion-rate').textContent = 
+                    metrics.deviceConversion[currentDevice].conversionRate.toFixed(1) + '%';
+
+                // Update shipping metrics
+                document.getElementById('shipping-attempts').textContent = 
+                    metrics.freeShippingThreshold.attempts.length;
+                document.getElementById('shipping-successful').textContent = 
+                    metrics.freeShippingThreshold.attempts.filter(a => a.success).length;
+                document.getElementById('shipping-avg-time').textContent = 
+                    Math.round(metrics.freeShippingThreshold.averageTime / 1000) + 's';
+
+                // Calculate estimated ROI
+                const estimatedROI = this.calculateEstimatedROI(metrics);
+                document.getElementById('total-roi').textContent = estimatedROI.toFixed(1) + '%';
+
+                // Update cart value and shipping progress
+                this.updateCartDisplay();
+            }
+
+            calculateEstimatedROI(metrics) {
+                // Simple ROI calculation based on improvements
+                const exitROI = metrics.exitIntent.conversionRate * 0.3;
+                const bundleROI = metrics.bundleKit.attachRate * 0.4;
+                const shippingROI = (metrics.shippingProgress.averageCartIncrease / 1000) * 0.2;
+                
+                return exitROI + bundleROI + shippingROI;
+            }
+
+            updateDeviceInfo() {
+                document.getElementById('device-type').textContent = 
+                    window.analyticsTracker?.metrics.session.device || 'Unknown';
+                document.getElementById('browser-type').textContent = 
+                    window.analyticsTracker?.metrics.session.browser || 'Unknown';
+            }
+
+            updateCartDisplay() {
+                const cartValue = this.demoCart.reduce((total, item) => total + item.price, 0);
+                document.getElementById('cart-value').textContent = cartValue.toLocaleString();
+
+                // Update shipping progress
+                const freeShippingThreshold = 15000;
+                const progress = Math.min(100, (cartValue / freeShippingThreshold) * 100);
+                
+                document.getElementById('shipping-progress').style.width = progress + '%';
+                document.getElementById('shipping-text').textContent = 
+                    `$${cartValue.toLocaleString()} / $${freeShippingThreshold.toLocaleString()} para envío gratis`;
+
+                // Update localStorage cart for analytics
+                localStorage.setItem('cart', JSON.stringify(this.demoCart));
+            }
+
+            setupExitIntentSimulation() {
+                // Simulate exit intent on mouse leave (for demo)
+                let exitIntentTriggered = false;
+                document.addEventListener('mouseleave', (e) => {
+                    if (e.clientY <= 0 && !exitIntentTriggered) {
+                        this.triggerExitIntent();
+                        exitIntentTriggered = true;
+                        // Reset after 10 seconds
+                        setTimeout(() => { exitIntentTriggered = false; }, 10000);
+                    }
+                });
+            }
+
+            // ===== DEMO FUNCTIONS =====
+
+            triggerExitIntent() {
+                this.log('🚪 Exit intent triggered');
+                
+                // Show popup after short delay
+                setTimeout(() => {
+                    document.getElementById('popup-backdrop').style.display = 'block';
+                    document.getElementById('exit-popup').style.display = 'block';
+                }, 500);
+            }
+
+            simulateEmailCapture() {
+                this.log('📧 Email capture simulated');
+                // Directly track email capture without showing popup
+                if (window.analyticsTracker) {
+                    window.analyticsTracker.trackExitIntentEmailCapture({
+                        querySelector: () => ({ value: 'demo@example.com' })
+                    });
+                }
+                this.dismissExitPopup();
+            }
+
+            simulatePopupDismissal() {
+                this.log('❌ Popup dismissal simulated');
+                if (window.analyticsTracker) {
+                    window.analyticsTracker.trackExitIntentDismissal();
+                }
+                this.dismissExitPopup();
+            }
+
+            dismissExitPopup() {
+                document.getElementById('popup-backdrop').style.display = 'none';
+                document.getElementById('exit-popup').style.display = 'none';
+            }
+
+            handleEmailSubmit(event) {
+                event.preventDefault();
+                this.log('✅ Email submitted successfully');
+                if (window.analyticsTracker) {
+                    window.analyticsTracker.trackExitIntentEmailCapture(event.target);
+                }
+                this.dismissExitPopup();
+                return false;
+            }
+
+            viewBundleKit() {
+                this.log('👀 Bundle kit viewed');
+                if (window.analyticsTracker) {
+                    window.analyticsTracker.trackBundleView();
+                }
+            }
+
+            addBundleToCart() {
+                this.log('📦 Bundle kit added to cart');
+                
+                // Add bundle items to demo cart
+                const bundleItems = [
+                    { name: 'Remera WFH', price: 5999 },
+                    { name: 'Taza Café', price: 3499 },
+                    { name: 'Mouse Pad', price: 2999 }
+                ];
+                
+                bundleItems.forEach(item => {
+                    this.demoCart.push({ ...item, isBundle: true });
+                });
+
+                if (window.analyticsTracker) {
+                    window.analyticsTracker.trackBundleAdd();
+                }
+                
+                this.updateCartDisplay();
+            }
+
+            simulateOrderWithBundle() {
+                this.log('✅ Order with bundle completed');
+                if (window.analyticsTracker) {
+                    window.analyticsTracker.trackOrder({
+                        items: [{ isBundle: true, name: 'Home Office Bundle' }],
+                        total: 11997
+                    });
+                }
+            }
+
+            simulateOrderWithoutBundle() {
+                this.log('📝 Order without bundle completed');
+                if (window.analyticsTracker) {
+                    window.analyticsTracker.trackOrder({
+                        items: [{ isBundle: false, name: 'Remera Simple' }],
+                        total: 5999
+                    });
+                }
+            }
+
+            addProductToCart(price) {
+                const products = {
+                    5999: 'Remera Personalizada',
+                    12999: 'Buzo Personalizado',
+                    3499: 'Taza Personalizada'
+                };
+                
+                const productName = products[price] || 'Producto';
+                this.demoCart.push({ name: productName, price: price });
+                
+                this.log(`🛒 ${productName} added to cart ($${price.toLocaleString()})`);
+                this.updateCartDisplay();
+            }
+
+            clearCart() {
+                this.demoCart = [];
+                localStorage.removeItem('cart');
+                this.log('🗑️ Cart cleared');
+                this.updateCartDisplay();
+            }
+
+            simulateConversion() {
+                this.log('💰 Conversion simulated');
+                if (window.analyticsTracker) {
+                    window.analyticsTracker.trackOrder({
+                        items: this.demoCart,
+                        total: this.demoCart.reduce((total, item) => total + item.price, 0)
+                    });
+                }
+            }
+
+            simulatePageView() {
+                this.log('👁️ Page view simulated');
+                if (window.analyticsTracker) {
+                    window.analyticsTracker.trackPageView();
+                }
+            }
+
+            startFreeShippingAttempt() {
+                this.freeShippingStartTime = Date.now();
+                this.log('⏰ Free shipping attempt started');
+            }
+
+            reachFreeShippingThreshold() {
+                if (this.freeShippingStartTime) {
+                    if (window.analyticsTracker) {
+                        window.analyticsTracker.trackShippingThresholdReached(this.freeShippingStartTime);
+                    }
+                    this.log('🎯 Free shipping threshold reached!');
+                    this.freeShippingStartTime = null;
+                }
+            }
+
+            abandonFreeShippingAttempt() {
+                if (this.freeShippingStartTime) {
+                    if (window.analyticsTracker) {
+                        window.analyticsTracker.trackFreeShippingAbandoned(this.freeShippingStartTime);
+                    }
+                    this.log('😞 Free shipping attempt abandoned');
+                    this.freeShippingStartTime = null;
+                }
+            }
+
+            refreshMetrics() {
+                this.updateDashboard();
+                this.log('🔄 Metrics refreshed');
+            }
+
+            exportAnalytics() {
+                if (window.analyticsTracker) {
+                    const report = window.analyticsTracker.generateReport();
+                    const dataStr = JSON.stringify(report, null, 2);
+                    
+                    // Create download
+                    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(dataBlob);
+                    link.download = `analytics-demo-${new Date().toISOString().split('T')[0]}.json`;
+                    link.click();
+                    
+                    this.log('📥 Analytics data exported');
+                }
+            }
+
+            clearAnalytics() {
+                if (window.analyticsTracker) {
+                    window.analyticsTracker.clearAllData();
+                    this.log('🧹 Analytics data cleared');
+                    // Reinitialize
+                    setTimeout(() => {
+                        window.analyticsTracker = new AnalyticsTracker();
+                    }, 500);
+                }
+            }
+
+            generateReport() {
+                if (window.analyticsTracker) {
+                    const report = window.analyticsTracker.generateReport();
+                    
+                    this.log('📊 === ANALYTICS REPORT ===');
+                    this.log(`Exit Intent ROI: ${report.summary.exitIntentROI.conversionRate.toFixed(1)}%`);
+                    this.log(`Bundle Attach Rate: ${report.summary.bundleKitROI.attachRate.toFixed(1)}%`);
+                    this.log(`Avg Cart Increase: $${report.summary.shippingProgressROI.averageCartIncrease.toFixed(0)}`);
+                    this.log(`Mobile Conversion: ${report.summary.devicePerformance.mobile.conversionRate.toFixed(1)}%`);
+                    this.log(`Desktop Conversion: ${report.summary.devicePerformance.desktop.conversionRate.toFixed(1)}%`);
+                    this.log('========================');
+                }
+            }
+
+            log(message) {
+                const console = document.getElementById('console-output');
+                const timestamp = new Date().toLocaleTimeString();
+                console.innerHTML += `<span style="color: #9ca3af;">[${timestamp}]</span> ${message}<br>`;
+                console.scrollTop = console.scrollHeight;
+            }
+        }
+
+        // Global functions for button clicks
+        function triggerExitIntent() { window.demo?.triggerExitIntent(); }
+        function simulateEmailCapture() { window.demo?.simulateEmailCapture(); }
+        function simulatePopupDismissal() { window.demo?.simulatePopupDismissal(); }
+        function dismissExitPopup() { window.demo?.dismissExitPopup(); }
+        function handleEmailSubmit(event) { return window.demo?.handleEmailSubmit(event); }
+        function viewBundleKit() { window.demo?.viewBundleKit(); }
+        function addBundleToCart() { window.demo?.addBundleToCart(); }
+        function simulateOrderWithBundle() { window.demo?.simulateOrderWithBundle(); }
+        function simulateOrderWithoutBundle() { window.demo?.simulateOrderWithoutBundle(); }
+        function addProductToCart(price) { window.demo?.addProductToCart(price); }
+        function clearCart() { window.demo?.clearCart(); }
+        function simulateConversion() { window.demo?.simulateConversion(); }
+        function simulatePageView() { window.demo?.simulatePageView(); }
+        function startFreeShippingAttempt() { window.demo?.startFreeShippingAttempt(); }
+        function reachFreeShippingThreshold() { window.demo?.reachFreeShippingThreshold(); }
+        function abandonFreeShippingAttempt() { window.demo?.abandonFreeShippingAttempt(); }
+        function refreshMetrics() { window.demo?.refreshMetrics(); }
+        function exportAnalytics() { window.demo?.exportAnalytics(); }
+        function clearAnalytics() { window.demo?.clearAnalytics(); }
+        function generateReport() { window.demo?.generateReport(); }
+
+        // Initialize demo when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.demo = new AnalyticsDemo();
+        });
+    </script>
+</body>
+</html>

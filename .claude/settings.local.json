@@ -1,15 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)",
-      "Bash(cp:*)",
-      "Bash(rsync:*)",
-      "Bash(find:*)",
-      "Bash(chmod:*)",
-      "Bash(./auto-backup.sh:*)",
-      "Bash(grep:*)",
-      "Bash(rg:*)",
-      "Bash(curl:*)"
+      "Bash(git reset:*)"
     ],
     "deny": []
   }

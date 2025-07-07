@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sin conexión - FractalMerch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .offline-container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+        }
+        
+        .offline-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .offline-message {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .retry-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .retry-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .features-list {
+            margin-top: 2rem;
+            text-align: left;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+        
+        .feature-icon {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 600px) {
+            .offline-container {
+                padding: 2rem 1rem;
+            }
+            
+            .offline-title {
+                font-size: 1.5rem;
+            }
+            
+            .offline-message {
+                font-size: 1rem;
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        .offline-icon {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📶</div>
+        <h1 class="offline-title">Sin conexión a internet</h1>
+        <p class="offline-message">
+            No hay problema! FractalMerch funciona offline. 
+            Podés seguir navegando el contenido cacheado y tu carrito se sincronizará cuando vuelvas a estar online.
+        </p>
+        
+        <button class="retry-btn" onclick="checkConnection()">
+            🔄 Reintentar conexión
+        </button>
+        
+        <div class="features-list">
+            <div class="feature-item">
+                <span class="feature-icon">🛒</span>
+                <span>Tu carrito se guarda localmente</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">📱</span>
+                <span>Navegación offline disponible</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">🔄</span>
+                <span>Sincronización automática al conectarte</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">💾</span>
+                <span>Datos guardados en tu dispositivo</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function checkConnection() {
+            if (navigator.onLine) {
+                // Reload the page to get back to the app
+                window.location.reload();
+            } else {
+                // Show feedback that we're still offline
+                const btn = document.querySelector('.retry-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '❌ Aún sin conexión';
+                btn.style.background = 'rgba(255, 82, 82, 0.3)';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'rgba(255, 255, 255, 0.2)';
+                }, 2000);
+            }
+        }
+        
+        // Auto-check connection every 30 seconds
+        setInterval(() => {
+            if (navigator.onLine) {
+                // Connection restored, go back to the app
+                window.location.reload();
+            }
+        }, 30000);
+        
+        // Listen for online event
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+        
+        // Update connection status
+        function updateConnectionStatus() {
+            const message = document.querySelector('.offline-message');
+            if (navigator.onLine) {
+                message.innerHTML = '🎉 ¡Conexión restaurada! Actualizando...';
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        }
+        
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+    </script>
+</body>
+</html>

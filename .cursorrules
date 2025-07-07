@@ -1,0 +1,122 @@
+# Cursor Rules - Proyecto E-commerce PHP
+
+## Context
+You are working on a PHP e-commerce project located at C:\xampp\htdocs\proyecto using XAMPP on Windows.
+
+## Project Structure
+- PHP 7.4+ with MySQL 5.7+
+- MVC-like architecture
+- LocalStorage for cart functionality
+- Modern admin panel with statistics
+- Argentine tax compliance (RG 5.614/2024)
+
+## Code Style
+- Follow PSR-12 for PHP
+- Use prepared statements for all database queries
+- Sanitize all user inputs with htmlspecialchars()
+- Use ES6+ JavaScript features
+- Mobile-first responsive design
+
+## Key Files
+- Main CSS: /assets/css/style.css (10,000+ lines)
+- Cart system: /assets/js/enhanced-cart.js
+- Admin panel: /admin/dashboard.php
+- Product management: /admin/manage-products.php
+- E-commerce: /particulares.php, /product-detail.php, /checkout.php
+
+## Common Tasks
+
+### For CEO
+- Generate executive reports
+- Analyze business metrics
+- Plan feature roadmap
+- Review KPIs
+
+### For Senior Developer
+- Code reviews
+- Architecture decisions
+- Performance optimization
+- Security audits
+- Mentoring
+
+### For Intern Developers
+- Implement assigned features
+- Fix bugs
+- Write tests
+- Document code
+- Learn best practices
+
+## Quick Commands
+- Status: "claude status del proyecto"
+- Review: "claude revisa este código"
+- Help: "claude ayúdame con este error"
+- Test: "claude genera tests para esta función"
+- Docs: "claude documenta este código"
+
+## Important Notes
+- Always work in /mnt/c/xampp/htdocs/proyecto/
+- Test at http://localhost/proyecto/
+- Check CLAUDE.md for detailed project info
+- Follow TEAM_WORKFLOW.md for processes
+- Use QUICK_COMMANDS.md for common tasks
+
+## Database
+- Name: proyecto_web
+- User: root
+- Password: (empty)
+- Host: localhost
+
+## Security Requirements
+- Validate all inputs
+- Use password_hash() for passwords
+- Check user roles for admin access
+- Prevent SQL injection
+- Sanitize output
+
+## Git Workflow
+- main → develop → feature/[ticket]
+- Commit format: type[TICKET] Description
+- Always create PRs for review
+- Run tests before pushing
+
+## Testing
+- PHP syntax: php -l file.php
+- Find security issues in code
+- Check for XSS vulnerabilities
+- Validate SQL queries
+
+## Common Patterns
+```php
+// Database connection
+require_once 'config/database.php';
+
+// User authentication
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+// Input sanitization
+$input = htmlspecialchars($_POST['input'] ?? '', ENT_QUOTES, 'UTF-8');
+
+// Prepared statements
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+```
+
+## Debugging Tips
+1. Check error logs in C:\xampp\apache\logs\
+2. Enable error reporting in PHP
+3. Use browser DevTools
+4. Check localStorage for cart data
+5. Verify database connection
+
+## Performance
+- Minimize CSS/JS files
+- Optimize images
+- Use caching when possible
+- Lazy load images
+- Minimize database queries
+
+Remember: The goal is clean, secure, and maintainable code that follows project conventions.
