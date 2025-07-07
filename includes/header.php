@@ -68,6 +68,10 @@
     <!-- Heatmap Analytics -->
     <script src="assets/js/heatmap-analytics.js?v=<?php echo time(); ?>"></script>
     
+    <!-- Analytics Tracking System - ROI Measurement -->
+    <script src="assets/js/analytics-tracker.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/analytics-integration.js?v=<?php echo time(); ?>"></script>
+    
     <!-- Fase 4: Advanced Features -->
     <script src="assets/js/advanced-personalization.js?v=<?php echo time(); ?>"></script>
     <script src="assets/js/ab-testing.js?v=<?php echo time(); ?>"></script>
@@ -443,4 +447,18 @@ function closeCheckoutModal() {
     // Ya no se usa modal, redirige a página independiente
     window.location.href = 'checkout.php';
 }
+</script>
+
+<!-- Recommendation System JS - Global -->
+<script src="assets/js/recommendation-system.js?v=<?php echo time(); ?>" onload="console.log('recommendation-system.js loaded')" onerror="console.error('Error loading recommendation-system.js')"></script>
+
+<!-- Exit Intent Popup JS - Conversion Optimization -->
+<script src="assets/js/exit-intent-popup.js?v=<?php echo time(); ?>" onload="console.log('exit-intent-popup.js loaded')" onerror="console.error('Error loading exit-intent-popup.js')"></script>
+<script>
+// Configurar usuario actual globalmente para recomendaciones
+<?php if (isset($_SESSION['user_id'])): ?>
+window.currentUserId = <?php echo $_SESSION['user_id']; ?>;
+<?php else: ?>
+window.currentUserId = null;
+<?php endif; ?>
 </script>

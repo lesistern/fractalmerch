@@ -17,12 +17,12 @@ if (!$product_id) {
 
 // Definir productos predeterminados
 $default_products = [
-    1 => ['id' => 1, 'name' => 'Remera Personalizada', 'price' => 5999, 'description' => 'Remera 100% algodón de alta calidad, perfecta para personalizar con tus diseños favoritos. Disponible en múltiples tallas y colores.', 'category' => 'remeras', 'stock' => 50, 'sku' => 'REM-001', 'iva_rate' => 21, 'real_sales' => 1247],
-    2 => ['id' => 2, 'name' => 'Buzo Personalizado', 'price' => 12999, 'description' => 'Buzo con capucha, ideal para el invierno. Material premium con forro interno suave. Personalizable en frente y espalda.', 'category' => 'buzos', 'stock' => 30, 'sku' => 'BUZ-001', 'iva_rate' => 21, 'real_sales' => 856],
-    3 => ['id' => 3, 'name' => 'Taza Personalizada', 'price' => 3499, 'description' => 'Taza de cerámica de alta calidad, resistente al lavavajillas y microondas. Ideal para sublimación.', 'category' => 'tazas', 'stock' => 100, 'sku' => 'TAZ-001', 'iva_rate' => 10.5, 'real_sales' => 2341],
-    4 => ['id' => 4, 'name' => 'Mouse Pad Personalizado', 'price' => 2999, 'description' => 'Mouse pad con base antideslizante de goma. Superficie suave para óptimo deslizamiento del mouse.', 'category' => 'accesorios', 'stock' => 75, 'sku' => 'MP-001', 'iva_rate' => 21, 'real_sales' => 634],
-    5 => ['id' => 5, 'name' => 'Funda Personalizada', 'price' => 4999, 'description' => 'Funda para celular resistente a impactos. Compatible con múltiples modelos de smartphones.', 'category' => 'accesorios', 'stock' => 60, 'sku' => 'FUN-001', 'iva_rate' => 21, 'real_sales' => 423],
-    6 => ['id' => 6, 'name' => 'Almohada Personalizada', 'price' => 6999, 'description' => 'Almohada suave y cómoda con funda personalizable. Relleno hipoalergénico de alta calidad.', 'category' => 'hogar', 'stock' => 25, 'sku' => 'ALM-001', 'iva_rate' => 10.5, 'real_sales' => 789]
+    1 => ['id' => 1, 'name' => 'Remera Personalizada', 'price' => 5990, 'description' => 'Remera 100% algodón de alta calidad, perfecta para personalizar con tus diseños favoritos. Disponible en múltiples tallas y colores.', 'category' => 'remeras', 'stock' => 50, 'sku' => 'REM-001', 'iva_rate' => 21, 'real_sales' => 1247],
+    2 => ['id' => 2, 'name' => 'Buzo Personalizado', 'price' => 12990, 'description' => 'Buzo con capucha, ideal para el invierno. Material premium con forro interno suave. Personalizable en frente y espalda.', 'category' => 'buzos', 'stock' => 30, 'sku' => 'BUZ-001', 'iva_rate' => 21, 'real_sales' => 856],
+    3 => ['id' => 3, 'name' => 'Taza Personalizada', 'price' => 3490, 'description' => 'Taza de cerámica de alta calidad, resistente al lavavajillas y microondas. Ideal para sublimación.', 'category' => 'tazas', 'stock' => 100, 'sku' => 'TAZ-001', 'iva_rate' => 10.5, 'real_sales' => 2341],
+    4 => ['id' => 4, 'name' => 'Mouse Pad Personalizado', 'price' => 2990, 'description' => 'Mouse pad con base antideslizante de goma. Superficie suave para óptimo deslizamiento del mouse.', 'category' => 'accesorios', 'stock' => 75, 'sku' => 'MP-001', 'iva_rate' => 21, 'real_sales' => 634],
+    5 => ['id' => 5, 'name' => 'Funda Personalizada', 'price' => 4990, 'description' => 'Funda para celular resistente a impactos. Compatible con múltiples modelos de smartphones.', 'category' => 'accesorios', 'stock' => 60, 'sku' => 'FUN-001', 'iva_rate' => 21, 'real_sales' => 423],
+    6 => ['id' => 6, 'name' => 'Almohada Personalizada', 'price' => 6990, 'description' => 'Almohada suave y cómoda con funda personalizable. Relleno hipoalergénico de alta calidad.', 'category' => 'hogar', 'stock' => 25, 'sku' => 'ALM-001', 'iva_rate' => 10.5, 'real_sales' => 789]
 ];
 
 // Obtener producto de la base de datos
@@ -2033,5 +2033,92 @@ const zoomStyles = `
 document.head.insertAdjacentHTML('beforeend', zoomStyles);
 
 </script>
+
+<!-- Secciones de Recomendaciones -->
+<section class="recommendations-wrapper">
+    <div class="container">
+        
+        <!-- Productos Frecuentemente Comprados Juntos -->
+        <div id="frequently-bought-together" 
+             data-recommendations="frequently_bought_together" 
+             data-product-id="<?php echo $product['id']; ?>" 
+             data-limit="4">
+            <!-- Se carga dinámicamente con JavaScript -->
+        </div>
+        
+        <!-- Productos Similares -->
+        <div id="similar-products" 
+             data-recommendations="similar_products" 
+             data-product-id="<?php echo $product['id']; ?>" 
+             data-limit="4">
+            <!-- Se carga dinámicamente con JavaScript -->
+        </div>
+        
+        <!-- Recomendaciones Personalizadas (solo si hay usuario logueado) -->
+        <?php if (isset($_SESSION['user_id'])): ?>
+        <div id="personalized-recommendations" 
+             data-recommendations="personalized" 
+             data-limit="6">
+            <!-- Se carga dinámicamente con JavaScript -->
+        </div>
+        <?php endif; ?>
+        
+        <!-- Productos Trending -->
+        <div id="trending-products" 
+             data-recommendations="trending" 
+             data-limit="4">
+            <!-- Se carga dinámicamente con JavaScript -->
+        </div>
+        
+        <!-- Recomendaciones Basadas en Precio -->
+        <div id="price-based-recommendations" 
+             data-recommendations="price_based" 
+             data-current-price="<?php echo $product['price']; ?>"
+             data-limit="4">
+            <!-- Se carga dinámicamente con JavaScript -->
+        </div>
+        
+        <!-- Productos Estacionales -->
+        <div id="seasonal-recommendations" 
+             data-recommendations-lazy="seasonal" 
+             data-limit="4">
+            <!-- Se carga con lazy loading -->
+        </div>
+        
+    </div>
+</section>
+
+<!-- Script para cargar las recomendaciones -->
+<script>
+// Configurar usuario actual para recomendaciones
+<?php if (isset($_SESSION['user_id'])): ?>
+window.currentUserId = <?php echo $_SESSION['user_id']; ?>;
+<?php else: ?>
+window.currentUserId = null;
+<?php endif; ?>
+
+// Trackear vista del producto actual
+document.addEventListener('DOMContentLoaded', function() {
+    // Esperar a que el sistema de recomendaciones se inicialice
+    setTimeout(() => {
+        if (window.recommendationSystem) {
+            // Trackear vista de producto
+            window.recommendationSystem.trackEvent('product_view', {
+                product_id: <?php echo $product['id']; ?>,
+                source_page: 'product_detail'
+            });
+            
+            // Configurar parámetros adicionales para recomendaciones basadas en precio
+            const priceBasedContainer = document.getElementById('price-based-recommendations');
+            if (priceBasedContainer) {
+                priceBasedContainer.setAttribute('data-current-price', '<?php echo $product['price']; ?>');
+            }
+        }
+    }, 500);
+});
+</script>
+
+<!-- CSS específico para recomendaciones en product detail -->
+<link rel="stylesheet" href="assets/css/recommendations.css?v=<?php echo time(); ?>">
 
 <?php include 'includes/footer.php'; ?>

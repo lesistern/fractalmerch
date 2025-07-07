@@ -81,12 +81,12 @@ $stmt->execute([$_SESSION['user_id']]);
 $unread_notifications = $stmt->fetch(PDO::FETCH_ASSOC)['unread_count'];
 
 if ($_POST) {
-    $username = sanitize_input($_POST['username']);
-    $email = sanitize_input($_POST['email']);
-    $bio = sanitize_input($_POST['bio']);
-    $current_password = $_POST['current_password'];
-    $new_password = $_POST['new_password'];
-    $confirm_password = $_POST['confirm_password'];
+    $username = validate_and_sanitize_input($_POST['username'] ?? '', 'string');
+    $email = validate_and_sanitize_input($_POST['email'] ?? '', 'email');
+    $bio = validate_and_sanitize_input($_POST['bio'] ?? '', 'string');
+    $current_password = $_POST['current_password'] ?? '';
+    $new_password = $_POST['new_password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
     
     $errors = [];
     
@@ -617,14 +617,14 @@ function get_status_badge($status) {
                         <div class="form-group">
                             <label for="username">Nombre de Usuario:</label>
                             <input type="text" id="username" name="username" required 
-                                   value="<?php echo htmlspecialchars($user['username']); ?>"
+                                   value="<?php echo sanitize_output($user['username']); ?>"
                                    style="width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); border-radius: 5px;">
                         </div>
                         
                         <div class="form-group">
                             <label for="email">Email:</label>
                             <input type="email" id="email" name="email" required 
-                                   value="<?php echo htmlspecialchars($user['email']); ?>"
+                                   value="<?php echo sanitize_output($user['email']); ?>"
                                    style="width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); border-radius: 5px;">
                         </div>
                     </div>
@@ -632,7 +632,7 @@ function get_status_badge($status) {
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label for="bio">Biografía:</label>
                         <textarea id="bio" name="bio" rows="3" placeholder="Cuéntanos sobre ti..."
-                                  style="width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); border-radius: 5px; resize: vertical;"><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
+                                  style="width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); border-radius: 5px; resize: vertical;"><?php echo sanitize_output($user['bio'] ?? ''); ?></textarea>
                     </div>
                     
                     <hr style="margin: 2rem 0;">

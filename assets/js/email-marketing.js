@@ -253,6 +253,164 @@ class EmailMarketingSystem {
     }
     
     /**
+     * Load saved automation state from localStorage
+     */
+    loadAutomationState() {
+        try {
+            console.log('📂 Loading automation state...');
+            
+            // Load campaign state
+            const savedCampaigns = localStorage.getItem('email_campaigns_state');
+            if (savedCampaigns) {
+                const campaignState = JSON.parse(savedCampaigns);
+                this.mergeCampaignState(campaignState);
+                console.log('Campaign state loaded successfully');
+            }
+            
+            // Load automation rules state
+            const savedAutomations = localStorage.getItem('email_automations_state');
+            if (savedAutomations) {
+                const automationState = JSON.parse(savedAutomations);
+                this.mergeAutomationState(automationState);
+                console.log('Automation state loaded successfully');
+            }
+            
+            // Load user segments
+            const savedSegments = localStorage.getItem('email_segments_state');
+            if (savedSegments) {
+                this.userSegments = { ...this.userSegments, ...JSON.parse(savedSegments) };
+                console.log('User segments loaded successfully');
+            }
+            
+            // Load email templates cache
+            const savedTemplates = localStorage.getItem('email_templates_cache');
+            if (savedTemplates) {
+                this.emailTemplatesCache = JSON.parse(savedTemplates);
+                console.log('Email templates cache loaded successfully');
+            }
+            
+            // Load automation metrics
+            const savedMetrics = localStorage.getItem('email_automation_metrics');
+            if (savedMetrics) {
+                this.automationMetrics = { ...this.automationMetrics, ...JSON.parse(savedMetrics) };
+                console.log('Automation metrics loaded successfully');
+            }
+            
+            // Load pending automations queue
+            const pendingAutomations = localStorage.getItem('pending_email_automations');
+            if (pendingAutomations) {
+                this.pendingAutomations = JSON.parse(pendingAutomations);
+                console.log(`${this.pendingAutomations.length} pending automations loaded`);
+            }
+            
+            console.log('✅ Automation state loading completed');
+            
+        } catch (error) {
+            console.error('Failed to load automation state:', error);
+            // Initialize with defaults if loading fails
+            this.initializeDefaultState();
+        }
+    }
+    
+    /**
+     * Merge loaded campaign state with current campaigns
+     */
+    mergeCampaignState(savedState) {
+        Object.keys(savedState).forEach(campaignType => {
+            if (this.campaigns[campaignType]) {
+                // Merge saved state with current campaign configuration
+                this.campaigns[campaignType] = {
+                    ...this.campaigns[campaignType],
+                    ...savedState[campaignType],
+                    // Preserve current configuration for critical fields
+                    emails: this.campaigns[campaignType].emails,
+                    triggers: this.campaigns[campaignType].triggers
+                };
+            }
+        });
+    }
+    
+    /**
+     * Merge loaded automation state
+     */
+    mergeAutomationState(savedState) {
+        // Merge automation rules
+        if (savedState.rules) {
+            this.automationRules = { ...this.automationRules, ...savedState.rules };
+        }
+        
+        // Merge processing state
+        if (savedState.processing) {
+            this.automationProcessing = { ...this.automationProcessing, ...savedState.processing };
+        }
+        
+        // Merge configuration
+        if (savedState.config) {
+            this.config = { ...this.config, ...savedState.config };
+        }
+    }
+    
+    /**
+     * Initialize default state when loading fails
+     */
+    initializeDefaultState() {
+        console.log('Initializing default automation state...');
+        
+        this.emailTemplatesCache = {};
+        this.userSegments = {
+            new_users: [],
+            active_users: [],
+            inactive_users: [],
+            vip_customers: []
+        };
+        this.automationMetrics = {
+            emails_sent: 0,
+            emails_opened: 0,
+            emails_clicked: 0,
+            conversions: 0,
+            revenue_generated: 0
+        };
+        this.pendingAutomations = [];
+        
+        console.log('Default state initialized');
+    }
+    
+    /**
+     * Save current automation state to localStorage
+     */
+    saveAutomationState() {
+        try {
+            // Save campaign state
+            const campaignState = {};
+            Object.keys(this.campaigns).forEach(key => {
+                campaignState[key] = {
+                    active: this.campaigns[key].active,
+                    metrics: this.campaigns[key].metrics,
+                    lastRun: this.campaigns[key].lastRun
+                };
+            });
+            localStorage.setItem('email_campaigns_state', JSON.stringify(campaignState));
+            
+            // Save automation state
+            const automationState = {
+                rules: this.automationRules,
+                processing: this.automationProcessing,
+                config: this.config
+            };
+            localStorage.setItem('email_automations_state', JSON.stringify(automationState));
+            
+            // Save other state data
+            localStorage.setItem('email_segments_state', JSON.stringify(this.userSegments));
+            localStorage.setItem('email_templates_cache', JSON.stringify(this.emailTemplatesCache));
+            localStorage.setItem('email_automation_metrics', JSON.stringify(this.automationMetrics));
+            localStorage.setItem('pending_email_automations', JSON.stringify(this.pendingAutomations));
+            
+        } catch (error) {
+            console.error('Failed to save automation state:', error);
+        }
+    }
+    
+    /**
      * EVENT LISTENERS AND TRIGGERS
      */
     initEventListeners() {

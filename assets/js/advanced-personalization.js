@@ -40,7 +40,7 @@ class AdvancedPersonalizationEngine {
             aiInsights: {
                 buyingIntent: 'low',
                 productInterest: [],
-                pricesensitivity: 'medium',
+                priceSensitivity: 'medium',
                 designPreference: 'modern',
                 conversionProbability: 0.1
             }

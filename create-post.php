@@ -9,10 +9,10 @@ if (!is_logged_in()) {
 $categories = get_categories();
 
 if ($_POST) {
-    $title = sanitize_input($_POST['title']);
-    $content = $_POST['content'];
-    $category_id = isset($_POST['category_id']) ? (int)$_POST['category_id'] : null;
-    $excerpt = sanitize_input($_POST['excerpt']);
+    $title = validate_and_sanitize_input($_POST['title'] ?? '', 'string');
+    $content = validate_and_sanitize_input($_POST['content'] ?? '', 'string');
+    $category_id = validate_and_sanitize_input($_POST['category_id'] ?? '', 'int');
+    $excerpt = validate_and_sanitize_input($_POST['excerpt'] ?? '', 'string');
     
     $errors = [];
     
@@ -52,7 +52,7 @@ include 'includes/header.php';
         <div class="form-group">
             <label for="title">Título:</label>
             <input type="text" id="title" name="title" required 
-                   value="<?php echo isset($_POST['title']) ? $_POST['title'] : ''; ?>">
+                   value="<?php echo isset($_POST['title']) ? sanitize_output($_POST['title']) : ''; ?>">
         </div>
         
         <div class="form-group">
@@ -70,12 +70,12 @@ include 'includes/header.php';
         
         <div class="form-group">
             <label for="excerpt">Resumen (opcional):</label>
-            <textarea id="excerpt" name="excerpt" rows="3" placeholder="Breve descripción del post..."><?php echo isset($_POST['excerpt']) ? $_POST['excerpt'] : ''; ?></textarea>
+            <textarea id="excerpt" name="excerpt" rows="3" placeholder="Breve descripción del post..."><?php echo isset($_POST['excerpt']) ? sanitize_output($_POST['excerpt']) : ''; ?></textarea>
         </div>
         
         <div class="form-group">
             <label for="content">Contenido:</label>
-            <textarea id="content" name="content" rows="15" required><?php echo isset($_POST['content']) ? $_POST['content'] : ''; ?></textarea>
+            <textarea id="content" name="content" rows="15" required><?php echo isset($_POST['content']) ? sanitize_output($_POST['content']) : ''; ?></textarea>
         </div>
         
         <div class="form-actions">

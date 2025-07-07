@@ -39,6 +39,18 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_product' && isset($_GET['
 
 // Manejo de acciones (añadir, editar, eliminar)
 if ($_POST) {
+    // Verificar CSRF token
+    if (!isset($_POST['csrf_token']) || !validate_csrf_token($_POST['csrf_token'])) {
+        flash_message('error', 'Token de seguridad inválido. Intenta nuevamente.');
+        redirect('manage-products.php');
+    }
+    
+    // Rate limiting
+    if (!check_rate_limit('product_management', 10, 60)) {
+        flash_message('error', 'Demasiados intentos. Espera un momento antes de continuar.');
+        redirect('manage-products.php');
+    }
+    
     error_log("POST data received: " . json_encode(array_keys($_POST)));
     error_log("FILES data received: " . json_encode(array_keys($_FILES)));
     $name = sanitize_input($_POST['name']);
@@ -50,8 +62,13 @@ if ($_POST) {
     $category_id = empty($_POST['category_id']) ? null : (int)$_POST['category_id'];
     $variants = $_POST['variants'] ?? [];
     
-    // Manejo de carga de imagen principal
+    // Manejo de carga de imagen principal con validación de seguridad
     if (isset($_FILES['mainImageFile']) && $_FILES['mainImageFile']['error'] === UPLOAD_ERR_OK) {
+        $validation = validate_upload_security($_FILES['mainImageFile']);
+        if (!$validation['valid']) {
+            flash_message('error', $validation['error']);
+            redirect('manage-products.php');
+        }
         $upload_dir = '../assets/images/products/';
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0755, true);
@@ -142,8 +159,16 @@ if (isset($_GET['edit'])) {
     }
 }
 
-// Obtener productos para mostrar
-$products = get_products();
+// Paginación optimizada
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$per_page = 20;
+$offset = ($page - 1) * $per_page;
+$search = isset($_GET['search']) ? sanitize_input($_GET['search']) : '';
+
+// Obtener productos con paginación y búsqueda
+$products = get_products_paginated($per_page, $offset, $search);
+$total_products = get_products_count($search);
+$total_pages = ceil($total_products / $per_page);
 $categories = get_categories();
 
 $pageTitle = '📦 Gestionar Productos - Panel Admin';
@@ -183,6 +208,7 @@ include 'admin-master-header.php';
             </div>
 
             <form action="" method="POST" class="modern-product-form" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                 <?php if ($edit_product): ?>
                     <input type="hidden" name="product_id" value="<?php echo $edit_product['id']; ?>">
                 <?php endif; ?>
@@ -519,7 +545,9 @@ include 'admin-master-header.php';
             <div class="tiendanube-search-bar">
                 <div class="tn-search-container">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="productSearch" placeholder="Busca por nombre, SKU o tags">
+                    <input type="text" id="productSearch" placeholder="Busca por nombre, SKU o tags" 
+                           value="<?php echo htmlspecialchars($search); ?>" 
+                           onkeyup="debounceSearch(this.value)">
                 </div>
                 <div class="tn-filters">
                     <button class="tn-filter-btn" onclick="toggleFilters()">
@@ -534,7 +562,7 @@ include 'admin-master-header.php';
             </div>
             
             <div class="tn-products-counter">
-                <span id="productsCount"><?php echo count($products); ?> productos</span>
+                <span id="productsCount"><?php echo $total_products; ?> productos (página <?php echo $page; ?> de <?php echo $total_pages; ?>)</span>
             </div>
 
             <?php if (empty($products)): ?>
@@ -633,6 +661,32 @@ include 'admin-master-header.php';
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Paginación -->
+                <?php if ($total_pages > 1): ?>
+                <div class="pagination-container" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
+                    <?php if ($page > 1): ?>
+                        <a href="?page=<?php echo $page - 1; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </a>
+                    <?php endif; ?>
+                    
+                    <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
+                        <a href="?page=<?php echo $i; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>" 
+                           class="btn <?php echo $i == $page ? 'btn-primary' : 'btn-secondary'; ?>">
+                            <?php echo $i; ?>
+                        </a>
+                    <?php endfor; ?>
+                    
+                    <?php if ($page < $total_pages): ?>
+                        <a href="?page=<?php echo $page + 1; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>" 
+                           class="btn btn-secondary">
+                            Siguiente <i class="fas fa-chevron-right"></i>
+                        </a>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
 </div>
@@ -933,10 +987,28 @@ function updateProductsCounter() {
     }
 }
 
-// Enhanced search function for Tiendanube style
+// Enhanced search function with debouncing
+let searchTimeout;
+function debounceSearch(value) {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        if (value.length >= 2 || value.length === 0) {
+            const url = new URL(window.location);
+            if (value) {
+                url.searchParams.set('search', value);
+            } else {
+                url.searchParams.delete('search');
+            }
+            url.searchParams.delete('page'); // Reset to first page on search
+            window.location.href = url.toString();
+        }
+    }, 500);
+}
+
 function enhancedProductSearch() {
     const searchInput = document.getElementById('productSearch');
     if (searchInput) {
+        // Live client-side filtering for immediate feedback
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const rows = document.querySelectorAll('.tn-product-row');

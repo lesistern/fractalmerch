@@ -7,17 +7,24 @@ if (is_logged_in()) {
 }
 
 if ($_POST) {
-    $email = sanitize_input($_POST['email']);
-    $password = $_POST['password'];
-    
-    if (empty($email) || empty($password)) {
-        flash_message('error', 'Por favor completa todos los campos');
+    // Validar CSRF token
+    if (!isset($_POST['csrf_token']) || !validate_csrf_token($_POST['csrf_token'])) {
+        flash_message('error', 'Token de seguridad inválido. Por favor, intenta de nuevo.');
     } else {
-        if (authenticate_user($email, $password)) {
-            flash_message('success', 'Bienvenido de vuelta!');
-            redirect('index.php');
+        $email = validate_and_sanitize_input($_POST['email'] ?? '', 'email');
+        $password = $_POST['password'] ?? '';
+        
+        if (!$email || empty($password)) {
+            flash_message('error', 'Por favor completa todos los campos con información válida');
         } else {
-            flash_message('error', 'Email o contraseña incorrectos');
+            if (authenticate_user($email, $password)) {
+                // Invalidar token después de uso exitoso
+                invalidate_csrf_token();
+                flash_message('success', 'Bienvenido de vuelta!');
+                redirect('index.php');
+            } else {
+                flash_message('error', 'Email o contraseña incorrectos');
+            }
         }
     }
 }
@@ -31,10 +38,11 @@ include 'includes/header.php';
         <h2>Iniciar Sesión</h2>
         
         <form method="POST" action="">
+            <?php echo csrf_field(); ?>
             <div class="form-group">
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" required 
-                       value="<?php echo isset($_POST['email']) ? $_POST['email'] : ''; ?>">
+                       value="<?php echo isset($_POST['email']) ? sanitize_output($_POST['email']) : ''; ?>">
             </div>
             
             <div class="form-group">

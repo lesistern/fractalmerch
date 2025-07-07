@@ -36,14 +36,22 @@ if (!isset($pageTitle)) {
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Chart.js for analytics -->
+    <!-- Chart.js for analytics - Lazy loaded only when needed -->
+    <?php if (in_array(basename($_SERVER['PHP_SELF']), ['dashboard.php', 'statistics.php', 'stats-payments.php', 'stats-shipping.php', 'stats-products.php', 'stats-traffic.php'])): ?>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <?php endif; ?>
     
     <!-- Main CSS -->
     <link rel="stylesheet" href="../assets/css/style.css?v=<?php echo time(); ?>">
     
+    <!-- Admin Professional CSS -->
+    <link rel="stylesheet" href="../assets/css/admin-professional.css?v=<?php echo time(); ?>">
+    
     <!-- Admin CSS Unificado -->
     <link rel="stylesheet" href="../assets/css/admin-notifications.css?v=<?php echo time(); ?>">
+    
+    <!-- Admin Professional JavaScript -->
+    <script src="assets/js/admin-professional.js?v=<?php echo time(); ?>" defer></script>
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/images/icon.ico">
@@ -418,6 +426,48 @@ if (!isset($pageTitle)) {
     .admin-body .nav-container {
         display: none !important;
     }
+
+    /* Keyboard shortcuts indicator */
+    .keyboard-shortcut {
+        font-size: 10px;
+        background: rgba(0,0,0,0.1);
+        padding: 2px 4px;
+        border-radius: 3px;
+        margin-left: auto;
+        opacity: 0.7;
+    }
+
+    /* Quick access toolbar */
+    .quick-access-toolbar {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 1000;
+    }
+
+    .quick-access-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #007bff;
+        color: white;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .quick-access-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+    }
     </style>
 </head>
 <body class="admin-body">
@@ -468,12 +518,14 @@ if (!isset($pageTitle)) {
                             <a href="dashboard.php">
                                 <i class="fas fa-home"></i>
                                 <span>Dashboard</span>
+                                <span class="keyboard-shortcut">Alt+D</span>
                             </a>
                         </li>
                         <li class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'statistics.php' ? 'active' : ''; ?>">
                             <a href="statistics.php">
                                 <i class="fas fa-chart-bar"></i>
                                 <span>Estadísticas</span>
+                                <span class="keyboard-shortcut">Alt+S</span>
                             </a>
                         </li>
                     </ul>
@@ -487,6 +539,7 @@ if (!isset($pageTitle)) {
                                 <i class="fas fa-boxes"></i>
                                 <span>Inventario</span>
                                 <span class="nav-badge warning">8</span>
+                                <span class="keyboard-shortcut">Alt+I</span>
                             </a>
                         </li>
                         <li class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'order-management.php' ? 'active' : ''; ?>">
@@ -494,6 +547,7 @@ if (!isset($pageTitle)) {
                                 <i class="fas fa-clipboard-list"></i>
                                 <span>Órdenes</span>
                                 <span class="nav-badge info">12</span>
+                                <span class="keyboard-shortcut">Alt+O</span>
                             </a>
                         </li>
                         <li class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'production-workflow.php' ? 'active' : ''; ?>">

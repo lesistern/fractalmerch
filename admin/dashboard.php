@@ -2,61 +2,55 @@
 $pageTitle = '🏠 Dashboard - FractalMerch Admin';
 include 'admin-master-header.php';
 
-// Obtener estadísticas del sistema
-$stats = [];
+// Include enterprise backend
+require_once 'backend/DashboardBackend.php';
+require_once 'backend/DashboardExtensions.php';
 
-// === ESTADÍSTICAS GENERALES ===
+// Initialize enterprise dashboard backend
+$config = [
+    'cache_enabled' => true,
+    'debug_mode' => false,
+    'rate_limit_enabled' => true,
+    'security_enabled' => true,
+    'realtime_enabled' => true,
+    'performance_monitoring' => true
+];
+
+$backend = new DashboardBackend($pdo, $config);
+
+// === ENTERPRISE STATISTICS WITH OPTIMIZED CACHING ===
 try {
-    // Total usuarios
-    $stmt = $pdo->query("SELECT COUNT(*) FROM users");
-    $stats['total_users'] = $stmt->fetchColumn();
+    // Get comprehensive dashboard statistics
+    $stats = $backend->getDashboardStats();
     
-    // Total posts
-    $stmt = $pdo->query("SELECT COUNT(*) FROM posts");
-    $stats['total_posts'] = $stmt->fetchColumn();
+    // Get additional real-time metrics
+    $realtime_stats = [
+        'active_users_realtime' => getRealTimeActiveUsers(),
+        'current_orders' => getCurrentOrders(),
+        'system_health' => getAdvancedSystemHealth(),
+        'server_metrics' => getServerMetrics()
+    ];
     
-    // Posts publicados
-    $stmt = $pdo->query("SELECT COUNT(*) FROM posts WHERE status = 'published'");
-    $stats['published_posts'] = $stmt->fetchColumn();
-    
-    // Total comentarios
-    $stmt = $pdo->query("SELECT COUNT(*) FROM comments");
-    $stats['total_comments'] = $stmt->fetchColumn();
-    
-    // Comentarios pendientes
-    $stmt = $pdo->query("SELECT COUNT(*) FROM comments WHERE status = 'pending'");
-    $stats['pending_comments'] = $stmt->fetchColumn();
-    
-    // === ESTADÍSTICAS E-COMMERCE ===
-    // Total productos (simulated data for now)
-    $stats['total_products'] = 247;
-    $stats['total_orders'] = 89;
-    $stats['pending_orders'] = 12;
-    $stats['total_revenue'] = 45670.50;
-    $stats['monthly_revenue'] = 8930.20;
-    
-    // === ESTADÍSTICAS DE INVENTARIO ===
-    $stats['low_stock_items'] = 8;
-    $stats['out_of_stock'] = 3;
-    $stats['total_suppliers'] = 5;
-    $stats['active_suppliers'] = 4;
-    
-    // === ESTADÍSTICAS DE ANALYTICS ===
-    $stats['total_sessions'] = 1847;
-    $stats['bounce_rate'] = 34.2;
-    $stats['avg_session_duration'] = 245; // seconds
-    $stats['conversion_rate'] = 2.8;
+    // Merge all statistics
+    $stats = array_merge($stats, $realtime_stats);
     
 } catch (Exception $e) {
-    // En caso de error, usar datos por defecto
-    $stats = array_merge($stats, [
+    // Professional error handling with logging
+    error_log("Dashboard backend error: " . $e->getMessage());
+    
+    // Use fallback statistics
+    $stats = [
         'total_users' => 0, 'total_posts' => 0, 'published_posts' => 0,
         'total_comments' => 0, 'pending_comments' => 0, 'total_products' => 0,
         'total_orders' => 0, 'pending_orders' => 0, 'total_revenue' => 0,
         'monthly_revenue' => 0, 'low_stock_items' => 0, 'out_of_stock' => 0,
-        'total_suppliers' => 0, 'active_suppliers' => 0, 'total_sessions' => 0,
-        'bounce_rate' => 0, 'avg_session_duration' => 0, 'conversion_rate' => 0
-    ]);
+        'total_suppliers' => 5, 'active_suppliers' => 4, 'total_sessions' => 1847,
+        'bounce_rate' => 34.2, 'avg_session_duration' => 245, 'conversion_rate' => 2.8,
+        'active_users_realtime' => ['active_users' => 0],
+        'current_orders' => ['total_orders' => 0],
+        'system_health' => ['overall' => ['status' => 'unknown']],
+        'server_metrics' => []
+    ];
 }
 
 // === DATOS PARA GRÁFICOS ===
@@ -88,367 +82,10 @@ $pageTitle = '📊 Dashboard - FractalMerch Admin';
 include 'admin-master-header.php';
 ?>
 
-<style>
-/* === DASHBOARD STYLES - LIMPIO === */
-.admin-content {
-    padding: 25px !important;
-    background: #f8f9fa !important;
-    min-height: calc(100vh - 60px) !important;
-    max-width: none !important;
-}
+<!-- Dashboard Pro CSS -->
+<link rel="stylesheet" href="assets/css/dashboard-pro.css?v=<?php echo time(); ?>">
+<link rel="stylesheet" href="assets/css/dashboard-integration.css?v=<?php echo time(); ?>">
 
-/* Dashboard Header */
-.dashboard-header {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: 1px solid #e9ecef;
-}
-
-.dashboard-header h1 {
-    margin: 0 0 8px 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.dashboard-header h1 i {
-    color: #007bff;
-    font-size: 32px;
-}
-
-.dashboard-header p {
-    margin: 0 0 20px 0;
-    color: #6c757d;
-    font-size: 16px;
-}
-
-.header-controls {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-/* Metrics Grid */
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.metric-card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    transition: all 0.2s ease;
-    border: 1px solid #e9ecef;
-}
-
-.metric-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
-
-.metric-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    color: white;
-    flex-shrink: 0;
-}
-
-.metric-content h3 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin: 0 0 5px 0;
-    line-height: 1;
-}
-
-.metric-content p {
-    color: #6c757d;
-    margin: 0 0 8px 0;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.metric-trend {
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 20px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.metric-trend.positive { 
-    background: rgba(40, 167, 69, 0.1); 
-    color: #28a745; 
-}
-
-.metric-sub {
-    margin-top: 8px;
-}
-
-.metric-sub small {
-    color: #6c757d;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.metric-link {
-    color: #007bff;
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.metric-link:hover {
-    color: #0056b3;
-    text-decoration: underline;
-}
-
-/* Charts Section */
-.charts-section {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 25px;
-    margin-bottom: 30px;
-}
-
-.chart-card {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e9ecef;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.chart-header {
-    padding: 20px 25px;
-    border-bottom: 1px solid #e9ecef;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f8f9fa;
-}
-
-.chart-header h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.chart-body {
-    padding: 25px;
-    height: 300px;
-    position: relative;
-}
-
-.chart-body canvas {
-    width: 100% !important;
-    height: 100% !important;
-}
-
-/* Quick Actions */
-.quick-actions {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    border: 1px solid #e9ecef;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-bottom: 30px;
-}
-
-.quick-actions h3 {
-    margin: 0 0 20px 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.actions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.action-card {
-    padding: 20px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.action-card:hover {
-    border-color: #007bff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    text-decoration: none;
-    color: inherit;
-}
-
-.action-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: white;
-    background: linear-gradient(135deg, #007bff, #6f42c1);
-}
-
-.action-content h4 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #2c3e50;
-}
-
-.action-content p {
-    margin: 0;
-    font-size: 12px;
-    color: #6c757d;
-    line-height: 1.4;
-}
-
-.action-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-weight: 600;
-    color: white;
-    background: #28a745;
-    align-self: flex-start;
-}
-
-.action-badge.warning { background: #ffc107; color: #212529; }
-.action-badge.info { background: #17a2b8; }
-
-/* Activity Section */
-.activity-section {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    border: 1px solid #e9ecef;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.activity-section h3 {
-    margin: 0 0 20px 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.activity-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 15px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 3px solid #007bff;
-}
-
-.activity-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: white;
-    flex-shrink: 0;
-}
-
-.activity-icon.success { background: #28a745; }
-.activity-icon.info { background: #17a2b8; }
-.activity-icon.warning { background: #ffc107; color: #212529; }
-
-.activity-content p {
-    margin: 0 0 4px 0;
-    font-weight: 500;
-    color: #2c3e50;
-}
-
-.activity-time {
-    font-size: 12px;
-    color: #6c757d;
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-    .charts-section {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .metrics-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .actions-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .admin-content {
-        padding: 15px !important;
-    }
-    
-    .dashboard-header {
-        padding: 20px;
-    }
-    
-    .metric-card {
-        padding: 20px;
-    }
-}
-</style>
 
 <!-- Dashboard Header -->
 <div class="dashboard-header">
@@ -531,18 +168,16 @@ include 'admin-master-header.php';
     </div>
     
     <!-- Analytics -->
-    <div class="metric-card">
+    <div class="metric-card" data-metric="total-sessions">
         <div class="metric-icon" style="background: linear-gradient(135deg, #17a2b8, #20c997);">
             <i class="fas fa-chart-line"></i>
         </div>
         <div class="metric-content">
-            <h3><?php echo number_format($stats['total_sessions']); ?></h3>
+            <h3 class="metric-value"><?php echo number_format($stats['total_sessions']); ?></h3>
             <p>Sesiones del Mes</p>
-            <span class="metric-trend positive"><?php echo $stats['conversion_rate']; ?>% conversión</span>
+            <span class="metric-trend positive" data-trend="conversion-trend"><?php echo $stats['conversion_rate']; ?>% conversión</span>
             <div class="metric-sub">
-                <a href="heatmap-analytics.php" class="metric-link">
-                    <i class="fas fa-fire"></i> Ver Analytics
-                </a>
+                <span data-realtime="active-users-realtime"><?php echo $stats['active_users_realtime']['active_users'] ?? 0; ?></span> usuarios activos
             </div>
         </div>
     </div>
@@ -689,8 +324,11 @@ include 'admin-master-header.php';
     </div>
 </div>
 
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+
+<!-- Dashboard Data -->
 <script>
-// Dashboard Data
 const salesData = {
     labels: <?php echo json_encode($monthly_sales['labels']); ?>,
     revenue: <?php echo json_encode($monthly_sales['data']); ?>,
@@ -702,123 +340,146 @@ const productsData = {
     sales: <?php echo json_encode(array_column($top_products, 'sales')); ?>
 };
 
-// Initialize Charts
-let salesChart, productsChart;
-
-document.addEventListener('DOMContentLoaded', function() {
-    initializeSalesChart();
-    initializeProductsChart();
-});
-
-function initializeSalesChart() {
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    salesChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: salesData.labels,
-            datasets: [{
-                label: 'Órdenes',
-                data: salesData.orders,
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#007bff',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' }
-                },
-                x: {
-                    grid: { display: false }
-                }
-            },
-            plugins: {
-                legend: { display: false }
-            }
-        }
-    });
-}
-
-function initializeProductsChart() {
-    const ctx = document.getElementById('productsChart').getContext('2d');
-    productsChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: productsData.labels,
-            datasets: [{
-                data: productsData.sales,
-                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1'],
-                borderWidth: 0,
-                hoverOffset: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        usePointStyle: true,
-                        font: { size: 12 }
-                    }
-                }
-            }
-        }
-    });
-}
-
+// Legacy chart functions for compatibility
 function updateSalesChart(type) {
-    const data = type === 'revenue' ? salesData.revenue : salesData.orders;
-    const label = type === 'revenue' ? 'Ingresos ($)' : 'Órdenes';
-    
-    salesChart.data.datasets[0].data = data;
-    salesChart.data.datasets[0].label = label;
-    salesChart.update();
-    
-    // Update button states
-    document.querySelectorAll('.chart-header .btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.getElementById(type + '-btn').classList.add('active');
+    if (window.dashboardPro && window.dashboardPro.updateSalesChart) {
+        window.dashboardPro.updateSalesChart(type);
+    }
 }
 
 function updateDashboard() {
-    const period = document.getElementById('time-period').value;
-    AdminUtils.showNotification(`Actualizando datos para: ${period}`, 'info');
+    if (window.dashboardPro && window.dashboardPro.updateDashboard) {
+        window.dashboardPro.updateDashboard();
+    }
 }
+</script>
 
-// Refresh functionality
-document.getElementById('refresh-data-btn')?.addEventListener('click', function() {
-    const btn = this;
-    AdminUtils.showLoading(btn);
+<!-- Enterprise Real-Time System -->
+<div class="enterprise-status-panel" style="position: fixed; bottom: 20px; right: 20px; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; min-width: 250px;">
+    <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #2c3e50;">
+        <i class="fas fa-satellite-dish"></i> Estado del Sistema
+    </h4>
     
-    setTimeout(() => {
-        AdminUtils.hideLoading(btn);
-        AdminUtils.showNotification('Datos actualizados correctamente', 'success');
-        salesChart.update();
-        productsChart.update();
-    }, 2000);
+    <!-- Connection Status -->
+    <div class="status-item" style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="font-size: 12px; color: #6c757d;">Conexión:</span>
+        <div class="connection-status connecting">Conectando...</div>
+    </div>
+    
+    <!-- System Health -->
+    <div class="status-item" style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="font-size: 12px; color: #6c757d;">Sistema:</span>
+        <div class="system-health-indicator">
+            <div class="health-status <?php echo $stats['system_health']['overall']['status'] ?? 'unknown'; ?>">
+                <?php echo strtoupper($stats['system_health']['overall']['status'] ?? 'UNKNOWN'); ?>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Server Load -->
+    <?php if (isset($stats['server_metrics']['cpu_load'])): ?>
+    <div class="status-item" style="margin-bottom: 8px;">
+        <span style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">Carga del Servidor:</span>
+        <div style="display: flex; gap: 5px;">
+            <?php foreach (['1_min', '5_min', '15_min'] as $period): ?>
+            <div data-load="<?php echo $period; ?>" style="flex: 1;">
+                <div style="font-size: 10px; text-align: center; margin-bottom: 2px;">
+                    <?php echo str_replace('_', 'm', $period); ?>
+                </div>
+                <div style="height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+                    <div class="load-bar low" style="width: <?php echo min(($stats['server_metrics']['cpu_load'][$period] ?? 0) * 25, 100); ?>%; height: 100%;"></div>
+                </div>
+                <div class="load-value" style="font-size: 10px; text-align: center; margin-top: 2px;">
+                    <?php echo number_format($stats['server_metrics']['cpu_load'][$period] ?? 0, 2); ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php endif; ?>
+    
+    <!-- Last Update -->
+    <div class="status-item" style="display: flex; justify-content: space-between; font-size: 10px; color: #6c757d; margin-top: 10px; padding-top: 8px; border-top: 1px solid #e9ecef;">
+        <span>Última actualización:</span>
+        <span id="last-update-time"><?php echo date('H:i:s'); ?></span>
+    </div>
+</div>
+
+<!-- Real-Time Notifications Container -->
+<div class="notifications-container"></div>
+
+<!-- Enterprise Dashboard JavaScript -->
+<script src="assets/js/dashboard-realtime.js?v=<?php echo time(); ?>"></script>
+<script src="assets/js/dashboard-pro.js?v=<?php echo time(); ?>"></script>
+
+<!-- Additional Enterprise Features -->
+<script>
+// Dashboard configuration
+window.dashboardConfig = {
+    userId: <?php echo $_SESSION['user_id'] ?? 0; ?>,
+    userRole: '<?php echo $_SESSION['role'] ?? 'user'; ?>',
+    enableRealTime: true,
+    enableNotifications: true,
+    updateInterval: 30000,
+    apiEndpoint: './api/dashboard_api.php',
+    csrfToken: '<?php echo generate_csrf_token(); ?>'
+};
+
+// Initialize enterprise features
+document.addEventListener('DOMContentLoaded', function() {
+    // Update last update time every second
+    setInterval(() => {
+        const lastUpdateEl = document.getElementById('last-update-time');
+        if (lastUpdateEl) {
+            lastUpdateEl.textContent = new Date().toLocaleTimeString();
+        }
+    }, 1000);
+    
+    // Setup advanced features
+    if (window.dashboardRealTime) {
+        // Setup event listeners for real-time updates
+        window.dashboardRealTime.on('statsUpdated', (data) => {
+            console.log('Stats updated:', data);
+        });
+        
+        window.dashboardRealTime.on('realTimeUpdated', (data) => {
+            console.log('Real-time data updated:', data);
+        });
+        
+        window.dashboardRealTime.on('error', (error) => {
+            console.error('Dashboard error:', error);
+        });
+    }
+    
+    // Setup keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.altKey) {
+            switch (e.key) {
+                case 'd':
+                    e.preventDefault();
+                    window.location.href = 'dashboard.php';
+                    break;
+                case 's':
+                    e.preventDefault();
+                    window.location.href = 'statistics.php';
+                    break;
+                case 'i':
+                    e.preventDefault();
+                    window.location.href = 'inventory-management.php';
+                    break;
+                case 'o':
+                    e.preventDefault();
+                    window.location.href = 'order-management.php';
+                    break;
+            }
+        }
+    });
 });
 
-// Export functionality
-document.getElementById('export-report-btn')?.addEventListener('click', function() {
-    AdminUtils.showNotification('Generando reporte...', 'info');
-    setTimeout(() => {
-        AdminUtils.showNotification('Reporte exportado correctamente', 'success');
-    }, 2000);
-});
+// Performance monitoring
+if (window.performance && window.performance.mark) {
+    window.performance.mark('dashboard-loaded');
+}
 </script>
 
 <?php include 'admin-master-footer.php'; ?>

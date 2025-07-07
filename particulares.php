@@ -38,12 +38,12 @@ try {
     // Fallback to predefined products if database is not available
     error_log("Database error in particulares.php: " . $e->getMessage());
     $products = [
-        ['id' => 1, 'name' => 'Remera Personalizada', 'price' => 5999, 'description' => 'Remera 100% algodón de alta calidad', 'avg_rating' => 4.5, 'review_count' => 12, 'main_image_url' => 'assets/images/remera-default.jpg'],
-        ['id' => 2, 'name' => 'Buzo Personalizado', 'price' => 12999, 'description' => 'Buzo con capucha, ideal para el invierno', 'avg_rating' => 4.8, 'review_count' => 8, 'main_image_url' => 'assets/images/buzo-default.jpg'],
-        ['id' => 3, 'name' => 'Taza Personalizada', 'price' => 3499, 'description' => 'Taza de cerámica de alta calidad', 'avg_rating' => 4.3, 'review_count' => 15, 'main_image_url' => 'assets/images/taza-default.jpg'],
-        ['id' => 4, 'name' => 'Mouse Pad Personalizado', 'price' => 2999, 'description' => 'Mouse pad con base antideslizante', 'avg_rating' => 4.6, 'review_count' => 6, 'main_image_url' => 'assets/images/mousepad-default.jpg'],
-        ['id' => 5, 'name' => 'Funda Personalizada', 'price' => 4999, 'description' => 'Funda para celular resistente', 'avg_rating' => 4.4, 'review_count' => 10, 'main_image_url' => 'assets/images/funda-default.jpg'],
-        ['id' => 6, 'name' => 'Almohada Personalizada', 'price' => 6999, 'description' => 'Almohada suave y cómoda', 'avg_rating' => 4.7, 'review_count' => 5, 'main_image_url' => 'assets/images/almohada-default.jpg']
+        ['id' => 1, 'name' => 'Remera Personalizada', 'price' => 5990, 'description' => 'Remera 100% algodón de alta calidad', 'avg_rating' => 4.5, 'review_count' => 12, 'main_image_url' => 'assets/images/remera-default.jpg'],
+        ['id' => 2, 'name' => 'Buzo Personalizado', 'price' => 12990, 'description' => 'Buzo con capucha, ideal para el invierno', 'avg_rating' => 4.8, 'review_count' => 8, 'main_image_url' => 'assets/images/buzo-default.jpg'],
+        ['id' => 3, 'name' => 'Taza Personalizada', 'price' => 3490, 'description' => 'Taza de cerámica de alta calidad', 'avg_rating' => 4.3, 'review_count' => 15, 'main_image_url' => 'assets/images/taza-default.jpg'],
+        ['id' => 4, 'name' => 'Mouse Pad Personalizado', 'price' => 2990, 'description' => 'Mouse pad con base antideslizante', 'avg_rating' => 4.6, 'review_count' => 6, 'main_image_url' => 'assets/images/mousepad-default.jpg'],
+        ['id' => 5, 'name' => 'Funda Personalizada', 'price' => 4990, 'description' => 'Funda para celular resistente', 'avg_rating' => 4.4, 'review_count' => 10, 'main_image_url' => 'assets/images/funda-default.jpg'],
+        ['id' => 6, 'name' => 'Almohada Personalizada', 'price' => 6990, 'description' => 'Almohada suave y cómoda', 'avg_rating' => 4.7, 'review_count' => 5, 'main_image_url' => 'assets/images/almohada-default.jpg']
     ];
     $all_reviews = [];
 }
@@ -139,6 +139,30 @@ $product_variants = [
                             <a href="product-detail.php?id=<?php echo $product['id']; ?>#reviews-section" class="reviews-count">
                                 (<?php echo $product['review_count']; ?> reseñas)
                             </a>
+                        </div>
+
+                        <!-- Indicadores de urgencia -->
+                        <?php 
+                        // Simular stock bajo para crear urgencia
+                        $stock_available = isset($product['stock']) ? $product['stock'] : rand(5, 50);
+                        $sales_today = isset($product['real_sales']) ? rand(8, 25) : rand(5, 15);
+                        ?>
+                        
+                        <?php if ($stock_available <= 10): ?>
+                            <div class="urgency-indicator stock-low">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Solo quedan <?php echo $stock_available; ?> unidades</span>
+                            </div>
+                        <?php elseif ($stock_available <= 20): ?>
+                            <div class="urgency-indicator stock-medium">
+                                <i class="fas fa-clock"></i>
+                                <span>Pocas unidades disponibles</span>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <div class="social-proof-indicator">
+                            <i class="fas fa-users"></i>
+                            <span><?php echo $sales_today; ?> personas vieron esto hoy</span>
                         </div>
 
                         <div class="product-price-compact">

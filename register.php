@@ -6,50 +6,57 @@ if (is_logged_in()) {
 }
 
 if ($_POST) {
-    $username = sanitize_input($_POST['username']);
-    $email = sanitize_input($_POST['email']);
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
-    
-    $errors = [];
-    
-    if (empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
-        $errors[] = 'Por favor completa todos los campos';
-    }
-    
-    if (strlen($username) < 3 || strlen($username) > 20) {
-        $errors[] = 'El nombre de usuario debe tener entre 3 y 20 caracteres';
-    }
-    
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Por favor ingresa un email válido';
-    }
-    
-    if (strlen($password) < 6) {
-        $errors[] = 'La contraseña debe tener al menos 6 caracteres';
-    }
-    
-    if ($password !== $confirm_password) {
-        $errors[] = 'Las contraseñas no coinciden';
-    }
-    
-    // Verificar si el usuario ya existe
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-    $stmt->execute([$username, $email]);
-    if ($stmt->fetch()) {
-        $errors[] = 'El nombre de usuario o email ya están en uso';
-    }
-    
-    if (empty($errors)) {
-        if (create_user($username, $email, $password)) {
-            flash_message('success', 'Cuenta creada exitosamente. Puedes iniciar sesión ahora.');
-            redirect('login.php');
-        } else {
-            flash_message('error', 'Error al crear la cuenta. Inténtalo de nuevo.');
-        }
+    // Validar CSRF token
+    if (!isset($_POST['csrf_token']) || !validate_csrf_token($_POST['csrf_token'])) {
+        flash_message('error', 'Token de seguridad inválido. Por favor, intenta de nuevo.');
     } else {
-        foreach ($errors as $error) {
-            flash_message('error', $error);
+        $username = validate_and_sanitize_input($_POST['username'] ?? '', 'string');
+        $email = validate_and_sanitize_input($_POST['email'] ?? '', 'email');
+        $password = $_POST['password'];
+        $confirm_password = $_POST['confirm_password'];
+        
+        $errors = [];
+        
+        if (empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
+            $errors[] = 'Por favor completa todos los campos';
+        }
+        
+        if (strlen($username) < 3 || strlen($username) > 20) {
+            $errors[] = 'El nombre de usuario debe tener entre 3 y 20 caracteres';
+        }
+        
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Por favor ingresa un email válido';
+        }
+        
+        if (strlen($password) < 6) {
+            $errors[] = 'La contraseña debe tener al menos 6 caracteres';
+        }
+        
+        if ($password !== $confirm_password) {
+            $errors[] = 'Las contraseñas no coinciden';
+        }
+        
+        // Verificar si el usuario ya existe
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+        $stmt->execute([$username, $email]);
+        if ($stmt->fetch()) {
+            $errors[] = 'El nombre de usuario o email ya están en uso';
+        }
+        
+        if (empty($errors)) {
+            if (create_user($username, $email, $password)) {
+                // Invalidar token después de uso exitoso
+                invalidate_csrf_token();
+                flash_message('success', 'Cuenta creada exitosamente. Puedes iniciar sesión ahora.');
+                redirect('login.php');
+            } else {
+                flash_message('error', 'Error al crear la cuenta. Inténtalo de nuevo.');
+            }
+        } else {
+            foreach ($errors as $error) {
+                flash_message('error', $error);
+            }
         }
     }
 }
@@ -63,16 +70,17 @@ include 'includes/header.php';
         <h2>Registrarse</h2>
         
         <form method="POST" action="">
+            <?php echo csrf_field(); ?>
             <div class="form-group">
                 <label for="username">Nombre de Usuario:</label>
                 <input type="text" id="username" name="username" required 
-                       value="<?php echo isset($_POST['username']) ? $_POST['username'] : ''; ?>">
+                       value="<?php echo isset($_POST['username']) ? sanitize_output($_POST['username']) : ''; ?>">
             </div>
             
             <div class="form-group">
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" required 
-                       value="<?php echo isset($_POST['email']) ? $_POST['email'] : ''; ?>">
+                       value="<?php echo isset($_POST['email']) ? sanitize_output($_POST['email']) : ''; ?>">
             </div>
             
             <div class="form-group">

@@ -3,6 +3,9 @@
 ini_set('display_errors', 0);
 error_reporting(0);
 
+// Cargar funciones de seguridad
+require_once __DIR__ . '/config/config.php';
+
 // Headers necesarios
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -111,8 +114,10 @@ try {
     // Generar nombre único y seguro
     $timestamp = time();
     $randomId = bin2hex(random_bytes(8));
-    $safeFilename = preg_replace('/[^a-zA-Z0-9\-_\.]/', '_', pathinfo($originalFilename, PATHINFO_FILENAME));
-    $safeFilename = substr($safeFilename, 0, 50); // Limitar longitud
+    // Sanitizar nombre de archivo más estrictamente
+    $originalFilename = validate_and_sanitize_input($originalFilename, 'string');
+    $safeFilename = preg_replace('/[^a-zA-Z0-9\-_]/', '_', pathinfo($originalFilename, PATHINFO_FILENAME));
+    $safeFilename = substr($safeFilename, 0, 30); // Limitar longitud más estrictamente
     $tempFilename = "temp_{$timestamp}_{$randomId}_{$safeFilename}.{$format}";
     
     // Configurar rutas

@@ -505,6 +505,180 @@ class HeatmapAnalytics {
     }
     
     /**
+     * Setup custom tracking methods
+     */
+    setupCustomTracking() {
+        if (!this.trackingEnabled) return;
+        
+        console.log('Setting up custom tracking methods...');
+        
+        // Setup advanced user interaction tracking
+        this.setupAdvancedInteractionTracking();
+        
+        // Setup performance monitoring
+        this.setupPerformanceTracking();
+        
+        // Setup conversion tracking
+        this.setupConversionTracking();
+        
+        // Setup A/B testing integration
+        this.setupABTestingIntegration();
+        
+        console.log('Custom tracking methods setup completed');
+    }
+    
+    /**
+     * Setup advanced interaction tracking
+     */
+    setupAdvancedInteractionTracking() {
+        // Track element visibility
+        if ('IntersectionObserver' in window) {
+            const visibilityObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        this.trackCustomEvent('element_visible', {
+                            element: this.getElementSelector(entry.target),
+                            page: window.location.pathname,
+                            timestamp: Date.now()
+                        });
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            // Observe important elements
+            document.querySelectorAll('[data-track-visibility]').forEach(el => {
+                visibilityObserver.observe(el);
+            });
+        }
+        
+        // Track copy/paste events
+        document.addEventListener('copy', () => {
+            this.trackCustomEvent('text_copied', {
+                page: window.location.pathname,
+                timestamp: Date.now()
+            });
+        });
+        
+        document.addEventListener('paste', (event) => {
+            this.trackCustomEvent('text_pasted', {
+                target: this.getElementSelector(event.target),
+                page: window.location.pathname,
+                timestamp: Date.now()
+            });
+        });
+    }
+    
+    /**
+     * Setup performance tracking
+     */
+    setupPerformanceTracking() {
+        // Track page load performance
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (window.performance && window.performance.timing) {
+                    const timing = window.performance.timing;
+                    const performanceData = {
+                        page_load_time: timing.loadEventEnd - timing.navigationStart,
+                        dom_ready_time: timing.domContentLoadedEventEnd - timing.navigationStart,
+                        first_byte_time: timing.responseStart - timing.navigationStart,
+                        page: window.location.pathname,
+                        timestamp: Date.now()
+                    };
+                    
+                    this.trackCustomEvent('page_performance', performanceData);
+                }
+            }, 1000);
+        });
+        
+        // Track Core Web Vitals if available
+        if ('PerformanceObserver' in window) {
+            try {
+                new PerformanceObserver((list) => {
+                    list.getEntries().forEach((entry) => {
+                        this.trackCustomEvent('core_web_vital', {
+                            metric: entry.name,
+                            value: entry.value,
+                            rating: entry.value < 100 ? 'good' : entry.value < 300 ? 'needs-improvement' : 'poor',
+                            page: window.location.pathname,
+                            timestamp: Date.now()
+                        });
+                    });
+                }).observe({ entryTypes: ['largest-contentful-paint', 'first-input', 'cumulative-layout-shift'] });
+            } catch (e) {
+                console.warn('Core Web Vitals tracking not supported');
+            }
+        }
+    }
+    
+    /**
+     * Setup conversion tracking
+     */
+    setupConversionTracking() {
+        // Track form submissions as conversions
+        document.addEventListener('submit', (event) => {
+            const form = event.target;
+            if (form.matches('[data-conversion-form]')) {
+                this.trackCustomEvent('conversion_form_submit', {
+                    form_id: form.id || 'unnamed',
+                    form_name: form.getAttribute('data-conversion-form'),
+                    page: window.location.pathname,
+                    timestamp: Date.now()
+                });
+            }
+        });
+        
+        // Track button clicks as micro-conversions
+        document.addEventListener('click', (event) => {
+            if (event.target.matches('[data-conversion-button]')) {
+                this.trackCustomEvent('micro_conversion', {
+                    button_id: event.target.id || 'unnamed',
+                    button_text: event.target.textContent?.trim(),
+                    conversion_type: event.target.getAttribute('data-conversion-button'),
+                    page: window.location.pathname,
+                    timestamp: Date.now()
+                });
+            }
+        });
+    }
+    
+    /**
+     * Setup A/B testing integration
+     */
+    setupABTestingIntegration() {
+        // Track A/B test variations
+        const trackABTestVariation = (testName, variation) => {
+            this.trackCustomEvent('ab_test_variation', {
+                test_name: testName,
+                variation: variation,
+                page: window.location.pathname,
+                timestamp: Date.now()
+            });
+        };
+        
+        // Expose method globally for A/B testing frameworks
+        window.trackABTestVariation = trackABTestVariation;
+        
+        // Auto-detect common A/B testing tools
+        setTimeout(() => {
+            // Google Optimize
+            if (window.gtag && window.google_optimize) {
+                this.trackCustomEvent('ab_testing_tool_detected', {
+                    tool: 'google_optimize',
+                    timestamp: Date.now()
+                });
+            }
+            
+            // Optimizely
+            if (window.optimizely) {
+                this.trackCustomEvent('ab_testing_tool_detected', {
+                    tool: 'optimizely',
+                    timestamp: Date.now()
+                });
+            }
+        }, 2000);
+    }
+    
+    /**
      * Setup click tracking
      */
     setupClickTracking() {

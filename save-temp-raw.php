@@ -22,11 +22,26 @@ function jsonResponse($data, $statusCode = 200) {
 function cleanOldTempFiles($tempDir) {
     if (!is_dir($tempDir)) return 0;
     
+    // SECURITY: Validar directorio permitido
+    $allowedDir = realpath('assets/images/temp/');
+    $actualDir = realpath($tempDir);
+    
+    if ($actualDir !== $allowedDir) {
+        error_log("SECURITY: Attempt to access unauthorized directory: $tempDir");
+        return 0;
+    }
+    
     $files = glob($tempDir . 'temp_*.dat');
     $oneHourAgo = time() - 3600;
     $cleaned = 0;
     
     foreach ($files as $file) {
+        // SECURITY: Validar que el archivo está en el directorio permitido
+        $realFile = realpath($file);
+        if (!$realFile || strpos($realFile, $allowedDir) !== 0) {
+            continue;
+        }
+        
         if (is_file($file) && filemtime($file) < $oneHourAgo) {
             if (unlink($file)) {
                 $cleaned++;

@@ -1,0 +1,370 @@
+/**
+ * Recommendation System Styles
+ * Estilos para el sistema de recomendaciones dinámico
+ */
+
+/* Sección principal de recomendaciones */
+.recommendations-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.recommendations-section:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+/* Header de recomendaciones */
+.recommendations-header {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.recommendations-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.recommendations-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+/* Grid de recomendaciones */
+.recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .recommendations-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+}
+
+/* Card de recomendación */
+.recommendation-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: var(--ecommerce-primary);
+}
+
+/* Imagen del producto en recomendación */
+.rec-product-image {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.rec-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.recommendation-card:hover .rec-product-image img {
+    transform: scale(1.05);
+}
+
+/* Badge de confianza */
+.confidence-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, var(--ecommerce-primary) 0%, #ff7b00 100%);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(255,149,0,0.3);
+    z-index: 2;
+}
+
+/* Información del producto */
+.rec-product-info {
+    padding: 1rem;
+}
+
+.rec-product-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.rec-product-title a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.rec-product-title a:hover {
+    color: var(--ecommerce-primary);
+}
+
+/* Rating en recomendaciones */
+.rec-product-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.rec-product-rating .stars {
+    display: flex;
+    gap: 2px;
+}
+
+.rec-product-rating .stars i {
+    color: #ffc107;
+    font-size: 0.8rem;
+}
+
+.rec-product-rating .rating-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Precio en recomendaciones */
+.rec-product-price {
+    margin-bottom: 0.75rem;
+}
+
+.rec-product-price .price-current {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ecommerce-danger);
+}
+
+/* Razón de recomendación */
+.rec-reason {
+    background: linear-gradient(135deg, rgba(255,149,0,0.1) 0%, rgba(255,123,0,0.05) 100%);
+    color: var(--ecommerce-primary);
+    padding: 0.5rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    border-left: 3px solid var(--ecommerce-primary);
+}
+
+/* Acciones del producto */
+.rec-product-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.btn-add-to-cart-rec {
+    flex: 1;
+    background: linear-gradient(135deg, var(--ecommerce-primary) 0%, #ff7b00 100%);
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+}
+
+.btn-add-to-cart-rec:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255,149,0,0.4);
+}
+
+.btn-view-rec {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-view-rec:hover {
+    background: var(--ecommerce-primary);
+    color: white;
+    border-color: var(--ecommerce-primary);
+}
+
+/* Estados de carga */
+.recommendations-loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.recommendations-loading::before {
+    content: '⏳';
+    margin-right: 0.5rem;
+}
+
+.recommendations-error {
+    text-align: center;
+    padding: 2rem;
+    color: var(--ecommerce-danger);
+    font-weight: 500;
+}
+
+.recommendations-error::before {
+    content: '⚠️';
+    margin-right: 0.5rem;
+}
+
+/* Animaciones específicas por tipo */
+.recommendations-grid[data-recommendation-type="trending"] .recommendation-card {
+    animation: trendingPulse 2s ease-in-out infinite;
+}
+
+@keyframes trendingPulse {
+    0%, 100% { 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+    }
+    50% { 
+        box-shadow: 0 2px 8px rgba(255,149,0,0.2); 
+    }
+}
+
+.recommendations-grid[data-recommendation-type="frequently_bought_together"] .recommendation-card {
+    border-left: 4px solid var(--ecommerce-success);
+}
+
+.recommendations-grid[data-recommendation-type="personalized"] .recommendation-card {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255,149,0,0.05) 100%);
+}
+
+/* Responsive design para móviles */
+@media (max-width: 480px) {
+    .recommendations-section {
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .recommendations-title {
+        font-size: 1.2rem;
+    }
+    
+    .recommendations-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .rec-product-info {
+        padding: 0.75rem;
+    }
+    
+    .rec-product-actions {
+        flex-direction: column;
+    }
+    
+    .btn-add-to-cart-rec,
+    .btn-view-rec {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Efectos especiales para tipos específicos */
+.recommendations-grid[data-recommendation-type="seasonal"] .recommendation-card::before {
+    content: '🌟';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 1.2rem;
+    z-index: 2;
+}
+
+.recommendations-grid[data-recommendation-type="trending"] .recommendation-card::before {
+    content: '🔥';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 1.2rem;
+    z-index: 2;
+    animation: fireFlicker 1.5s ease-in-out infinite;
+}
+
+@keyframes fireFlicker {
+    0%, 100% { 
+        transform: scale(1) rotate(0deg); 
+    }
+    25% { 
+        transform: scale(1.1) rotate(-5deg); 
+    }
+    75% { 
+        transform: scale(0.9) rotate(5deg); 
+    }
+}
+
+/* Modo oscuro */
+[data-theme="dark"] .recommendations-section {
+    background: var(--bg-primary-dark);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .recommendation-card {
+    background: var(--bg-secondary-dark);
+    border-color: var(--border-color-dark);
+}
+
+[data-theme="dark"] .recommendation-card:hover {
+    border-color: var(--ecommerce-primary);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+}
+
+[data-theme="dark"] .rec-reason {
+    background: rgba(255,149,0,0.15);
+    color: #ffb84d;
+}
+
+[data-theme="dark"] .btn-view-rec {
+    background: var(--bg-tertiary-dark);
+    border-color: var(--border-color-dark);
+    color: var(--text-primary-dark);
+}
+
+/* Integración con el grid principal de productos */
+.products-grid + .recommendations-section,
+.shop-products .recommendations-section {
+    margin-top: 3rem;
+    border-top: 2px solid var(--border-color);
+    padding-top: 2rem;
+}

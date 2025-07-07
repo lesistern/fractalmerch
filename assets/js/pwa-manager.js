@@ -59,33 +59,40 @@ class PWAManager {
         }
         
         try {
-            this.swRegistration = await navigator.serviceWorker.register(this.config.swPath);
-            console.log('Service Worker registered successfully:', this.swRegistration);
+            const registration = await navigator.serviceWorker.register(this.config.swPath);
+            this.swRegistration = registration;
             
-            // Check for updates
-            this.swRegistration.addEventListener('updatefound', () => {
-                this.handleServiceWorkerUpdate();
+            console.log('Service Worker registered successfully');
+            
+            // Handle updates
+            registration.addEventListener('updatefound', () => {
+                this.handleUpdateFound(registration);
             });
             
-            return this.swRegistration;
+            // Handle controller change
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('New service worker activated');
+                this.isUpdateAvailable = false;
+            });
+            
         } catch (error) {
             console.error('Service Worker registration failed:', error);
             throw error;
         }
     }
     
-    handleServiceWorkerUpdate() {
-        const newWorker = this.swRegistration.installing;
+    handleUpdateFound(registration) {
+        const installingWorker = registration.installing;
         
-        newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed') {
+        installingWorker.addEventListener('statechange', () => {
+            if (installingWorker.state === 'installed') {
                 if (navigator.serviceWorker.controller) {
-                    // New update available
+                    // Update available
                     this.isUpdateAvailable = true;
                     this.showUpdateNotification();
                 } else {
-                    // First time installation
-                    console.log('PWA is ready for offline use');
+                    // First install
+                    console.log('Service Worker installed for the first time');
                 }
             }
         });
@@ -97,19 +104,17 @@ class PWAManager {
     initEventListeners() {
         // Install prompt event
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('PWA install prompt triggered');
             e.preventDefault();
             this.deferredPrompt = e;
-            this.showInstallPrompt();
+            console.log('Install prompt ready');
         });
         
         // App installed event
-        window.addEventListener('appinstalled', () => {
+        window.addEventListener('appinstalled', (e) => {
             console.log('PWA was installed');
             this.isInstalled = true;
-            this.hideInstallPrompt();
-            this.trackInstallation();
             this.showInstalledConfirmation();
+            this.trackInstallation('completed');
         });
         
         // Online/offline events
@@ -125,4 +130,376 @@ class PWAManager {
         
         // Visibility change (for update checking when app becomes visible)
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && this.swRegistration) {\n                this.checkForUpdates();\n            }\n        });\n    }\n    \n    /**\n     * INSTALLATION MANAGEMENT\n     */\n    checkInstallStatus() {\n        // Check if running as PWA\n        if (window.matchMedia('(display-mode: standalone)').matches ||\n            window.navigator.standalone === true) {\n            this.isInstalled = true;\n            console.log('App is running as PWA');\n        }\n        \n        // Check installation criteria\n        this.checkInstallCriteria();\n    }\n    \n    checkInstallCriteria() {\n        const pageViews = parseInt(localStorage.getItem('page_views') || '0');\n        const timeOnSite = parseInt(localStorage.getItem('time_on_site') || '0');\n        const engagement = parseInt(localStorage.getItem('user_engagement') || '0');\n        \n        // Show install prompt if user is engaged\n        if (pageViews >= 3 && timeOnSite > 180000 && engagement > 0.5) { // 3+ pages, 3+ minutes, high engagement\n            if (!this.installPromptShown && !this.installDismissed && this.deferredPrompt) {\n                setTimeout(() => {\n                    this.showInstallPrompt();\n                }, 5000); // Show after 5 seconds\n            }\n        }\n    }\n    \n    async showInstallPrompt() {\n        if (!this.deferredPrompt || this.isInstalled || this.installDismissed) {\n            return;\n        }\n        \n        this.createInstallPromptUI();\n    }\n    \n    createInstallPromptUI() {\n        // Don't show if already shown\n        if (document.getElementById('pwa-install-prompt')) {\n            return;\n        }\n        \n        const promptHTML = `\n        <div id=\"pwa-install-prompt\" class=\"pwa-install-overlay\">\n            <div class=\"pwa-install-content\">\n                <div class=\"pwa-install-header\">\n                    <img src=\"/assets/images/icon-192.png\" alt=\"FractalMerch\" class=\"pwa-install-icon\">\n                    <h3>¡Instalá FractalMerch!</h3>\n                </div>\n                <div class=\"pwa-install-body\">\n                    <p>Acceso rápido desde tu escritorio</p>\n                    <ul class=\"pwa-benefits\">\n                        <li>📱 Acceso instantáneo</li>\n                        <li>🚀 Carga súper rápida</li>\n                        <li>🔄 Funciona sin internet</li>\n                        <li>🔔 Notificaciones push</li>\n                    </ul>\n                </div>\n                <div class=\"pwa-install-actions\">\n                    <button id=\"pwa-install-btn\" class=\"btn-primary\">\n                        <i class=\"fas fa-download\"></i>\n                        Instalar App\n                    </button>\n                    <button id=\"pwa-dismiss-btn\" class=\"btn-secondary\">Tal vez después</button>\n                </div>\n                <button id=\"pwa-close-btn\" class=\"pwa-close-btn\">\n                    <i class=\"fas fa-times\"></i>\n                </button>\n            </div>\n        </div>\n        `;\n        \n        document.body.insertAdjacentHTML('beforeend', promptHTML);\n        \n        // Add event listeners\n        document.getElementById('pwa-install-btn').addEventListener('click', () => {\n            this.installPWA();\n        });\n        \n        document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {\n            this.dismissInstallPrompt(false);\n        });\n        \n        document.getElementById('pwa-close-btn').addEventListener('click', () => {\n            this.dismissInstallPrompt(true);\n        });\n        \n        this.installPromptShown = true;\n        localStorage.setItem('pwa_install_prompt_shown', 'true');\n    }\n    \n    async installPWA() {\n        if (!this.deferredPrompt) {\n            console.log('Install prompt not available');\n            return;\n        }\n        \n        try {\n            // Show the install prompt\n            this.deferredPrompt.prompt();\n            \n            // Wait for the user response\n            const { outcome } = await this.deferredPrompt.userChoice;\n            \n            console.log('Install prompt outcome:', outcome);\n            \n            if (outcome === 'accepted') {\n                console.log('User accepted the install prompt');\n                this.trackInstallation('accepted');\n            } else {\n                console.log('User dismissed the install prompt');\n                this.trackInstallation('dismissed');\n            }\n            \n            this.deferredPrompt = null;\n            this.hideInstallPrompt();\n            \n        } catch (error) {\n            console.error('Installation failed:', error);\n        }\n    }\n    \n    dismissInstallPrompt(permanent = false) {\n        this.hideInstallPrompt();\n        \n        if (permanent) {\n            this.installDismissed = true;\n            localStorage.setItem('pwa_install_dismissed', 'true');\n        }\n    }\n    \n    hideInstallPrompt() {\n        const prompt = document.getElementById('pwa-install-prompt');\n        if (prompt) {\n            prompt.remove();\n        }\n    }\n    \n    /**\n     * UPDATE MANAGEMENT\n     */\n    setupUpdateChecking() {\n        if (!this.config.enableUpdateNotifications) return;\n        \n        // Check for updates periodically\n        setInterval(() => {\n            this.checkForUpdates();\n        }, this.config.updateCheckInterval);\n    }\n    \n    async checkForUpdates() {\n        if (!this.swRegistration) return;\n        \n        try {\n            await this.swRegistration.update();\n        } catch (error) {\n            console.warn('Update check failed:', error);\n        }\n    }\n    \n    showUpdateNotification() {\n        // Don't show multiple update notifications\n        if (document.getElementById('pwa-update-notification')) {\n            return;\n        }\n        \n        const updateHTML = `\n        <div id=\"pwa-update-notification\" class=\"pwa-update-notification\">\n            <div class=\"pwa-update-content\">\n                <div class=\"pwa-update-icon\">\n                    <i class=\"fas fa-download\"></i>\n                </div>\n                <div class=\"pwa-update-text\">\n                    <h4>Nueva versión disponible</h4>\n                    <p>Actualización con mejoras y nuevas funcionalidades</p>\n                </div>\n                <div class=\"pwa-update-actions\">\n                    <button id=\"pwa-update-btn\" class=\"btn-primary btn-sm\">Actualizar</button>\n                    <button id=\"pwa-update-dismiss-btn\" class=\"btn-secondary btn-sm\">Después</button>\n                </div>\n            </div>\n        </div>\n        `;\n        \n        document.body.insertAdjacentHTML('beforeend', updateHTML);\n        \n        // Add event listeners\n        document.getElementById('pwa-update-btn').addEventListener('click', () => {\n            this.applyUpdate();\n        });\n        \n        document.getElementById('pwa-update-dismiss-btn').addEventListener('click', () => {\n            this.dismissUpdateNotification();\n        });\n        \n        // Auto-dismiss after 10 seconds\n        setTimeout(() => {\n            this.dismissUpdateNotification();\n        }, 10000);\n    }\n    \n    async applyUpdate() {\n        if (!this.swRegistration || !this.swRegistration.waiting) {\n            console.log('No update available');\n            return;\n        }\n        \n        try {\n            // Tell the waiting service worker to skip waiting\n            this.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });\n            \n            // Reload the page to apply the update\n            window.location.reload();\n            \n        } catch (error) {\n            console.error('Update failed:', error);\n        }\n    }\n    \n    dismissUpdateNotification() {\n        const notification = document.getElementById('pwa-update-notification');\n        if (notification) {\n            notification.remove();\n        }\n    }\n    \n    /**\n     * OFFLINE HANDLING\n     */\n    setupOfflineHandling() {\n        if (!this.config.enableOfflineMode) return;\n        \n        this.createOfflineIndicator();\n        this.setupOfflineSync();\n    }\n    \n    createOfflineIndicator() {\n        const indicatorHTML = `\n        <div id=\"pwa-offline-indicator\" class=\"pwa-offline-indicator ${this.isOnline ? 'hidden' : ''}\">\n            <div class=\"pwa-offline-content\">\n                <i class=\"fas fa-wifi-slash\"></i>\n                <span>Sin conexión - Usando modo offline</span>\n            </div>\n        </div>\n        `;\n        \n        document.body.insertAdjacentHTML('beforeend', indicatorHTML);\n    }\n    \n    handleOnlineStatusChange() {\n        const indicator = document.getElementById('pwa-offline-indicator');\n        \n        if (this.isOnline) {\n            indicator?.classList.add('hidden');\n            this.syncOfflineData();\n            console.log('App is online - syncing data');\n        } else {\n            indicator?.classList.remove('hidden');\n            console.log('App is offline - using cached data');\n        }\n        \n        // Trigger custom event\n        document.dispatchEvent(new CustomEvent('pwa-online-status-change', {\n            detail: { isOnline: this.isOnline }\n        }));\n    }\n    \n    setupOfflineSync() {\n        // Register for background sync if supported\n        if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {\n            navigator.serviceWorker.ready.then(registration => {\n                // Register background sync events\n                registration.sync.register('background-sync-cart');\n                registration.sync.register('background-sync-analytics');\n            });\n        }\n    }\n    \n    async syncOfflineData() {\n        // Sync pending data when coming back online\n        try {\n            // Sync cart data\n            const pendingCartData = JSON.parse(localStorage.getItem('pending_cart_sync') || '[]');\n            if (pendingCartData.length > 0) {\n                await this.syncCartData(pendingCartData);\n                localStorage.removeItem('pending_cart_sync');\n            }\n            \n            // Sync analytics data\n            const pendingAnalytics = JSON.parse(localStorage.getItem('pending_analytics_sync') || '[]');\n            if (pendingAnalytics.length > 0) {\n                await this.syncAnalyticsData(pendingAnalytics);\n                localStorage.removeItem('pending_analytics_sync');\n            }\n            \n            console.log('Offline data synced successfully');\n        } catch (error) {\n            console.error('Failed to sync offline data:', error);\n        }\n    }\n    \n    async syncCartData(data) {\n        for (const item of data) {\n            await fetch('/api/cart/sync', {\n                method: 'POST',\n                headers: { 'Content-Type': 'application/json' },\n                body: JSON.stringify(item)\n            });\n        }\n    }\n    \n    async syncAnalyticsData(data) {\n        await fetch('/api/analytics/bulk', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(data)\n        });\n    }\n    \n    /**\n     * PWA UTILITIES\n     */\n    isPWASupported() {\n        return 'serviceWorker' in navigator && \n               'PushManager' in window && \n               'Notification' in window;\n    }\n    \n    showInstalledConfirmation() {\n        const confirmationHTML = `\n        <div id=\"pwa-installed-confirmation\" class=\"pwa-success-notification\">\n            <div class=\"pwa-success-content\">\n                <div class=\"pwa-success-icon\">\n                    <i class=\"fas fa-check-circle\"></i>\n                </div>\n                <div class=\"pwa-success-text\">\n                    <h4>¡App instalada exitosamente!</h4>\n                    <p>Ya podés acceder desde tu escritorio</p>\n                </div>\n            </div>\n        </div>\n        `;\n        \n        document.body.insertAdjacentHTML('beforeend', confirmationHTML);\n        \n        // Auto-remove after 5 seconds\n        setTimeout(() => {\n            const confirmation = document.getElementById('pwa-installed-confirmation');\n            confirmation?.remove();\n        }, 5000);\n    }\n    \n    trackInstallation(outcome = 'completed') {\n        // Send installation analytics\n        if (typeof gtag !== 'undefined') {\n            gtag('event', 'pwa_install', {\n                'outcome': outcome,\n                'timestamp': Date.now()\n            });\n        }\n        \n        // Send to our analytics\n        fetch('/api/analytics/pwa-install', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify({\n                outcome: outcome,\n                timestamp: Date.now(),\n                userAgent: navigator.userAgent\n            })\n        }).catch(error => {\n            console.warn('Failed to track installation:', error);\n        });\n    }\n    \n    /**\n     * PUBLIC API\n     */\n    getInstallationStatus() {\n        return {\n            isInstalled: this.isInstalled,\n            isInstallable: !!this.deferredPrompt,\n            isUpdateAvailable: this.isUpdateAvailable,\n            isOnline: this.isOnline\n        };\n    }\n    \n    async triggerInstallPrompt() {\n        if (this.deferredPrompt && !this.isInstalled) {\n            await this.installPWA();\n        } else {\n            console.log('Install prompt not available');\n        }\n    }\n    \n    async forceUpdate() {\n        await this.applyUpdate();\n    }\n    \n    clearCache() {\n        if (this.swRegistration) {\n            this.swRegistration.active?.postMessage({ type: 'CLEAR_CACHE' });\n        }\n    }\n    \n    getNetworkStatus() {\n        return {\n            isOnline: this.isOnline,\n            connectionType: navigator.connection?.effectiveType || 'unknown',\n            downlink: navigator.connection?.downlink || null\n        };\n    }\n}\n\n// Auto-initialize\nwindow.addEventListener('DOMContentLoaded', () => {\n    if (window.pwaManager) return;\n    \n    window.pwaManager = new PWAManager();\n    \n    // Expose API\n    window.PWA = {\n        install: () => window.pwaManager.triggerInstallPrompt(),\n        update: () => window.pwaManager.forceUpdate(),\n        status: () => window.pwaManager.getInstallationStatus(),\n        network: () => window.pwaManager.getNetworkStatus(),\n        clearCache: () => window.pwaManager.clearCache()\n    };\n});\n\n// Export for module systems\nif (typeof module !== 'undefined' && module.exports) {\n    module.exports = PWAManager;\n}
+            if (!document.hidden && this.swRegistration) {
+                this.checkForUpdates();
+            }
+        });
+    }
+    
+    /**
+     * INSTALLATION MANAGEMENT
+     */
+    checkInstallStatus() {
+        // Check if running as PWA
+        if (window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone === true) {
+            this.isInstalled = true;
+            console.log('App is running as PWA');
+        }
+        
+        // Check installation criteria
+        this.checkInstallCriteria();
+    }
+    
+    checkInstallCriteria() {
+        const pageViews = parseInt(localStorage.getItem('page_views') || '0');
+        const timeOnSite = parseInt(localStorage.getItem('time_on_site') || '0');
+        const engagement = parseInt(localStorage.getItem('user_engagement') || '0');
+        
+        // Show install prompt if user is engaged
+        if (pageViews >= 3 && timeOnSite > 180000 && engagement > 0.5) {
+            if (!this.installPromptShown && !this.installDismissed && this.deferredPrompt) {
+                setTimeout(() => {
+                    this.showInstallPrompt();
+                }, 5000);
+            }
+        }
+    }
+    
+    createInstallPrompt() {
+        // Create install button if not shown
+        if (!this.installPromptShown && !this.installDismissed) {
+            const installButton = document.createElement('button');
+            installButton.id = 'pwa-install-button';
+            installButton.innerHTML = '<i class="fas fa-download"></i> Instalar App';
+            installButton.className = 'pwa-install-btn';
+            installButton.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 25px;
+                cursor: pointer;
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 1000;
+                display: none;
+            `;
+            
+            installButton.addEventListener('click', () => {
+                this.showInstallPrompt();
+            });
+            
+            document.body.appendChild(installButton);
+            
+            // Show button when install prompt is available
+            if (this.deferredPrompt) {
+                installButton.style.display = 'block';
+            }
+        }
+    }
+    
+    async showInstallPrompt() {
+        if (!this.deferredPrompt || this.isInstalled || this.installDismissed) {
+            return;
+        }
+        
+        try {
+            const { outcome } = await this.deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+                this.trackInstallation('accepted');
+            } else {
+                console.log('User dismissed the install prompt');
+                this.trackInstallation('dismissed');
+            }
+            
+            this.deferredPrompt = null;
+            this.installPromptShown = true;
+            localStorage.setItem('pwa_install_prompt_shown', 'true');
+            
+            // Hide install button
+            const installButton = document.getElementById('pwa-install-button');
+            if (installButton) {
+                installButton.style.display = 'none';
+            }
+            
+        } catch (error) {
+            console.error('Installation failed:', error);
+        }
+    }
+    
+    /**
+     * UPDATE MANAGEMENT
+     */
+    setupUpdateChecking() {
+        if (!this.config.enableUpdateNotifications) return;
+        
+        setInterval(() => {
+            this.checkForUpdates();
+        }, this.config.updateCheckInterval);
+    }
+    
+    async checkForUpdates() {
+        if (!this.swRegistration) return;
+        
+        try {
+            await this.swRegistration.update();
+        } catch (error) {
+            console.warn('Update check failed:', error);
+        }
+    }
+    
+    showUpdateNotification() {
+        if (document.getElementById('pwa-update-notification')) {
+            return;
+        }
+        
+        const notification = document.createElement('div');
+        notification.id = 'pwa-update-notification';
+        notification.innerHTML = `
+            <div class="pwa-update-content">
+                <div class="pwa-update-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="pwa-update-text">
+                    <h4>Nueva versión disponible</h4>
+                    <p>Actualización con mejoras y nuevas funcionalidades</p>
+                </div>
+                <div class="pwa-update-actions">
+                    <button id="pwa-update-btn" class="btn-primary btn-sm">Actualizar</button>
+                    <button id="pwa-update-dismiss-btn" class="btn-secondary btn-sm">Después</button>
+                </div>
+            </div>
+        `;
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1001;
+            max-width: 300px;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Event listeners
+        document.getElementById('pwa-update-btn').addEventListener('click', () => {
+            this.applyUpdate();
+        });
+        
+        document.getElementById('pwa-update-dismiss-btn').addEventListener('click', () => {
+            this.dismissUpdateNotification();
+        });
+        
+        // Auto-dismiss after 10 seconds
+        setTimeout(() => {
+            this.dismissUpdateNotification();
+        }, 10000);
+    }
+    
+    async applyUpdate() {
+        if (!this.swRegistration || !this.swRegistration.waiting) {
+            console.log('No update available');
+            return;
+        }
+        
+        try {
+            this.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            window.location.reload();
+        } catch (error) {
+            console.error('Update failed:', error);
+        }
+    }
+    
+    dismissUpdateNotification() {
+        const notification = document.getElementById('pwa-update-notification');
+        if (notification) {
+            notification.remove();
+        }
+    }
+    
+    /**
+     * OFFLINE HANDLING
+     */
+    setupOfflineHandling() {
+        if (!this.config.enableOfflineMode) return;
+        
+        this.createOfflineIndicator();
+    }
+    
+    createOfflineIndicator() {
+        const indicator = document.createElement('div');
+        indicator.id = 'pwa-offline-indicator';
+        indicator.innerHTML = `
+            <div class="pwa-offline-content">
+                <i class="fas fa-wifi-slash"></i>
+                <span>Sin conexión - Usando modo offline</span>
+            </div>
+        `;
+        
+        indicator.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ff6b6b;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            z-index: 1002;
+            display: ${this.isOnline ? 'none' : 'block'};
+        `;
+        
+        document.body.appendChild(indicator);
+    }
+    
+    handleOnlineStatusChange() {
+        const indicator = document.getElementById('pwa-offline-indicator');
+        
+        if (this.isOnline) {
+            if (indicator) indicator.style.display = 'none';
+            console.log('App is online');
+        } else {
+            if (indicator) indicator.style.display = 'block';
+            console.log('App is offline');
+        }
+        
+        document.dispatchEvent(new CustomEvent('pwa-online-status-change', {
+            detail: { isOnline: this.isOnline }
+        }));
+    }
+    
+    /**
+     * UTILITIES
+     */
+    isPWASupported() {
+        return 'serviceWorker' in navigator && 
+               'PushManager' in window && 
+               'Notification' in window;
+    }
+    
+    showInstalledConfirmation() {
+        const confirmation = document.createElement('div');
+        confirmation.id = 'pwa-installed-confirmation';
+        confirmation.innerHTML = `
+            <div class="pwa-success-content">
+                <div class="pwa-success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="pwa-success-text">
+                    <h4>¡App instalada exitosamente!</h4>
+                    <p>Ya podés acceder desde tu escritorio</p>
+                </div>
+            </div>
+        `;
+        
+        confirmation.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            z-index: 1003;
+            text-align: center;
+        `;
+        
+        document.body.appendChild(confirmation);
+        
+        setTimeout(() => {
+            confirmation.remove();
+        }, 5000);
+    }
+    
+    trackInstallation(outcome = 'completed') {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'pwa_install', {
+                'outcome': outcome,
+                'timestamp': Date.now()
+            });
+        }
+        
+        fetch('/api/analytics/pwa-install', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                outcome: outcome,
+                timestamp: Date.now(),
+                userAgent: navigator.userAgent
+            })
+        }).catch(error => {
+            console.warn('Failed to track installation:', error);
+        });
+    }
+    
+    /**
+     * PUBLIC API
+     */
+    getInstallationStatus() {
+        return {
+            isInstalled: this.isInstalled,
+            isInstallable: !!this.deferredPrompt,
+            isUpdateAvailable: this.isUpdateAvailable,
+            isOnline: this.isOnline
+        };
+    }
+    
+    async triggerInstallPrompt() {
+        if (this.deferredPrompt && !this.isInstalled) {
+            await this.showInstallPrompt();
+        } else {
+            console.log('Install prompt not available');
+        }
+    }
+    
+    async forceUpdate() {
+        await this.applyUpdate();
+    }
+    
+    clearCache() {
+        if (this.swRegistration) {
+            this.swRegistration.active?.postMessage({ type: 'CLEAR_CACHE' });
+        }
+    }
+    
+    getNetworkStatus() {
+        return {
+            isOnline: this.isOnline,
+            connectionType: navigator.connection?.effectiveType || 'unknown',
+            downlink: navigator.connection?.downlink || null
+        };
+    }
+}
+
+// Auto-initialize
+window.addEventListener('DOMContentLoaded', () => {
+    if (window.pwaManager) return;
+    
+    window.pwaManager = new PWAManager();
+    
+    // Expose API
+    window.PWA = {
+        install: () => window.pwaManager.triggerInstallPrompt(),
+        update: () => window.pwaManager.forceUpdate(),
+        status: () => window.pwaManager.getInstallationStatus(),
+        network: () => window.pwaManager.getNetworkStatus(),
+        clearCache: () => window.pwaManager.clearCache()
+    };
+});
+
+// Export for module systems
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = PWAManager;
+}

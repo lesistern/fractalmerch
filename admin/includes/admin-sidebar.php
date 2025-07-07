@@ -19,7 +19,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
         
         <!-- Estadísticas -->
-        <div class="nav-item-expandable <?php echo (in_array($current_page, ['statistics.php', 'stats-overview.php', 'stats-payments.php', 'stats-shipping.php', 'stats-products.php', 'stats-traffic.php'])) ? 'active' : ''; ?>">
+        <div class="nav-item-expandable <?php echo (in_array($current_page, ['statistics.php', 'stats-overview.php', 'stats-payments.php', 'stats-shipping.php', 'stats-products.php', 'stats-traffic.php', 'analytics-dashboard.php'])) ? 'active' : ''; ?>">
             <a href="#" class="nav-item nav-expandable">
                 <i class="fas fa-chart-bar"></i>
                 <span>Estadísticas</span>
@@ -28,6 +28,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <div class="nav-submenu">
                 <a href="statistics.php" class="nav-subitem <?php echo ($current_page == 'statistics.php') ? 'active' : ''; ?>">
                     <span>Visión general</span>
+                </a>
+                <a href="analytics-dashboard.php" class="nav-subitem <?php echo ($current_page == 'analytics-dashboard.php') ? 'active' : ''; ?>">
+                    <span>🎯 Analytics ROI</span>
                 </a>
                 <a href="stats-payments.php" class="nav-subitem <?php echo ($current_page == 'stats-payments.php') ? 'active' : ''; ?>">
                     <span>Pagos</span>

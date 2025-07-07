@@ -35,9 +35,7 @@ define('SMTP_PASSWORD', 'TU_PASSWORD_ZOHO');
 define('FROM_EMAIL', 'noreply@fractalmerch.com.ar');
 define('FROM_NAME', 'FractalMerch');
 
-function sanitize_input($data) {
-    return htmlspecialchars(strip_tags(trim($data)));
-}
+// Funciones de sanitización ya están definidas en includes/functions.php
 
 function redirect($url) {
     header("Location: " . SITE_URL . $url);
@@ -67,5 +65,35 @@ function get_flash_messages() {
     $messages = $_SESSION['flash'] ?? [];
     unset($_SESSION['flash']);
     return $messages;
+}
+
+// Funciones CSRF ya están definidas en includes/functions.php
+// Las funciones CSRF (generate_csrf_token, validate_csrf_token, csrf_field, invalidate_csrf_token) 
+// están implementadas en includes/functions.php con validación de seguridad avanzada
+
+// Función json_response() ya está definida en includes/functions.php
+// La función incluye headers de seguridad avanzados para respuestas JSON
+
+// NOTA: La función check_rate_limit() ya está definida en includes/functions.php
+// con funcionalidad completa incluyendo logs de seguridad
+
+// Función para validar direcciones de email de forma más estricta
+function validate_email_domain($email) {
+    $domain = substr(strrchr($email, "@"), 1);
+    return checkdnsrr($domain, "MX");
+}
+
+// Función para limpiar arrays recursivamente
+function sanitize_array($array) {
+    $clean = [];
+    foreach ($array as $key => $value) {
+        $clean_key = sanitize_input($key);
+        if (is_array($value)) {
+            $clean[$clean_key] = sanitize_array($value);
+        } else {
+            $clean[$clean_key] = sanitize_input($value);
+        }
+    }
+    return $clean;
 }
 ?>

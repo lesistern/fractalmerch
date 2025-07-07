@@ -5,11 +5,17 @@ require_once '../includes/functions.php';
 
 // Procesar creación de usuario
 if ($_POST && isset($_POST['create_user'])) {
-    $username = sanitize_input($_POST['username']);
-    $email = sanitize_input($_POST['email']);
+    // Validar CSRF token
+    if (!isset($_POST['csrf_token']) || !validate_csrf_token($_POST['csrf_token'])) {
+        flash_message('error', 'Token de seguridad inválido');
+        redirect('manage-users.php');
+    }
+    
+    $username = sanitize_input($_POST['username'], 'string');
+    $email = sanitize_input($_POST['email'], 'email');
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
-    $role = sanitize_input($_POST['role']);
+    $role = sanitize_input($_POST['role'], 'string');
     
     $errors = [];
     
@@ -48,6 +54,8 @@ if ($_POST && isset($_POST['create_user'])) {
         $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, ?, NOW())");
         
         if ($stmt->execute([$username, $email, $hashed_password, $role])) {
+            // Invalidar token después de uso exitoso
+            invalidate_csrf_token();
             flash_message('success', "Usuario $username creado exitosamente como $role");
         } else {
             flash_message('error', 'Error al crear el usuario');
@@ -61,10 +69,16 @@ if ($_POST && isset($_POST['create_user'])) {
     redirect('manage-users.php');
 }
 
-// Procesar acciones
-if (isset($_GET['action'])) {
-    $user_id = (int)$_GET['user_id'];
-    $action = $_GET['action'];
+// Procesar acciones (POST con CSRF)
+if ($_POST && isset($_POST['action'])) {
+    // Validar CSRF token
+    if (!isset($_POST['csrf_token']) || !validate_csrf_token($_POST['csrf_token'])) {
+        flash_message('error', 'Token de seguridad inválido');
+        redirect('manage-users.php');
+    }
+    
+    $user_id = (int)$_POST['user_id'];
+    $action = sanitize_input($_POST['action'], 'string');
     
     if ($user_id == $_SESSION['user_id']) {
         flash_message('error', 'No puedes realizar acciones sobre tu propia cuenta');
@@ -316,26 +330,38 @@ include 'admin-master-header.php';
                                 <div class="action-buttons">
                                     <?php if ($user['id'] != $_SESSION['user_id']): ?>
                                         <?php if ($user['role'] !== 'admin'): ?>
-                                            <a href="?action=promote&user_id=<?php echo $user['id']; ?>" 
-                                               class="btn btn-sm btn-success"
-                                               onclick="return confirm('¿Promover a administrador?')">
-                                                <i class="fas fa-arrow-up"></i>
-                                            </a>
+                                            <form method="POST" style="display: inline;">
+                                                <?php echo csrf_field(); ?>
+                                                <input type="hidden" name="action" value="promote">
+                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                                <button type="submit" class="btn btn-sm btn-success"
+                                                        onclick="return confirm('¿Promover a administrador?')">
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </button>
+                                            </form>
                                         <?php endif; ?>
                                         
                                         <?php if ($user['role'] !== 'user'): ?>
-                                            <a href="?action=demote&user_id=<?php echo $user['id']; ?>" 
-                                               class="btn btn-sm btn-warning"
-                                               onclick="return confirm('¿Degradar a usuario regular?')">
-                                                <i class="fas fa-arrow-down"></i>
-                                            </a>
+                                            <form method="POST" style="display: inline;">
+                                                <?php echo csrf_field(); ?>
+                                                <input type="hidden" name="action" value="demote">
+                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                                <button type="submit" class="btn btn-sm btn-warning"
+                                                        onclick="return confirm('¿Degradar a usuario regular?')">
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </button>
+                                            </form>
                                         <?php endif; ?>
                                         
-                                        <a href="?action=delete&user_id=<?php echo $user['id']; ?>" 
-                                           class="btn btn-sm btn-danger"
-                                           onclick="return confirm('¿Eliminar usuario? Esta acción no se puede deshacer.')">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
+                                        <form method="POST" style="display: inline;">
+                                            <?php echo csrf_field(); ?>
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('¿Eliminar usuario? Esta acción no se puede deshacer.')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
                                     <?php else: ?>
                                         <span class="badge badge-info">Tu cuenta</span>
                                     <?php endif; ?>
@@ -384,6 +410,7 @@ include 'admin-master-header.php';
         </div>
         <div class="modal-body">
             <form method="POST" class="user-form">
+                <?php echo csrf_field(); ?>
                 <div class="form-grid">
                     <div class="form-group">
                         <label><i class="fas fa-user"></i> Nombre de usuario</label>

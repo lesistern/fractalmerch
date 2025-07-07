@@ -296,6 +296,40 @@ class EnhancedCart {
         }
     }
 
+    // Generar barra de progreso para envío gratis
+    generateShippingProgressBar() {
+        const subtotal = this.calculateSubtotal();
+        const remaining = this.freeShippingThreshold - subtotal;
+        const progress = Math.min((subtotal / this.freeShippingThreshold) * 100, 100);
+        
+        if (remaining <= 0) {
+            return `
+                <div class="shipping-progress-bar">
+                    <div class="shipping-progress-header">
+                        <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                        <span class="shipping-progress-text">¡Envío GRATIS activado!</span>
+                    </div>
+                    <div class="shipping-progress-track">
+                        <div class="shipping-progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="shipping-progress-bar">
+                    <div class="shipping-progress-header">
+                        <i class="fas fa-truck" style="color: #ff9500;"></i>
+                        <span class="shipping-progress-text">Te faltan $${remaining.toLocaleString()} para <strong>ENVÍO GRATIS</strong></span>
+                    </div>
+                    <div class="shipping-progress-track">
+                        <div class="shipping-progress-fill" style="width: ${progress}%;"></div>
+                    </div>
+                    <div class="shipping-progress-percentage">${Math.round(progress)}%</div>
+                </div>
+            `;
+        }
+    }
+
     // Actualizar display del carrito
     updateCartDisplay() {
         const cartBody = document.getElementById('cartModalBody');
@@ -335,6 +369,8 @@ class EnhancedCart {
             <div class="cart-items">
                 ${this.items.map(item => this.getCartItemHTML(item)).join('')}
             </div>
+            
+            ${this.generateShippingProgressBar()}
             
             <div class="cart-summary">
                 <div class="coupon-section">

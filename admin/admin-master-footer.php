@@ -276,6 +276,98 @@
     } else {
         localStorage.setItem('admin_last_check', new Date().toISOString());
     }
+
+    // Advanced Keyboard Shortcuts Handler
+    document.addEventListener('keydown', function(e) {
+        // Only handle if Alt is pressed and not in input fields
+        if (e.altKey && !['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+            switch(e.key.toLowerCase()) {
+                case 'd':
+                    e.preventDefault();
+                    window.location.href = 'dashboard.php';
+                    break;
+                case 's':
+                    e.preventDefault();
+                    window.location.href = 'statistics.php';
+                    break;
+                case 'i':
+                    e.preventDefault();
+                    window.location.href = 'inventory-management.php';
+                    break;
+                case 'o':
+                    e.preventDefault();
+                    window.location.href = 'order-management.php';
+                    break;
+                case 'p':
+                    e.preventDefault();
+                    window.location.href = 'manage-products.php';
+                    break;
+                case 'u':
+                    e.preventDefault();
+                    window.location.href = 'manage-users.php';
+                    break;
+            }
+        }
+        
+        // Ctrl/Cmd + K for global search
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            const searchInput = document.getElementById('admin-search');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+            }
+        }
+        
+        // Quick add new item with Ctrl/Cmd + N
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            e.preventDefault();
+            const currentPage = window.location.pathname.split('/').pop();
+            if (currentPage === 'manage-products.php' && typeof window.adminPanel !== 'undefined') {
+                window.adminPanel.showProductForm();
+            }
+        }
+    });
+
+    // Quick Access Toolbar
+    function createQuickAccessToolbar() {
+        const toolbar = document.createElement('div');
+        toolbar.className = 'quick-access-toolbar';
+        toolbar.innerHTML = `
+            <button class="quick-access-btn" title="Nuevo Producto (Ctrl+N)" onclick="quickAddProduct()">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="quick-access-btn" title="Búsqueda Rápida (Ctrl+K)" onclick="quickSearch()">
+                <i class="fas fa-search"></i>
+            </button>
+            <button class="quick-access-btn" title="Ir al Dashboard (Alt+D)" onclick="location.href='dashboard.php'">
+                <i class="fas fa-home"></i>
+            </button>
+        `;
+        document.body.appendChild(toolbar);
+    }
+
+    // Quick action functions
+    function quickAddProduct() {
+        if (window.location.pathname.includes('manage-products.php') && typeof window.adminPanel !== 'undefined') {
+            window.adminPanel.showProductForm();
+        } else {
+            window.location.href = 'manage-products.php';
+        }
+    }
+
+    function quickSearch() {
+        const searchInput = document.getElementById('admin-search');
+        if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+        }
+    }
+
+    // Initialize quick access toolbar
+    if (!document.querySelector('.quick-access-toolbar')) {
+        createQuickAccessToolbar();
+    }
     </script>
 
     <style>

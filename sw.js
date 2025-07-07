@@ -3,4 +3,450 @@
  * Caching strategy for performance optimization
  */
 
-const CACHE_NAME = 'fractalmerch-v1.2.0';\nconst STATIC_CACHE = 'fractalmerch-static-v1.2.0';\nconst DYNAMIC_CACHE = 'fractalmerch-dynamic-v1.2.0';\nconst IMAGE_CACHE = 'fractalmerch-images-v1.2.0';\n\n// Cache strategies\nconst CACHE_STRATEGIES = {\n    CACHE_FIRST: 'cache-first',\n    NETWORK_FIRST: 'network-first',\n    STALE_WHILE_REVALIDATE: 'stale-while-revalidate',\n    NETWORK_ONLY: 'network-only',\n    CACHE_ONLY: 'cache-only'\n};\n\n// Static assets to cache immediately\nconst STATIC_ASSETS = [\n    '/',\n    '/assets/css/style.css',\n    '/assets/js/main.js',\n    '/assets/js/enhanced-cart.js',\n    '/assets/js/performance-optimizer.js',\n    '/assets/images/icon.png',\n    '/assets/images/icon.ico',\n    '/particulares.php',\n    '/customize-shirt.php',\n    '/offline.html'\n];\n\n// Routes and their caching strategies\nconst ROUTE_STRATEGIES = [\n    {\n        pattern: /\\.(js|css)$/,\n        strategy: CACHE_STRATEGIES.STALE_WHILE_REVALIDATE,\n        cache: STATIC_CACHE\n    },\n    {\n        pattern: /\\.(png|jpg|jpeg|gif|webp|svg|ico)$/,\n        strategy: CACHE_STRATEGIES.CACHE_FIRST,\n        cache: IMAGE_CACHE,\n        expiration: 30 * 24 * 60 * 60 * 1000 // 30 days\n    },\n    {\n        pattern: /\\.(php|html)$/,\n        strategy: CACHE_STRATEGIES.NETWORK_FIRST,\n        cache: DYNAMIC_CACHE,\n        expiration: 24 * 60 * 60 * 1000 // 24 hours\n    },\n    {\n        pattern: /\\/api\\//,\n        strategy: CACHE_STRATEGIES.NETWORK_FIRST,\n        cache: DYNAMIC_CACHE,\n        expiration: 5 * 60 * 1000 // 5 minutes\n    }\n];\n\n// Install event - cache static assets\nself.addEventListener('install', event => {\n    console.log('Service Worker installing...');\n    \n    event.waitUntil(\n        caches.open(STATIC_CACHE)\n            .then(cache => {\n                console.log('Caching static assets...');\n                return cache.addAll(STATIC_ASSETS);\n            })\n            .then(() => {\n                console.log('Static assets cached successfully');\n                return self.skipWaiting();\n            })\n            .catch(error => {\n                console.error('Failed to cache static assets:', error);\n            })\n    );\n});\n\n// Activate event - cleanup old caches\nself.addEventListener('activate', event => {\n    console.log('Service Worker activating...');\n    \n    event.waitUntil(\n        caches.keys()\n            .then(cacheNames => {\n                const deletePromises = cacheNames\n                    .filter(cacheName => {\n                        return cacheName !== STATIC_CACHE && \n                               cacheName !== DYNAMIC_CACHE && \n                               cacheName !== IMAGE_CACHE;\n                    })\n                    .map(cacheName => {\n                        console.log('Deleting old cache:', cacheName);\n                        return caches.delete(cacheName);\n                    });\n                \n                return Promise.all(deletePromises);\n            })\n            .then(() => {\n                console.log('Service Worker activated');\n                return self.clients.claim();\n            })\n    );\n});\n\n// Fetch event - handle requests with caching strategies\nself.addEventListener('fetch', event => {\n    const request = event.request;\n    const url = new URL(request.url);\n    \n    // Skip non-GET requests\n    if (request.method !== 'GET') {\n        return;\n    }\n    \n    // Skip chrome-extension and other protocols\n    if (!url.protocol.startsWith('http')) {\n        return;\n    }\n    \n    // Find matching route strategy\n    const route = findRouteStrategy(request.url);\n    \n    if (route) {\n        event.respondWith(handleRequest(request, route));\n    } else {\n        // Default to network first for unmatched routes\n        event.respondWith(\n            handleRequest(request, {\n                strategy: CACHE_STRATEGIES.NETWORK_FIRST,\n                cache: DYNAMIC_CACHE\n            })\n        );\n    }\n});\n\n/**\n * Find the appropriate caching strategy for a URL\n */\nfunction findRouteStrategy(url) {\n    for (const route of ROUTE_STRATEGIES) {\n        if (route.pattern.test(url)) {\n            return route;\n        }\n    }\n    return null;\n}\n\n/**\n * Handle request based on caching strategy\n */\nasync function handleRequest(request, route) {\n    const { strategy, cache: cacheName, expiration } = route;\n    \n    try {\n        switch (strategy) {\n            case CACHE_STRATEGIES.CACHE_FIRST:\n                return await cacheFirst(request, cacheName, expiration);\n            \n            case CACHE_STRATEGIES.NETWORK_FIRST:\n                return await networkFirst(request, cacheName, expiration);\n            \n            case CACHE_STRATEGIES.STALE_WHILE_REVALIDATE:\n                return await staleWhileRevalidate(request, cacheName, expiration);\n            \n            case CACHE_STRATEGIES.NETWORK_ONLY:\n                return await fetch(request);\n            \n            case CACHE_STRATEGIES.CACHE_ONLY:\n                return await cacheOnly(request, cacheName);\n            \n            default:\n                return await networkFirst(request, cacheName, expiration);\n        }\n    } catch (error) {\n        console.error('Request handling failed:', error);\n        return await handleOffline(request);\n    }\n}\n\n/**\n * Cache First strategy\n */\nasync function cacheFirst(request, cacheName, expiration) {\n    const cache = await caches.open(cacheName);\n    const cachedResponse = await cache.match(request);\n    \n    if (cachedResponse) {\n        // Check if cache is expired\n        if (expiration && isCacheExpired(cachedResponse, expiration)) {\n            // Try to update cache in background\n            updateCacheInBackground(request, cacheName);\n        }\n        return cachedResponse;\n    }\n    \n    // Not in cache, fetch from network\n    const networkResponse = await fetch(request);\n    \n    if (networkResponse.ok) {\n        const responseClone = networkResponse.clone();\n        await cache.put(request, responseClone);\n    }\n    \n    return networkResponse;\n}\n\n/**\n * Network First strategy\n */\nasync function networkFirst(request, cacheName, expiration) {\n    try {\n        const networkResponse = await fetch(request);\n        \n        if (networkResponse.ok) {\n            const cache = await caches.open(cacheName);\n            const responseClone = networkResponse.clone();\n            await cache.put(request, responseClone);\n        }\n        \n        return networkResponse;\n    } catch (error) {\n        // Network failed, try cache\n        const cache = await caches.open(cacheName);\n        const cachedResponse = await cache.match(request);\n        \n        if (cachedResponse) {\n            return cachedResponse;\n        }\n        \n        throw error;\n    }\n}\n\n/**\n * Stale While Revalidate strategy\n */\nasync function staleWhileRevalidate(request, cacheName, expiration) {\n    const cache = await caches.open(cacheName);\n    const cachedResponse = await cache.match(request);\n    \n    // Start network request immediately\n    const networkPromise = fetch(request)\n        .then(networkResponse => {\n            if (networkResponse.ok) {\n                const responseClone = networkResponse.clone();\n                cache.put(request, responseClone);\n            }\n            return networkResponse;\n        })\n        .catch(error => {\n            console.warn('Network request failed:', error);\n            return null;\n        });\n    \n    // Return cached response immediately if available\n    if (cachedResponse) {\n        return cachedResponse;\n    }\n    \n    // If no cache, wait for network\n    return await networkPromise;\n}\n\n/**\n * Cache Only strategy\n */\nasync function cacheOnly(request, cacheName) {\n    const cache = await caches.open(cacheName);\n    const cachedResponse = await cache.match(request);\n    \n    if (cachedResponse) {\n        return cachedResponse;\n    }\n    \n    throw new Error('Resource not found in cache');\n}\n\n/**\n * Check if cached response is expired\n */\nfunction isCacheExpired(response, expiration) {\n    if (!expiration) return false;\n    \n    const cachedDate = response.headers.get('date');\n    if (!cachedDate) return false;\n    \n    const cacheTime = new Date(cachedDate).getTime();\n    const now = Date.now();\n    \n    return (now - cacheTime) > expiration;\n}\n\n/**\n * Update cache in background\n */\nasync function updateCacheInBackground(request, cacheName) {\n    try {\n        const networkResponse = await fetch(request);\n        \n        if (networkResponse.ok) {\n            const cache = await caches.open(cacheName);\n            await cache.put(request, networkResponse.clone());\n        }\n    } catch (error) {\n        console.warn('Background cache update failed:', error);\n    }\n}\n\n/**\n * Handle offline scenarios\n */\nasync function handleOffline(request) {\n    const url = new URL(request.url);\n    \n    // For HTML pages, return offline page\n    if (request.headers.get('accept').includes('text/html')) {\n        const cache = await caches.open(STATIC_CACHE);\n        return await cache.match('/offline.html');\n    }\n    \n    // For images, return placeholder\n    if (request.url.match(/\\.(png|jpg|jpeg|gif|webp|svg)$/)) {\n        const cache = await caches.open(IMAGE_CACHE);\n        return await cache.match('/assets/images/offline-placeholder.png');\n    }\n    \n    // For other resources, return a generic response\n    return new Response('Offline', {\n        status: 503,\n        statusText: 'Service Unavailable',\n        headers: {\n            'Content-Type': 'text/plain'\n        }\n    });\n}\n\n// Background sync for failed requests\nself.addEventListener('sync', event => {\n    if (event.tag === 'background-sync') {\n        event.waitUntil(handleBackgroundSync());\n    }\n});\n\n/**\n * Handle background sync\n */\nasync function handleBackgroundSync() {\n    // Retry failed analytics requests\n    const failedRequests = await getFailedRequests();\n    \n    for (const request of failedRequests) {\n        try {\n            await fetch(request);\n            await removeFailedRequest(request);\n        } catch (error) {\n            console.warn('Background sync failed for request:', request.url);\n        }\n    }\n}\n\n/**\n * Get failed requests from IndexedDB\n */\nasync function getFailedRequests() {\n    // Implementation would use IndexedDB to store failed requests\n    return [];\n}\n\n/**\n * Remove failed request from storage\n */\nasync function removeFailedRequest(request) {\n    // Implementation would remove from IndexedDB\n}\n\n// Push notifications\nself.addEventListener('push', event => {\n    if (!event.data) return;\n    \n    const data = event.data.json();\n    \n    const options = {\n        body: data.body,\n        icon: '/assets/images/icon.png',\n        badge: '/assets/images/badge.png',\n        data: data.data,\n        actions: data.actions || []\n    };\n    \n    event.waitUntil(\n        self.registration.showNotification(data.title, options)\n    );\n});\n\n// Notification click handling\nself.addEventListener('notificationclick', event => {\n    event.notification.close();\n    \n    if (event.action) {\n        // Handle specific action\n        handleNotificationAction(event.action, event.notification.data);\n    } else {\n        // Default action - open app\n        event.waitUntil(\n            clients.openWindow(event.notification.data.url || '/')\n        );\n    }\n});\n\n/**\n * Handle notification actions\n */\nfunction handleNotificationAction(action, data) {\n    switch (action) {\n        case 'view-product':\n            clients.openWindow(data.productUrl);\n            break;\n        case 'view-cart':\n            clients.openWindow('/cart.php');\n            break;\n        case 'dismiss':\n            // Do nothing, notification is already closed\n            break;\n    }\n}\n\n// Periodic background sync for cache cleanup\nself.addEventListener('periodicsync', event => {\n    if (event.tag === 'cache-cleanup') {\n        event.waitUntil(cleanupOldCaches());\n    }\n});\n\n/**\n * Cleanup old cache entries\n */\nasync function cleanupOldCaches() {\n    const cacheNames = [IMAGE_CACHE, DYNAMIC_CACHE];\n    \n    for (const cacheName of cacheNames) {\n        const cache = await caches.open(cacheName);\n        const requests = await cache.keys();\n        \n        for (const request of requests) {\n            const response = await cache.match(request);\n            \n            if (response) {\n                const cachedDate = response.headers.get('date');\n                if (cachedDate) {\n                    const age = Date.now() - new Date(cachedDate).getTime();\n                    const maxAge = cacheName === IMAGE_CACHE ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;\n                    \n                    if (age > maxAge) {\n                        await cache.delete(request);\n                    }\n                }\n            }\n        }\n    }\n}\n\n/**\n * Enhanced Notification Support Functions\n */\nfunction getUrlForNotificationAction(action, data) {\n    const actionUrls = {\n        create: '/customize-shirt.php',\n        browse: '/particulares.php',\n        checkout: '/checkout.php',\n        view_cart: '/checkout.php',\n        track: '/track-order.php?id=' + (data.orderId || ''),\n        view_product: '/product-detail.php?id=' + (data.productId || ''),\n        customize: '/customize-shirt.php',\n        shop_now: '/particulares.php',\n        view_offer: '/offers.php',\n        buy_now: '/particulares.php',\n        get_inspired: '/inspiration.php',\n        start_designing: '/customize-shirt.php'\n    };\n    \n    return actionUrls[action] || '/';\n}\n\nasync function sendNotificationAnalytics(event, data) {\n    try {\n        await fetch('/api/analytics/notification', {\n            method: 'POST',\n            headers: {\n                'Content-Type': 'application/json'\n            },\n            body: JSON.stringify({\n                event: event,\n                data: data,\n                timestamp: Date.now(),\n                userAgent: navigator.userAgent\n            })\n        });\n    } catch (error) {\n        console.error('Failed to send notification analytics:', error);\n    }\n}\n\n// Message handling for communication with main thread\nself.addEventListener('message', event => {\n    console.log('Service Worker received message:', event.data);\n    \n    if (event.data.type === 'SKIP_WAITING') {\n        self.skipWaiting();\n    } else if (event.data.type === 'GET_VERSION') {\n        event.ports[0].postMessage({ version: CACHE_NAME });\n    } else if (event.data.type === 'CLEAR_CACHE') {\n        clearAllCaches().then(() => {\n            event.ports[0].postMessage({ success: true });\n        });\n    }\n});\n\nasync function clearAllCaches() {\n    const cacheNames = await caches.keys();\n    return Promise.all(\n        cacheNames.map(cacheName => caches.delete(cacheName))\n    );\n}\n\nconsole.log('FractalMerch Service Worker v1.2.0 loaded successfully');
+const CACHE_NAME = 'fractalmerch-v1.2.0';
+const STATIC_CACHE = 'fractalmerch-static-v1.2.0';
+const DYNAMIC_CACHE = 'fractalmerch-dynamic-v1.2.0';
+const IMAGE_CACHE = 'fractalmerch-images-v1.2.0';
+
+// Cache strategies
+const CACHE_STRATEGIES = {
+    CACHE_FIRST: 'cache-first',
+    NETWORK_FIRST: 'network-first',
+    STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
+    NETWORK_ONLY: 'network-only',
+    CACHE_ONLY: 'cache-only'
+};
+
+// Static assets to cache immediately
+const STATIC_ASSETS = [
+    '/',
+    '/assets/css/style.css',
+    '/assets/js/main.js',
+    '/assets/js/enhanced-cart.js',
+    '/assets/js/performance-optimizer.js',
+    '/assets/images/icon.png',
+    '/assets/images/icon.ico',
+    '/particulares.php',
+    '/customize-shirt.php',
+    '/offline.html'
+];
+
+// Routes and their caching strategies
+const ROUTE_STRATEGIES = [
+    {
+        pattern: /\.(js|css)$/,
+        strategy: CACHE_STRATEGIES.STALE_WHILE_REVALIDATE,
+        cache: STATIC_CACHE
+    },
+    {
+        pattern: /\.(png|jpg|jpeg|gif|webp|svg|ico)$/,
+        strategy: CACHE_STRATEGIES.CACHE_FIRST,
+        cache: IMAGE_CACHE,
+        expiration: 30 * 24 * 60 * 60 * 1000 // 30 days
+    },
+    {
+        pattern: /\.(php|html)$/,
+        strategy: CACHE_STRATEGIES.NETWORK_FIRST,
+        cache: DYNAMIC_CACHE,
+        expiration: 24 * 60 * 60 * 1000 // 24 hours
+    },
+    {
+        pattern: /\/api\//,
+        strategy: CACHE_STRATEGIES.NETWORK_FIRST,
+        cache: DYNAMIC_CACHE,
+        expiration: 5 * 60 * 1000 // 5 minutes
+    }
+];
+
+// Install event - cache static assets
+self.addEventListener('install', event => {
+    console.log('Service Worker installing...');
+    
+    event.waitUntil(
+        caches.open(STATIC_CACHE)
+            .then(cache => {
+                console.log('Caching static assets...');
+                return cache.addAll(STATIC_ASSETS);
+            })
+            .then(() => {
+                console.log('Static assets cached successfully');
+                return self.skipWaiting();
+            })
+            .catch(error => {
+                console.error('Failed to cache static assets:', error);
+            })
+    );
+});
+
+// Activate event - cleanup old caches
+self.addEventListener('activate', event => {
+    console.log('Service Worker activating...');
+    
+    event.waitUntil(
+        caches.keys()
+            .then(cacheNames => {
+                const deletePromises = cacheNames
+                    .filter(cacheName => {
+                        return cacheName !== STATIC_CACHE && 
+                               cacheName !== DYNAMIC_CACHE && 
+                               cacheName !== IMAGE_CACHE;
+                    })
+                    .map(cacheName => {
+                        console.log('Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    });
+                
+                return Promise.all(deletePromises);
+            })
+            .then(() => {
+                console.log('Service Worker activated');
+                return self.clients.claim();
+            })
+    );
+});
+
+// Fetch event - handle requests with caching strategies
+self.addEventListener('fetch', event => {
+    const request = event.request;
+    const url = new URL(request.url);
+    
+    // Skip non-GET requests
+    if (request.method !== 'GET') {
+        return;
+    }
+    
+    // Skip chrome-extension and other protocols
+    if (!url.protocol.startsWith('http')) {
+        return;
+    }
+    
+    // Find matching route strategy
+    const route = findRouteStrategy(request.url);
+    
+    if (route) {
+        event.respondWith(handleRequest(request, route));
+    } else {
+        // Default to network first for unmatched routes
+        event.respondWith(
+            handleRequest(request, {
+                strategy: CACHE_STRATEGIES.NETWORK_FIRST,
+                cache: DYNAMIC_CACHE
+            })
+        );
+    }
+});
+
+/**
+ * Find the appropriate caching strategy for a URL
+ */
+function findRouteStrategy(url) {
+    for (const route of ROUTE_STRATEGIES) {
+        if (route.pattern.test(url)) {
+            return route;
+        }
+    }
+    return null;
+}
+
+/**
+ * Handle request based on caching strategy
+ */
+async function handleRequest(request, route) {
+    const { strategy, cache: cacheName, expiration } = route;
+    
+    try {
+        switch (strategy) {
+            case CACHE_STRATEGIES.CACHE_FIRST:
+                return await cacheFirst(request, cacheName, expiration);
+            
+            case CACHE_STRATEGIES.NETWORK_FIRST:
+                return await networkFirst(request, cacheName, expiration);
+            
+            case CACHE_STRATEGIES.STALE_WHILE_REVALIDATE:
+                return await staleWhileRevalidate(request, cacheName, expiration);
+            
+            case CACHE_STRATEGIES.NETWORK_ONLY:
+                return await fetch(request);
+            
+            case CACHE_STRATEGIES.CACHE_ONLY:
+                return await cacheOnly(request, cacheName);
+            
+            default:
+                return await networkFirst(request, cacheName, expiration);
+        }
+    } catch (error) {
+        console.error('Request handling failed:', error);
+        return await handleOffline(request);
+    }
+}
+
+/**
+ * Cache First strategy
+ */
+async function cacheFirst(request, cacheName, expiration) {
+    const cache = await caches.open(cacheName);
+    const cachedResponse = await cache.match(request);
+    
+    if (cachedResponse) {
+        // Check if cache is expired
+        if (expiration && isCacheExpired(cachedResponse, expiration)) {
+            // Try to update cache in background
+            updateCacheInBackground(request, cacheName);
+        }
+        return cachedResponse;
+    }
+    
+    // Not in cache, fetch from network
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+        const responseClone = networkResponse.clone();
+        await cache.put(request, responseClone);
+    }
+    
+    return networkResponse;
+}
+
+/**
+ * Network First strategy
+ */
+async function networkFirst(request, cacheName, expiration) {
+    try {
+        const networkResponse = await fetch(request);
+        
+        if (networkResponse.ok) {
+            const cache = await caches.open(cacheName);
+            const responseClone = networkResponse.clone();
+            await cache.put(request, responseClone);
+        }
+        
+        return networkResponse;
+    } catch (error) {
+        // Network failed, try cache
+        const cache = await caches.open(cacheName);
+        const cachedResponse = await cache.match(request);
+        
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+        
+        throw error;
+    }
+}
+
+/**
+ * Stale While Revalidate strategy
+ */
+async function staleWhileRevalidate(request, cacheName, expiration) {
+    const cache = await caches.open(cacheName);
+    const cachedResponse = await cache.match(request);
+    
+    // Start network request immediately
+    const networkPromise = fetch(request)
+        .then(networkResponse => {
+            if (networkResponse.ok) {
+                const responseClone = networkResponse.clone();
+                cache.put(request, responseClone);
+            }
+            return networkResponse;
+        })
+        .catch(error => {
+            console.warn('Network request failed:', error);
+            return null;
+        });
+    
+    // Return cached response immediately if available
+    if (cachedResponse) {
+        return cachedResponse;
+    }
+    
+    // If no cache, wait for network
+    return await networkPromise;
+}
+
+/**
+ * Cache Only strategy
+ */
+async function cacheOnly(request, cacheName) {
+    const cache = await caches.open(cacheName);
+    const cachedResponse = await cache.match(request);
+    
+    if (cachedResponse) {
+        return cachedResponse;
+    }
+    
+    throw new Error('Resource not found in cache');
+}
+
+/**
+ * Check if cached response is expired
+ */
+function isCacheExpired(response, expiration) {
+    if (!expiration) return false;
+    
+    const cachedDate = response.headers.get('date');
+    if (!cachedDate) return false;
+    
+    const cacheTime = new Date(cachedDate).getTime();
+    const now = Date.now();
+    
+    return (now - cacheTime) > expiration;
+}
+
+/**
+ * Update cache in background
+ */
+async function updateCacheInBackground(request, cacheName) {
+    try {
+        const networkResponse = await fetch(request);
+        
+        if (networkResponse.ok) {
+            const cache = await caches.open(cacheName);
+            await cache.put(request, networkResponse.clone());
+        }
+    } catch (error) {
+        console.warn('Background cache update failed:', error);
+    }
+}
+
+/**
+ * Handle offline scenarios
+ */
+async function handleOffline(request) {
+    const url = new URL(request.url);
+    
+    // For HTML pages, return offline page
+    if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
+        const cache = await caches.open(STATIC_CACHE);
+        return await cache.match('/offline.html');
+    }
+    
+    // For images, return placeholder
+    if (request.url.match(/\.(png|jpg|jpeg|gif|webp|svg)$/)) {
+        const cache = await caches.open(IMAGE_CACHE);
+        return await cache.match('/assets/images/offline-placeholder.png');
+    }
+    
+    // For other resources, return a generic response
+    return new Response('Offline', {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: {
+            'Content-Type': 'text/plain'
+        }
+    });
+}
+
+// Background sync for failed requests
+self.addEventListener('sync', event => {
+    if (event.tag === 'background-sync') {
+        event.waitUntil(handleBackgroundSync());
+    }
+});
+
+/**
+ * Handle background sync
+ */
+async function handleBackgroundSync() {
+    // Retry failed analytics requests
+    const failedRequests = await getFailedRequests();
+    
+    for (const request of failedRequests) {
+        try {
+            await fetch(request);
+            await removeFailedRequest(request);
+        } catch (error) {
+            console.warn('Background sync failed for request:', request.url);
+        }
+    }
+}
+
+/**
+ * Get failed requests from IndexedDB
+ */
+async function getFailedRequests() {
+    // Implementation would use IndexedDB to store failed requests
+    return [];
+}
+
+/**
+ * Remove failed request from storage
+ */
+async function removeFailedRequest(request) {
+    // Implementation would remove from IndexedDB
+}
+
+// Push notifications
+self.addEventListener('push', event => {
+    if (!event.data) return;
+    
+    const data = event.data.json();
+    
+    const options = {
+        body: data.body,
+        icon: '/assets/images/icon.png',
+        badge: '/assets/images/badge.png',
+        data: data.data,
+        actions: data.actions || []
+    };
+    
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+    );
+});
+
+// Notification click handling
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    
+    if (event.action) {
+        // Handle specific action
+        handleNotificationAction(event.action, event.notification.data);
+    } else {
+        // Default action - open app
+        event.waitUntil(
+            clients.openWindow(event.notification.data.url || '/')
+        );
+    }
+});
+
+/**
+ * Handle notification actions
+ */
+function handleNotificationAction(action, data) {
+    switch (action) {
+        case 'view-product':
+            clients.openWindow(data.productUrl);
+            break;
+        case 'view-cart':
+            clients.openWindow('/cart.php');
+            break;
+        case 'dismiss':
+            // Do nothing, notification is already closed
+            break;
+    }
+}
+
+// Message handling for communication with main thread
+self.addEventListener('message', event => {
+    console.log('Service Worker received message:', event.data);
+    
+    if (event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    } else if (event.data.type === 'GET_VERSION') {
+        event.ports[0].postMessage({ version: CACHE_NAME });
+    } else if (event.data.type === 'CLEAR_CACHE') {
+        clearAllCaches().then(() => {
+            event.ports[0].postMessage({ success: true });
+        });
+    }
+});
+
+async function clearAllCaches() {
+    const cacheNames = await caches.keys();
+    return Promise.all(
+        cacheNames.map(cacheName => caches.delete(cacheName))
+    );
+}
+
+console.log('FractalMerch Service Worker v1.2.0 loaded successfully');

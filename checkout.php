@@ -34,6 +34,7 @@ include 'includes/header.php';
                     </div>
 
                     <form id="checkout-form" class="checkout-form">
+                        <?php echo csrf_field(); ?>
                         <!-- Paso 1: Datos de contacto -->
                         <div class="checkout-step" id="step-1">
                             <h2>Datos de contacto</h2>

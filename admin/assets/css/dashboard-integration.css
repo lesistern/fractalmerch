@@ -1,0 +1,533 @@
+/*
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                        DASHBOARD INTEGRATION CSS                                     ║
+║                     Seamless Admin Theme Integration                                 ║
+║                                                                                      ║
+║ Description: Ensures perfect integration with existing admin theme                   ║
+║ Features: Override conflicts, responsive fixes, accessibility                        ║
+║ Author: Professional Frontend Development Team                                      ║
+║ Version: 1.0.0                                                                      ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ========================================================================
+   ADMIN THEME INTEGRATION
+   ======================================================================== */
+
+/* Ensure dashboard content takes full space */
+.admin-content {
+    padding: var(--space-8) !important;
+    background: var(--bg-secondary) !important;
+    min-height: calc(100vh - var(--header-height)) !important;
+    max-width: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+/* Override any sidebar interference */
+.admin-sidebar + .admin-content {
+    margin-left: 0 !important;
+    width: calc(100% - var(--sidebar-width)) !important;
+}
+
+/* Dark mode integration */
+[data-theme="dark"] {
+    --bg-primary: #1f2937;
+    --bg-secondary: #111827;
+    --bg-tertiary: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #9ca3af;
+    --border-color: #374151;
+    --border-color-light: #4b5563;
+}
+
+[data-theme="dark"] .dashboard-header {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .metric-card {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .chart-card {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .chart-header {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .quick-actions {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .activity-section {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .activity-item {
+    background: var(--bg-tertiary);
+    border-left-color: var(--primary-500);
+}
+
+[data-theme="dark"] .action-card {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn-secondary {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-control {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* ========================================================================
+   RESPONSIVE ENHANCEMENTS
+   ======================================================================== */
+
+/* Mobile admin content adjustments */
+@media (max-width: 768px) {
+    .admin-content {
+        padding: var(--space-4) !important;
+    }
+    
+    .admin-sidebar + .admin-content {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+    
+    .dashboard-header h1 {
+        font-size: var(--text-xl);
+    }
+    
+    .dashboard-header p {
+        font-size: var(--text-sm);
+    }
+    
+    .header-controls {
+        flex-direction: column;
+        width: 100%;
+        gap: var(--space-3);
+    }
+    
+    .header-controls .btn,
+    .header-controls .form-control {
+        width: 100%;
+    }
+}
+
+/* Tablet adjustments */
+@media (max-width: 1024px) {
+    .admin-content {
+        padding: var(--space-6) !important;
+    }
+    
+    .admin-sidebar + .admin-content {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+}
+
+/* ========================================================================
+   ACCESSIBILITY IMPROVEMENTS
+   ======================================================================== */
+
+/* Focus indicators for keyboard navigation */
+.metric-card:focus {
+    outline: 2px solid var(--primary-600);
+    outline-offset: 2px;
+}
+
+.action-card:focus {
+    outline: 2px solid var(--primary-600);
+    outline-offset: 2px;
+}
+
+.activity-item:focus {
+    outline: 2px solid var(--primary-600);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .metric-card,
+    .chart-card,
+    .quick-actions,
+    .activity-section,
+    .dashboard-header {
+        border-width: 2px !important;
+        border-color: #000000 !important;
+    }
+    
+    .metric-icon,
+    .action-icon,
+    .activity-icon {
+        border: 2px solid #000000 !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .metric-card,
+    .action-card,
+    .activity-item,
+    .btn,
+    .metric-icon::before,
+    .action-icon::before {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    .metric-card:hover,
+    .action-card:hover {
+        transform: none !important;
+    }
+}
+
+/* ========================================================================
+   PRINT STYLES
+   ======================================================================== */
+
+@media print {
+    .dashboard-header .header-controls,
+    .quick-actions,
+    .activity-section {
+        display: none !important;
+    }
+    
+    .admin-content {
+        padding: 0 !important;
+        background: white !important;
+    }
+    
+    .metric-card,
+    .chart-card {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #333 !important;
+        margin-bottom: var(--space-4);
+    }
+    
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: var(--space-4) !important;
+    }
+    
+    .charts-section {
+        grid-template-columns: 1fr !important;
+        gap: var(--space-4) !important;
+    }
+    
+    .dashboard-header {
+        border: 1px solid #333 !important;
+        margin-bottom: var(--space-6) !important;
+    }
+    
+    .dashboard-header h1 {
+        color: #000 !important;
+    }
+    
+    .dashboard-header p {
+        color: #333 !important;
+    }
+}
+
+/* ========================================================================
+   PERFORMANCE OPTIMIZATIONS
+   ======================================================================== */
+
+/* GPU acceleration for smooth animations */
+.metric-card,
+.action-card,
+.activity-item {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Optimize repaints */
+.metric-icon,
+.action-icon,
+.activity-icon {
+    contain: layout style paint;
+}
+
+/* ========================================================================
+   FALLBACKS AND POLYFILLS
+   ======================================================================== */
+
+/* CSS Grid fallback for older browsers */
+@supports not (display: grid) {
+    .metrics-grid {
+        display: flex;
+        flex-wrap: wrap;
+        margin: calc(var(--space-3) * -1);
+    }
+    
+    .metric-card {
+        flex: 1 1 calc(33.333% - var(--space-6));
+        margin: var(--space-3);
+        min-width: 300px;
+    }
+    
+    .charts-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-6);
+    }
+    
+    .actions-grid {
+        display: flex;
+        flex-wrap: wrap;
+        margin: calc(var(--space-3) * -1);
+    }
+    
+    .action-card {
+        flex: 1 1 calc(25% - var(--space-6));
+        margin: var(--space-3);
+        min-width: 200px;
+    }
+}
+
+/* CSS Custom Properties fallback */
+@supports not (color: var(--primary-600)) {
+    .metric-icon {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+    
+    .dashboard-header h1 i {
+        color: #3b82f6;
+    }
+}
+
+/* ========================================================================
+   COMPONENT STATES
+   ======================================================================== */
+
+/* Loading states */
+.metric-card.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.metric-card.loading .metric-content {
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-card.loading .metric-content::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-secondary);
+    opacity: 0.8;
+    z-index: 1;
+}
+
+/* Error states */
+.metric-card.error {
+    border-color: var(--danger-500);
+    background: var(--danger-50);
+}
+
+.metric-card.error .metric-icon {
+    background: var(--gradient-danger);
+}
+
+/* Success states */
+.metric-card.success {
+    border-color: var(--success-500);
+}
+
+.metric-card.success .metric-trend {
+    background: var(--success-100);
+    color: var(--success-700);
+}
+
+/* ========================================================================
+   MICRO-INTERACTIONS
+   ======================================================================== */
+
+/* Staggered animations for metric cards */
+.metric-card:nth-child(1) { animation-delay: 0ms; }
+.metric-card:nth-child(2) { animation-delay: 100ms; }
+.metric-card:nth-child(3) { animation-delay: 200ms; }
+.metric-card:nth-child(4) { animation-delay: 300ms; }
+.metric-card:nth-child(5) { animation-delay: 400ms; }
+.metric-card:nth-child(6) { animation-delay: 500ms; }
+
+/* Pulse animation for real-time updates */
+.metric-value-updating {
+    animation: pulse-update 0.8s ease-in-out;
+}
+
+@keyframes pulse-update {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); background-color: var(--primary-50); }
+    100% { transform: scale(1); }
+}
+
+/* Smooth chart transitions */
+.chart-body canvas {
+    transition: opacity 0.3s ease;
+}
+
+.chart-body.loading canvas {
+    opacity: 0.3;
+}
+
+/* Action card press effect */
+.action-card:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+/* ========================================================================
+   UTILITY CLASSES
+   ======================================================================== */
+
+/* Animation utilities */
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.4s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* State utilities */
+.is-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.is-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--neutral-300);
+    border-top: 2px solid var(--primary-600);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 10;
+}
+
+.is-hidden {
+    display: none !important;
+}
+
+.is-visible {
+    display: block !important;
+}
+
+/* Spacing utilities specific to dashboard */
+.dashboard-section {
+    margin-bottom: var(--space-8);
+}
+
+.dashboard-section:last-child {
+    margin-bottom: 0;
+}
+
+/* ========================================================================
+   BROWSER SPECIFIC FIXES
+   ======================================================================== */
+
+/* Safari specific fixes */
+@supports (-webkit-appearance: none) {
+    .metric-card {
+        transform: translateZ(0);
+    }
+    
+    .chart-body {
+        -webkit-transform: translateZ(0);
+    }
+}
+
+/* Firefox specific fixes */
+@-moz-document url-prefix() {
+    .metric-icon {
+        background-attachment: fixed;
+    }
+}
+
+/* Edge specific fixes */
+@supports (-ms-ime-align: auto) {
+    .metrics-grid {
+        display: -ms-grid;
+        -ms-grid-columns: 1fr 1fr 1fr;
+        -ms-grid-rows: auto auto;
+    }
+    
+    .metric-card:nth-child(1) { -ms-grid-column: 1; -ms-grid-row: 1; }
+    .metric-card:nth-child(2) { -ms-grid-column: 2; -ms-grid-row: 1; }
+    .metric-card:nth-child(3) { -ms-grid-column: 3; -ms-grid-row: 1; }
+    .metric-card:nth-child(4) { -ms-grid-column: 1; -ms-grid-row: 2; }
+    .metric-card:nth-child(5) { -ms-grid-column: 2; -ms-grid-row: 2; }
+    .metric-card:nth-child(6) { -ms-grid-column: 3; -ms-grid-row: 2; }
+}
+
+/*
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                              INTEGRATION COMPLETE                                   ║
+║                         Dashboard Integration CSS                                   ║
+║                                                                                      ║
+║ Features Implemented:                                                                ║
+║ ✓ Dark/Light theme integration                                                       ║
+║ ✓ Responsive design                                                                  ║
+║ ✓ Accessibility compliance                                                           ║
+║ ✓ Print styles                                                                       ║
+║ ✓ Performance optimizations                                                          ║
+║ ✓ Browser compatibility                                                              ║
+║ ✓ Micro-interactions                                                                 ║
+║ ✓ Loading/Error states                                                               ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+*/
